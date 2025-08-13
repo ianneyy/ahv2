@@ -58,9 +58,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body class="bg-gray-50">
     <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-sm w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+        <div class="max-w-sm w-full space-y-8 p-8 bg-white rounded-2xl shadow-md">
             <div class="text-center">
-                <h2 class="text-3xl font-bold text-green-600">Login</h2>
+                <h2 class="text-3xl font-bold text-[#28453E]">Login</h2>
                 <p class="mt-2 text-gray-600">Please enter your credentials</p>
             </div>
 
@@ -80,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div>
                     <button type="submit"
-                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-900 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         Sign in
                     </button>
                 </div>

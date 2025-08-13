@@ -25,15 +25,20 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
 </head>
 
 <body class="p-10">
-  <div class="mx-auto max-w-2xl py-8 px-4 border border-slate-200 shadow-md bg-white rounded-2xl">
-    <div class="flex justify-between items-center">
-      <h2 class="ml-5 text-slate-700 font-semibold text-lg">Welcome,
+  <div id="bar" class="mx-auto  max-w-2xl flex justify-between items-center mt-8 mb-10 bg-[#ECF5E9] px-8 py-4 rounded-full">
+   
+      <h2 class="text-2xl font-semibold text-emerald-800">Welcome,
         <?php echo htmlspecialchars($_SESSION["user_name"]); ?>!
       </h2>
       <div class="relative">
-        <?php include '../includes/notification_ui.php'; ?>
+        <div
+          class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
+
+          <?php include '../includes/notification_ui.php'; ?>
+        </div>
+
       </div>
-    </div>
+    
   </div>
 
   <div class=" mx-auto max-w-2xl py-8 px-4 border border-slate-200 shadow-md bg-white rounded-2xl mt-10">
@@ -66,7 +71,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
       </a>
     </div>
 
-   
+
   </div>
 
 
@@ -85,8 +90,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
     </script>
   <?php endif; ?>
   <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
     lucide.createIcons();
+     anime({
+      targets: '#bar',
+      width: ['30%', '100%'],
+      duration: 1500,
+      // easing: 'easeInOutSine'
+      // easing: 'easeInOutCirc'
+      easing: 'easeInExpo'
+    });
   </script>
 
 </body>

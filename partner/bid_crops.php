@@ -131,18 +131,23 @@ while ($row = $result->fetch_assoc()) {
     <div class="max-w-7xl mx-auto">
       <!-- Header Section -->
       <div class="flex justify-between items-center mb-8">
-        <div class="flex items-center gap-4">
-          <a href="dashboard.php" class="text-gray-600 hover:text-gray-900">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+        <div class="flex  gap-4 flex-col">
+          <a href="dashboard.php" class="text-gray-600 hover:text-gray-900 flex gap-2 items-center">
+            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+            <span>Dashboard</span>
+
           </a>
-          <h1 class="text-2xl font-semibold text-gray-900">Bid on Available Crops</h1>
+          <div>
+
+            <h2 class="text-4xl text-emerald-900 font-semibold ">Bid on Available Crops</h2>
+            <span class="text-lg text-gray-600 ">Browse and bid on listed crops.</span>
+          </div>
+
         </div>
       </div>
 
       <!-- Filters Section -->
-      <div class="bg-white rounded-lg border shadow-sm p-6 mb-8">
+      <div class="bg-white rounded-2xl border shadow-sm p-6 mb-8">
         <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Crop Type Filter -->
 
@@ -177,23 +182,23 @@ while ($row = $result->fetch_assoc()) {
               <option value="closed" <?= ($biddingStatus === 'closed') ? 'selected' : '' ?>>Closed</option>
             </select>
           </fieldset>
-         
+
 
           <!-- Sort Option -->
-           <fieldset class="fieldset space-y-2">
+          <fieldset class="fieldset space-y-2">
             <legend class="fieldset-legend">Sort By</legend>
             <select class="select border px-2 focus:border-green-600 focus:ring focus:ring-green-200" name="sort">
-             <option value="ending_soon">Ending Soon</option>
+              <option value="ending_soon">Ending Soon</option>
               <option value="newest" <?= ($_GET['sort'] ?? '') === 'newest' ? 'selected' : '' ?>>Newest</option>
               <option value="price_desc" <?= ($_GET['sort'] ?? '') === 'price_desc' ? 'selected' : '' ?>>Highest Price
               </option>
             </select>
           </fieldset>
 
-        
+
 
           <!-- Your Status -->
-           <fieldset class="fieldset space-y-2">
+          <fieldset class="fieldset space-y-2">
             <legend class="fieldset-legend">Your Status</legend>
             <select class="select border px-2 focus:border-green-600 focus:ring focus:ring-green-200" name="userstatus">
               <option value="all">All Bids</option>
@@ -202,12 +207,12 @@ while ($row = $result->fetch_assoc()) {
             </select>
           </fieldset>
 
-          
+
 
           <!-- Apply Filters Button -->
           <div class="lg:col-span-4 flex justify-end">
             <button type="submit"
-              class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 ease-in-out">
+              class="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 ease-in-out">
               Apply Filters
             </button>
           </div>
@@ -232,7 +237,7 @@ while ($row = $result->fetch_assoc()) {
             $biddingClosed = $endTime < new DateTime(); // Check if bidding is already closed
             ?>
             <div
-              class="bg-white rounded-lg border shadow-sm overflow-hidden flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
+              class="bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
 
               <!-- Crop Image -->
               <div id="img-wrap-<?= $approvedId ?>" class=" relative h-48">
@@ -352,7 +357,7 @@ while ($row = $result->fetch_assoc()) {
                         </fieldset>
                       </div>
                       <button type="submit"
-                        class="w-full flex justify-center items-center gap-3 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        class="w-full flex justify-center items-center gap-3 bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
                         <?= $biddingClosed ? 'disabled' : '' ?>>
                         <i data-lucide="gavel" class="w-4 h-4"></i>
                         <span>Place Bid</span>
@@ -381,7 +386,7 @@ while ($row = $result->fetch_assoc()) {
 
                             </div>
                           <div class="flex flex-col">
-                            <span class="font-bold text-2xl">
+                            <span class="font-bold text-2xl text-emerald-700">
                               ₱${parseFloat(data.highest_bid.amount).toFixed(2)}
                             </span>
                             <span class="text-sm text-gray-500">

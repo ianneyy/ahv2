@@ -98,7 +98,7 @@ foreach ($notifications as $notif) {
         <?php if (count($notifications) > 0): ?>
             
 <?php foreach ($notifications as $notif): ?>
-    <div class="notification-item <?= !$notif['is_read'] ? 'unread' : '' ?>"
+    <div class="notification-item text-black <?= !$notif['is_read'] ? 'unread' : '' ?>"
          data-id="<?= $notif['notificationid'] ?>"
          onclick="markNotificationAsRead(this)">
         <?= htmlspecialchars($notif['message']) ?>
@@ -108,7 +108,7 @@ foreach ($notifications as $notif) {
 
 
         <?php else: ?>
-            <div class="notification-item">No notifications yet.</div>
+            <div class="notification-item text-black">No notifications yet.</div>
         <?php endif; ?>
     </div>
 </div>

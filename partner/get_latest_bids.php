@@ -54,7 +54,7 @@ $result = $stmt->get_result();
 $historyHTML = '<ul class="list-group list-group-flush">';
 $first = true;
 while ($bid = $result->fetch_assoc()) {
-    $class = $first ? 'bg-zinc-900/10 border border-zinc-900/20' : '';
+    $class = $first ? 'bg-[#ECF5E9] border border-emerald-900/20' : '';
     $check = $first ? ' ✅' : '';
  
 $historyHTML .= "

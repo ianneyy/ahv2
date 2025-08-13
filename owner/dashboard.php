@@ -134,19 +134,25 @@ while ($row = $res->fetch_assoc()) {
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+ 
 </head>
 
 <body>
   <div class="max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
-    <div class="flex justify-between items-center mb-10">
-      <h2 class="text-2xl font-semibold text-emerald-800">Welcome, <?= htmlspecialchars($_SESSION["user_name"]) ?>!</h2>
+    <div class="flex items-center justify-center">
 
-      <div class="relative">
-        <div class="rounded-full p-2 flex items-center justify-center" style="background-color: #EDF6EC;">
+      <div id="bar" class="flex justify-between items-center mt-8 mb-10 bg-[#ECF5E9] px-8 py-4 rounded-full">
+        <h2 class="text-2xl font-semibold text-emerald-800">Welcome, <?= htmlspecialchars($_SESSION["user_name"]) ?>!
+        </h2>
 
-          <?php include '../includes/notification_ui.php'; ?>
+        <div class="relative">
+          <div
+            class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
+
+            <?php include '../includes/notification_ui.php'; ?>
+          </div>
+
         </div>
-
       </div>
     </div>
 
@@ -160,7 +166,7 @@ while ($row = $res->fetch_assoc()) {
         <div class="flex flex-col gap-5 px-5 w-full gap-7">
 
           <a href="verify_crops.php"
-            class="flex gap-2 text-slate-700 hover:bg-green-50 hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+            class="flex gap-2 text-slate-700 hover:bg-[#ECF5E9] hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
 
             <i data-lucide="clipboard-list" class="w-5 h-5"></i>
             <span>Verify Crop Submission</span>
@@ -169,7 +175,7 @@ while ($row = $res->fetch_assoc()) {
           <hr>
 
           <a href="verified_crops.php"
-            class="flex gap-2 text-slate-700 hover:bg-green-50 hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+            class="flex gap-2 text-slate-700 hover:bg-[#ECF5E9] hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
 
             <i data-lucide="book-check" class="w-5 h-5"></i>
             <span>View Verified Crops</span>
@@ -177,7 +183,7 @@ while ($row = $res->fetch_assoc()) {
 
           <hr>
           <a href="confirm_payments.php"
-            class="flex gap-2 text-slate-700 hover:bg-green-50 hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+            class="flex gap-2 text-slate-700 hover:bg-[#ECF5E9] hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
 
             <i data-lucide="credit-card" class="w-5 h-5"></i>
             <span>Confirm Payments</span>
@@ -379,8 +385,16 @@ while ($row = $res->fetch_assoc()) {
   </div>
 
   <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
     lucide.createIcons();
+    anime({
+      targets: '#bar',
+      width: ['60%', '100%'],
+      duration: 1500,
+      easing: 'easeInExpo'
+    });
   </script>
 </body>
 
@@ -405,7 +419,7 @@ while ($row = $res->fetch_assoc()) {
       }]
     },
     options: {
-    
+
       maintainAspectRatio: false,
       responsive: true,
 
