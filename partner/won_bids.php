@@ -2,6 +2,9 @@
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 
+
+
+
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessPartner') {
     header("Location: ../auth/login.php");
     exit();
@@ -68,13 +71,28 @@ $result = $stmt->get_result();
         <!-- Header Section -->
         <div class="max-w-7xl mx-auto">
             <div class="flex justify-between items-center mb-8">
-                <div class="flex items-center gap-4">
+                <!-- <div class="flex items-center gap-4">
                     <a href="dashboard.php" class="text-gray-600 hover:text-gray-900">
                         <i data-lucide="chevron-left" class="w-6 h-6"></i>
                        
                     </a>
                     <h1 class="text-2xl font-semibold text-gray-900">My Won Bids</h1>
-                </div>
+                </div> -->
+                <!-- <div class="flex  gap-4 flex-col">
+                    <a href="dashboard.php" class="text-gray-600 hover:text-gray-900 flex gap-2 items-center">
+                        <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                        <span>Dashboard</span>
+
+                    </a>
+                    <div>
+
+                        <h2 class="text-4xl text-emerald-900 font-semibold">My Won Bids</h2>
+<span class="text-lg text-gray-600">View your winning bids and upload proof of payment to claim your crop</span>
+
+                    </div>
+
+                </div> -->
+                
 
                 <!-- Filter -->
                 <form method="GET" class="flex items-center gap-2">
@@ -100,7 +118,7 @@ $result = $stmt->get_result();
             <!-- Bids Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                 <?php while ($row = $result->fetch_assoc()): ?>
-                    <div class="bg-white rounded-lg border shadow-sm overflow-hidden">
+                    <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
                         <!-- Card Header -->
                         <div class="bg-green-50 px-4 py-3 border-b">
                             <div class="flex items-center justify-between">
@@ -139,7 +157,7 @@ $result = $stmt->get_result();
                                     <input type="hidden" name="approvedid" value="<?= $row['approvedid'] ?>">
                                     <input type="hidden" name="winningbidprice" value="<?= $row['winningbidprice'] ?>">
                                     <button type="submit"
-                                        class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
+                                        class="w-full bg-emerald-600 text-white py-2 px-4 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
                                         Proceed to Transaction
                                     </button>
                                 </form>

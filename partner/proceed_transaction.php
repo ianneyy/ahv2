@@ -83,8 +83,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $bp_notify->execute();
             $bp_notify->close();
 
+            $_SESSION['toast_message'] = "This crop is now yours. Please proceed by uploading your proof of payment";
+            // $message = "🧾 A payment proof for Transaction #$transactionId was submitted. ($dateNow)";
+
             // Redirect after successful transaction and notification
-            header("Location: submit_payment.php?success=1");
+            header("Location: wond_bids.php");
             exit();
         } else {
             echo "Failed to insert transaction: " . $insert_stmt->error;

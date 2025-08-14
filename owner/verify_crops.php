@@ -135,6 +135,8 @@ $result = $stmt->get_result();
 <?php
 require_once '../includes/header.php';
 ?>
+
+
 <a href="dashboard.php"
   class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-900 px-4 py-1 justify-center rounded-lg">
   <i data-lucide="chevron-left" class="w-6 h-6"></i>
@@ -143,61 +145,169 @@ require_once '../includes/header.php';
 </a>
 
 
-<div class=" ml-4 mt-5">
+<div class="flex justify-between items-center ml-4 mt-5">
+  <div>
+    <h2 class="text-4xl text-emerald-900 font-semibold ">Verify Crop Submissions</h2>
+    <span class="text-lg text-gray-600 ">Review and approve farmer crop submissions</span>
+  </div>
+  <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+    <form method="GET">
+      <!-- Header with Sort and View buttons -->
+      <div class="flex items-center gap-2 p-4 border-gray-200">
+        <!-- Sort Button -->
+        <button type="button" id="sortButton"
+          class="flex items-center gap-2 bg-white text-gray-600   px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          Sort
+          <svg id="sortArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
 
-  <h2 class="text-4xl text-emerald-900 font-semibold ">Verify Crop Submissions</h2>
-  <span class="text-lg text-gray-600 ">Review and approve farmer crop submissions</span>
-</div>
+        <!-- View Button -->
+        <button type="button" id="cropButton"
+          class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+          <i data-lucide="wheat" class="h-4 w-4"></i>
+          Crop
+          <svg id="cropArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <fieldset class="fieldset">
+          <select name="croptype" class="hidden select">
+            <option value="all" <?= $cropFilter === 'all' ? 'selected' : '' ?>>All</option>
+            <option value="buko" <?= $cropFilter === 'buko' ? 'selected' : '' ?>>Buko</option>
+            <option value="saba" <?= $cropFilter === 'saba' ? 'selected' : '' ?>>Saba</option>
+            <option value="lanzones" <?= $cropFilter === 'lanzones' ? 'selected' : '' ?>>Lanzones</option>
+            <option value="rambutan" <?= $cropFilter === 'rambutan' ? 'selected' : '' ?>>Rambutan</option>
+          </select>
 
-<div class="flex rounded-2xl p-6 mt-10 items-center bg-[#ECF5E9]">
-  <form method="GET">
-    <div class="flex gap-10 items-center">
-      <div class="flex gap-10 items-center ">
+        </fieldset>
+
+        <fieldset class="fieldset ">
+          <select name="sort" class="hidden select ">
+            <option value="newest" <?= $sortOption === 'newest' ? 'selected' : '' ?>>Newest</option>
+            <option value="oldest" <?= $sortOption === 'oldest' ? 'selected' : '' ?>>Oldest</option>
+            <option value="qty_desc" <?= $sortOption === 'qty_desc' ? 'selected' : '' ?>>Quantity: High to Low</option>
+            <option value="qty_asc" <?= $sortOption === 'qty_asc' ? 'selected' : '' ?>>Quantity: Low to High</option>
+          </select>
+
+        </fieldset>
 
 
-        <div class="flex gap-2 items-center ">
-          <fieldset class="fieldset space-y-2">
-            <legend class="fieldset-legend">Crop Type</legend>
-            <select name="croptype"
-              class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36"
-              >
-              <option value="all" <?= $cropFilter === 'all' ? 'selected' : '' ?>>All</option>
-              <option value="buko" <?= $cropFilter === 'buko' ? 'selected' : '' ?>>Buko</option>
-              <option value="saba" <?= $cropFilter === 'saba' ? 'selected' : '' ?>>Saba</option>
-              <option value="lanzones" <?= $cropFilter === 'lanzones' ? 'selected' : '' ?>>Lanzones</option>
-              <option value="rambutan" <?= $cropFilter === 'rambutan' ? 'selected' : '' ?>>Rambutan</option>
-            </select>
+        <!-- More Options Button -->
+        <button type="submit" class="ml-auto text-gray-400 hover:text-gray-600 p-2 hover:bg-[#ECF5E9] rounded-lg px-4">
+          <!-- <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+      </svg> -->
+          <span>Apply</span>
+        </button>
+      </div>
+      <!-- Dropdown Menu -->
+      <div class="relative">
+        <!-- Dropdown -->
+        <div id="cropDropdown"
+          class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+          <!-- Sort Options -->
+          <div data-crop-value="all"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
 
-          </fieldset>
+            All
+          </div>
+          <div data-crop-value="buko"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
 
-        </div>
-        <div class="flex gap-2 items-center">
-          <fieldset class="fieldset space-y-2">
-            <legend class="fieldset-legend">Sort</legend>
-            <select name="sort"
-              class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36"
-             >
-              <option value="newest" <?= $sortOption === 'newest' ? 'selected' : '' ?>>Newest</option>
-              <option value="oldest" <?= $sortOption === 'oldest' ? 'selected' : '' ?>>Oldest</option>
-              <option value="qty_desc" <?= $sortOption === 'qty_desc' ? 'selected' : '' ?>>Quantity: High to Low</option>
-              <option value="qty_asc" <?= $sortOption === 'qty_asc' ? 'selected' : '' ?>>Quantity: Low to High</option>
-            </select>
-
-          </fieldset>
-
+            Buko
+          </div>
+          <!-- Order Options -->
+          <div data-crop-value="saba"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
+            Saba
+          </div>
+          <div data-crop-value="lanzones"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
+            Lanzones
+          </div>
+          <div data-crop-value="rambutan"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
+            Rambutan
+          </div>
+          <!-- <div class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+        Quantity: High to Low
+      </div>
+       <div class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+         Quantity: Low to High
+      </div> -->
         </div>
       </div>
+      <!-- Dropdown Menu -->
+      <div class="relative">
+        <!-- Dropdown -->
+        <div id="sortDropdown"
+          class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+          <!-- Sort Options -->
+          <div data-sort-value="newest"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
 
-      <button type="submit"
-        class="self-auto bg-emerald-600 px-5 py-1 rounded-lg text-white hover:bg-emerald-700 transition duration-300 ease-in-out">Apply</button>
-    </div>
+            Newest
+          </div>
+          <div data-sort-value="oldest"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
 
-  </form>
+            Oldest
+          </div>
+
+          <!-- Separator -->
+          <div class="border-t border-gray-200 my-2"></div>
+
+          <!-- Order Options -->
+          <div data-sort-value="qty_asc"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
+            Ascending
+          </div>
+          <div data-sort-value="qty_desc"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
+            Descending
+          </div>
+          <!-- <div class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+        Quantity: High to Low
+      </div>
+       <div class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+         Quantity: Low to High
+      </div> -->
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+
 </div>
+
+
+
+
+
+
+
 
 <?php if ($result->num_rows > 0): ?>
   <?php while ($row = $result->fetch_assoc()): ?>
-    <div class="border rounded-3xl p-6 mt-10 border-slate-300 hover:shadow-md transition duration-200 ease-in">
+    <div class="border rounded-3xl p-6 mt-5 border-slate-300 hover:shadow-md transition duration-200 ease-in">
 
       <div class="flex flex-col lg:flex-row gap-6">
 
@@ -328,6 +438,7 @@ require_once '../includes/footer.php';
     return confirm("Are you sure you want to reject this submission?");
   }
 </script>
+<script src="./assets/script.js"></script>
 
 <?php $conn->close(); ?>
 

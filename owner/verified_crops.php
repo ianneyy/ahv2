@@ -11,11 +11,25 @@ $ownerId = $_SESSION['user_id'];
 $cropFilter = $_GET['croptype'] ?? 'all';
 
 // Fetch verified crops for this owner
-$query = "SELECT a.*, u.name AS farmer_name 
-          FROM approved_submissions a
-          JOIN users u ON a.farmerid = u.id
-          WHERE a.verifiedby = ?";
+// $query = "SELECT a.*, u.name AS farmer_name 
+//           FROM approved_submissions a
+//           JOIN users u ON a.farmerid = u.id
+//           WHERE a.verifiedby = ?";
+$query = "
 
+SELECT 
+    transactions.*,
+    approved_submissions.*,
+    users.name AS farmer_name
+FROM transactions
+JOIN approved_submissions 
+    ON transactions.approvedid = approved_submissions.approvedid
+JOIN users 
+    ON approved_submissions.farmerid = users.id;
+
+
+
+";
 $params = [$ownerId];
 $types = "i";
 
@@ -25,12 +39,18 @@ if ($cropFilter !== 'all') {
   $types .= "s";
 }
 
-$query .= " ORDER BY a.sellingdate ASC";
+// $query .= " ORDER BY a.sellingdate ASC";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param($types, ...$params);
+// $stmt->bind_param($types, ...$params);
+// $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
+
+// echo "<pre>";
+// print_r($result->fetch_all(MYSQLI_ASSOC));
+// echo "</pre>";
+// exit;
 ?>
 
 <?php
@@ -43,27 +63,85 @@ require_once '../includes/header.php';
   <span class="text-md">Dashboard</span>
 </a>
 
-<div class=" ml-4 mt-5">
-  <h2 class="text-4xl text-emerald-900 font-semibold ">Verified Crops</h2>
-  <span class="text-lg text-gray-600 ">All crops approved and ready for bidding.</span>
-</div>
-<div class="flex rounded-2xl p-6 mt-10 items-center bg-[#ECF5E9] mb-10">
-  <form method="GET">
-    <fieldset class="fieldset space-y-2">
-      <legend class="fieldset-legend">Crop Type</legend>
-      <select name="croptype" id="croptype" onchange="this.form.submit()"
-        class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36">
-        <option value="all" <?= $cropFilter === 'all' ? 'selected' : '' ?>>All</option>
-        <option value="buko" <?= $cropFilter === 'buko' ? 'selected' : '' ?>>Buko</option>
-        <option value="saba" <?= $cropFilter === 'saba' ? 'selected' : '' ?>>Saba</option>
-        <option value="lanzones" <?= $cropFilter === 'lanzones' ? 'selected' : '' ?>>Lanzones</option>
-        <option value="rambutan" <?= $cropFilter === 'rambutan' ? 'selected' : '' ?>>Rambutan</option>
-      </select>
+<div class="flex justify-between items-center ml-4 mt-5 mb-5">
+  <div>
+    <h2 class="text-4xl text-emerald-900 font-semibold ">Verified Crops</h2>
+    <span class="text-lg text-gray-600 ">All crops approved and ready for bidding.</span>
+  </div>
+  <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+    <form method="GET">
+      <!-- Header with Sort and View buttons -->
+      <div class="flex items-center gap-2 p-4 border-gray-200">
 
-    </fieldset>
 
-  </form>
+        <!-- View Button -->
+        <button type="button" id="cropButton"
+          class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+          <i data-lucide="wheat" class="h-4 w-4"></i>
+          Crop
+          <svg id="cropArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <fieldset class="fieldset">
+          <select name="croptype" class="hidden select">
+            <option value="all" <?= $cropFilter === 'all' ? 'selected' : '' ?>>All</option>
+            <option value="buko" <?= $cropFilter === 'buko' ? 'selected' : '' ?>>Buko</option>
+            <option value="saba" <?= $cropFilter === 'saba' ? 'selected' : '' ?>>Saba</option>
+            <option value="lanzones" <?= $cropFilter === 'lanzones' ? 'selected' : '' ?>>Lanzones</option>
+            <option value="rambutan" <?= $cropFilter === 'rambutan' ? 'selected' : '' ?>>Rambutan</option>
+          </select>
+
+        </fieldset>
+        <button type="submit" class="ml-auto text-gray-400 hover:text-gray-600 p-2 hover:bg-[#ECF5E9] rounded-lg px-4">
+
+          <span>Apply</span>
+        </button>
+      </div>
+      <!-- Dropdown Menu -->
+      <div class="relative">
+        <!-- Dropdown -->
+        <div id="cropDropdown"
+          class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+          <!-- Sort Options -->
+          <div data-crop-value="all"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+
+            All
+          </div>
+          <div data-crop-value="buko"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+
+            Buko
+          </div>
+          <!-- Order Options -->
+          <div data-crop-value="saba"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+            Saba
+          </div>
+          <div data-crop-value="lanzones"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+            Lanzones
+          </div>
+          <div data-crop-value="rambutan"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+            Rambutan
+          </div>
+
+        </div>
+      </div>
+
+    </form>
+
+  </div>
 </div>
+
 
 <?php if ($result->num_rows > 0): ?>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -138,13 +216,27 @@ require_once '../includes/header.php';
               </div>
 
             </div>
+            <?php
+            $statusLabel = match ($row['status']) {
+              'rejected' => 'Rejected',
+              'verified' => 'Verified',
+              'awaiting_verification' => 'Pending Verification',
+              default => 'Pending'
+            };
+            $statusColor = match ($row['status']) {
+              'rejected' => 'bg-red-500',
+              'verified' => 'bg-green-500',
+              'awaiting_verification' => 'bg-yellow-500',
+              default => 'bg-blue-500'
+            };
 
+            ?>
             <!-- Footer Section -->
             <div class="pt-4 border-t border-gray-100">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span class="text-xs text-gray-500">Verified</span>
+                  <div class="w-2 h-2 <?= $statusColor ?> rounded-full"></div>
+                  <span class="text-xs text-gray-500"><?= $statusLabel ?></span>
                 </div>
                 <div class="text-xs text-gray-400">
                   <?= date('M d, Y', strtotime($row['verifiedat'])) ?>
@@ -191,8 +283,9 @@ require_once '../includes/header.php';
   </div>
 <?php endif; ?>
 
+
 <?php
 require_once '../includes/footer.php';
 ?>
-
+<script src="./assets/script2.js"></script>
 <?php $conn->close(); ?>

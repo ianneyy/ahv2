@@ -111,43 +111,90 @@ require_once '../includes/header.php';
 </a>
 
 
-<div class=" ml-4 mt-5 mb-4">
+<div class=" ml-4 mt-5 mb-10 flex justify-between items-center ">
 
-    <h2 class="text-4xl text-emerald-900 font-semibold ">Payment Confirmations</h2>
-    <span class="text-lg text-gray-600 ">Review and manage payment verification requests</span>
-</div>
-<!-- Header Section -->
-<div class=" rounded-xl shadow-sm bg-[#ECF5E9] p-6 mb-8">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <!-- <div>
-            <h2 class="text-2xl font-bold text-gray-900">Payment Confirmations</h2>
-            <p class="text-gray-600 text-sm">Review and manage payment verification requests</p>
-        </div> -->
+    <div>
 
-        <form method="GET" class="flex items-center gap-3">
-            <fieldset class="fieldset">
-                <div class="flex items-center gap-2">
+        <h2 class="text-4xl text-emerald-900 font-semibold ">Payment Confirmations</h2>
+        <span class="text-lg text-gray-600 ">Review and manage payment verification requests</span>
 
-                    <legend class="fieldset-legend">Status</legend>
-                    <select name="status" id="status" onchange="this.form.submit()"
-                        class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36">
-                        <option value="">All</option>
-                        <option value="pending" <?= (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'selected' : '' ?>>
-                            Pending</option>
-                        <option value="awaiting_verification" <?= (isset($_GET['status']) && $_GET['status'] === 'awaiting_verification') ? 'selected' : '' ?>>Awaiting Verification
-                        </option>
-                        <option value="verified" <?= (isset($_GET['status']) && $_GET['status'] === 'verified') ? 'selected' : '' ?>>Verified
-                        </option>
-                        <option value="rejected" <?= (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'selected' : '' ?>>Rejected
-                        </option>
-                    </select>
+    </div>
+
+    <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+        <form method="GET">
+            <!-- Header with Sort and View buttons -->
+            <div class="flex items-center gap-2 p-4 border-gray-200">
+
+
+                <!-- View Button -->
+                <button type="button" id="statusButton"
+                    class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                    <i data-lucide="wheat" class="h-4 w-4"></i>
+                    Status
+                    <svg id="statusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <select name="status" id="status" class="hidden" onchange="this.form.submit()"
+                    class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36">
+                    <option value="">All</option>
+                    <option value="pending" <?= (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'selected' : '' ?>>
+                        Pending</option>
+                    <option value="awaiting_verification" <?= (isset($_GET['status']) && $_GET['status'] === 'awaiting_verification') ? 'selected' : '' ?>>Awaiting Verification
+                    </option>
+                    <option value="verified" <?= (isset($_GET['status']) && $_GET['status'] === 'verified') ? 'selected' : '' ?>>Verified
+                    </option>
+                    <option value="rejected" <?= (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'selected' : '' ?>>Rejected
+                    </option>
+                </select>
+              
+            </div>
+            <!-- Dropdown Menu -->
+            <div class="relative">
+                <!-- Dropdown -->
+                <div id="statusDropdown"
+                    class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    <!-- Sort Options -->
+                    <div data-status-value="all"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+
+                        All
+                    </div>
+                    <div data-status-value="pending"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+
+                        Pending
+                    </div>
+                    <!-- Order Options -->
+                    <div data-status-value="awaiting_verification"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                        Pending Verification
+                    </div>
+                    <div data-status-value="verified"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                        Verified
+                    </div>
+                    <div data-status-value="rejected"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                        Rejected
+                    </div>
+
                 </div>
-
-            </fieldset>
+            </div>
 
         </form>
+
     </div>
 </div>
+
+
+
 
 <!-- Cards Grid -->
 <?php if (mysqli_num_rows($result) > 0): ?>
@@ -163,7 +210,8 @@ require_once '../includes/header.php';
             $colors = $statusColors[$row['status']] ?? ['border' => 'border-gray-200', 'bg' => 'bg-gray-50', 'badge' => 'bg-gray-100 text-gray-800'];
             ?>
 
-            <div class="bg-white rounded-3xl shadow-sm border hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+            <div
+                class="bg-white rounded-3xl shadow-sm border hover:shadow-md transition-shadow flex flex-col justify-between h-full">
 
                 <!-- Card Header -->
                 <div class="p-5 border-b border-gray-100 bg-emerald-900 rounded-tl-3xl rounded-tr-3xl">
@@ -358,7 +406,7 @@ require_once '../includes/header.php';
         }
     }
 </script>
-
+<script src="./assets/confirm_payments.js"></script>
 <?php
 require_once '../includes/footer.php';
 ?>
