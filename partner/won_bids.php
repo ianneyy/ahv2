@@ -30,13 +30,16 @@ $sql = "SELECT ab.approvedid, ab.croptype, ab.quantity, ab.unit, ab.imagepath,
                cb.bidamount AS winningbidprice,
                t.transactionid, t.payment_proof, t.status, t.rejectionreason
         FROM approved_submissions ab
+       
         JOIN crop_bids cb ON ab.approvedid = cb.approvedid
         LEFT JOIN transactions t ON ab.approvedid = t.approvedid AND t.bpartnerid = cb.bpartnerid
         WHERE cb.bpartnerid = ?
+          AND ab.status = 'closed'
           AND cb.bidamount = (
               SELECT MAX(bidamount)
               FROM crop_bids
               WHERE approvedid = ab.approvedid
+            
           )" . $status_condition;
 
 
@@ -62,39 +65,105 @@ $result = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Won Bids</title>
     <script src="https://cdn.tailwindcss.com"></script>
-      <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
 <body class="bg-gray-50">
     <div class="min-h-screen p-8">
+
         <!-- Header Section -->
         <div class="max-w-7xl mx-auto">
-            <div class="flex justify-between items-center mb-8">
-                <!-- <div class="flex items-center gap-4">
-                    <a href="dashboard.php" class="text-gray-600 hover:text-gray-900">
-                        <i data-lucide="chevron-left" class="w-6 h-6"></i>
-                       
-                    </a>
-                    <h1 class="text-2xl font-semibold text-gray-900">My Won Bids</h1>
-                </div> -->
-                <!-- <div class="flex  gap-4 flex-col">
-                    <a href="dashboard.php" class="text-gray-600 hover:text-gray-900 flex gap-2 items-center">
-                        <i data-lucide="chevron-left" class="w-6 h-6"></i>
-                        <span>Dashboard</span>
+            <div class="flex  gap-4 flex-col">
+                <a href="dashboard.php" class="text-gray-600 hover:text-gray-900 flex gap-2 items-center">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                    <span>Dashboard</span>
 
-                    </a>
+                </a>
+                <div class="flex justify-between items-center">
+
+
                     <div>
 
-                        <h2 class="text-4xl text-emerald-900 font-semibold">My Won Bids</h2>
-<span class="text-lg text-gray-600">View your winning bids and upload proof of payment to claim your crop</span>
+                        <h2 class="text-4xl text-emerald-900 font-semibold ">Bid on Available Crops</h2>
+                        <span class="text-lg text-gray-600 ">Browse and bid on listed crops.</span>
+                    </div>
+                    <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+                        <form method="GET">
+                            <!-- Header with Sort and View buttons -->
+                            <div class="flex items-center gap-2 p-4 border-gray-200">
+
+
+                                <!-- View Button -->
+                                <button type="button" id="statusButton"
+                                    class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                                    <i data-lucide="wheat" class="h-4 w-4"></i>
+                                    Status
+                                    <svg id="statusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <select name="status" id="status" class="hidden" onchange="this.form.submit()"
+                                    class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36">
+                                    <option value="">All</option>
+                                    <option value="pending" <?= (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'selected' : '' ?>>
+                                        Pending</option>
+                                    <option value="awaiting_verification" <?= (isset($_GET['status']) && $_GET['status'] === 'awaiting_verification') ? 'selected' : '' ?>>Awaiting Verification
+                                    </option>
+                                    <option value="verified" <?= (isset($_GET['status']) && $_GET['status'] === 'verified') ? 'selected' : '' ?>>Verified
+                                    </option>
+                                    <option value="rejected" <?= (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'selected' : '' ?>>Rejected
+                                    </option>
+                                </select>
+
+                            </div>
+                            <!-- Dropdown Menu -->
+                            <div class="relative">
+                                <!-- Dropdown -->
+                                <div id="statusDropdown"
+                                    class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                    <!-- Sort Options -->
+                                    <div data-status-value="all"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+
+                                        All
+                                    </div>
+                                    <div data-status-value="pending"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+
+                                        Pending
+                                    </div>
+                                    <!-- Order Options -->
+                                    <div data-status-value="awaiting_verification"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                                        Pending Verification
+                                    </div>
+                                    <div data-status-value="verified"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                                        Verified
+                                    </div>
+                                    <div data-status-value="rejected"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                                        Rejected
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </form>
 
                     </div>
+                </div>
+            </div>
 
-                </div> -->
-                
 
-                <!-- Filter -->
+            <!-- <div class="flex justify-between items-center mb-8">
                 <form method="GET" class="flex items-center gap-2">
                     <label for="status" class="text-sm font-medium text-gray-700">Filter by Status:</label>
                     <select name="status" id="status" onchange="this.form.submit()"
@@ -106,12 +175,25 @@ $result = $stmt->get_result();
                         <option value="rejected" <?= $status_filter === 'rejected' ? 'selected' : '' ?>>Rejected</option>
                     </select>
                 </form>
-            </div>
+            </div> -->
 
             <!-- No Results Message -->
             <?php if ($result->num_rows === 0): ?>
-                <div class="rounded-lg bg-blue-50 p-4 text-sm text-blue-600">
+                <!-- <div class="rounded-lg bg-blue-50 p-4 text-sm text-blue-600">
                     You haven't won any bids yet or all your transactions are complete.
+                </div> -->
+                <div class="text-center py-12">
+                    <div class="max-w-md mx-auto">
+                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Empty</h3>
+                       
+                    </div>
                 </div>
             <?php endif; ?>
 
@@ -185,17 +267,16 @@ $result = $stmt->get_result();
                                         </button>
                                     </form>
                                 <?php endif; ?>
-<?php
-            $statusClass = match ($row['status']) {
-                'rejected' => 'bg-red-50 text-red-700',
-                'verified' => 'bg-green-50 text-green-700',
-                default => 'bg-yellow-50 text-yellow-700'
-            };
-            ?>
+                                <?php
+                                $statusClass = match ($row['status']) {
+                                    'rejected' => 'bg-red-50 text-red-700',
+                                    'verified' => 'bg-green-50 text-green-700',
+                                    default => 'bg-yellow-50 text-yellow-700'
+                                };
+                                ?>
                                 <!-- Status Badges -->
                                 <?php if (!empty($row['payment_proof'])): ?>
-                                    <div class="rounded-md p-4 
-                                          <?= $statusClass ?>">
+                                    <div class="rounded-md p-4 <?= $statusClass ?>">
                                         <?php if ($row['status'] === 'awaiting_verification'): ?>
                                             <div class="flex items-center">
                                                 <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor"
@@ -206,10 +287,10 @@ $result = $stmt->get_result();
                                                 <p class="text-sm text-yellow-700">Awaiting verification</p>
                                             </div>
 
-                                             <?php elseif ($row['status'] === 'verified'): ?>
+                                        <?php elseif ($row['status'] === 'verified'): ?>
                                             <div class="flex items-center gap-2">
                                                 <i data-lucide="check" class="w-5 h-5 text-green-700"></i>
-                                               
+
                                                 <p class="text-sm text-green-700">Verified</p>
                                             </div>
                                         <?php elseif ($row['status'] === 'rejected'): ?>
@@ -253,25 +334,25 @@ $result = $stmt->get_result();
         </div>
     </div>
 
-<?php if ($toast_message): ?>
-    <div class="toast">
-        <div class="alert alert-success">
-            <span><?php echo htmlspecialchars($toast_message); ?></span>
+    <?php if ($toast_message): ?>
+        <div class="toast">
+            <div class="alert alert-success">
+                <span><?php echo htmlspecialchars($toast_message); ?></span>
+            </div>
         </div>
-    </div>
 
+        <script>
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                document.querySelector('.toast')?.remove();
+            }, 3000);
+        </script>
+    <?php endif; ?>
+    <script src="./assets/won_bids.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        // Hide toast after 3 seconds
-        setTimeout(() => {
-            document.querySelector('.toast')?.remove();
-        }, 3000);
+        lucide.createIcons();
     </script>
-<?php endif; ?>
-
- <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    lucide.createIcons();
-  </script>
 </body>
 
 </html>

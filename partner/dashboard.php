@@ -5,8 +5,20 @@ require_once '../includes/notify.php';
 $userId = $_SESSION['user_id'];
 $userType = $_SESSION['user_type'];
 
+$sql = "SELECT name FROM users WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$stmt->bind_result($userName);
+$stmt->fetch();
+$stmt->close();
+
 $notifications = get_notifications($conn, $userId, $userType);
+
+
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +34,8 @@ $notifications = get_notifications($conn, $userId, $userType);
 
 <body class="bg-gray-50 p-10">
   <div id="bar" class=" max-w-7xl mx-auto flex justify-between items-center mt-8 mb-10 bg-[#ECF5E9] px-8 py-4 rounded-full">
-    <h2 class="text-2xl font-semibold text-emerald-800">Partner Dashboard
+    <h2 class="text-2xl font-semibold text-emerald-800">Partner Dashboard |   <span class="text-lg text-emerald-600"> <?php echo htmlspecialchars($userName); ?></span>
+
 
     </h2>
     <div class="relative">
@@ -91,12 +104,12 @@ $notifications = get_notifications($conn, $userId, $userType);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
     lucide.createIcons();
- anime({
-      targets: '#bar',
-      width: ['60%', '100%'],
-      duration: 1500,
-      easing: 'easeInExpo'
-    });
+//  anime({
+//       targets: '#bar',
+//       width: ['60%', '100%'],
+//       duration: 1500,
+//       easing: 'easeInExpo'
+//     });
   </script>
 </body>
 

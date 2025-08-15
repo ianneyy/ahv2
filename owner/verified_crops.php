@@ -1,6 +1,8 @@
 <?php
 require_once '../includes/session.php';
 require_once '../includes/db.php';
+$toast_message = $_SESSION['toast_message'] ?? null;
+unset($_SESSION['toast_message']);
 
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessOwner') {
   header("Location: ../auth/login.php");

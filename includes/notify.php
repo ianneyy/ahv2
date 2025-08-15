@@ -77,7 +77,7 @@ function sendNotificationToUserType($conn, $userType, $message) {
 
 
 function get_notifications($conn, $userId, $userType) {
-    $stmt = $conn->prepare("SELECT * FROM notifications WHERE userid = ? AND user_type = ? ORDER BY created_at DESC");
+    $stmt = $conn->prepare("SELECT * FROM notifications WHERE (userid = ? AND user_type = ?)  OR user_type = 'all' ORDER BY created_at DESC");
     $stmt->bind_param("is", $userId, $userType);
     $stmt->execute();
     $result = $stmt->get_result();

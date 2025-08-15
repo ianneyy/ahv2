@@ -10,6 +10,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessPartner'
 $partnerId = $_SESSION['user_id'];
 
 
+$conn->query("
+    UPDATE approved_submissions
+    SET status = 'closed'
+    WHERE sellingdate <= DATE_ADD(NOW(), INTERVAL 1 HOUR)
+");
+
+$conn->query("
+    UPDATE approved_submissions
+    SET status = 'open'
+    WHERE sellingdate > DATE_ADD(NOW(), INTERVAL 1 HOUR)
+");
+
 
 // Get filter values from dropdowns
 $cropTypeFilter = $_GET['croptype'] ?? 'all';
@@ -23,11 +35,19 @@ $types = "";
 
 
 // Filter by bidding status
+// if ($biddingStatus === 'open') {
+//   $whereClauses[] = "a.sellingdate > DATE_ADD(NOW(), INTERVAL 1 HOUR)";
+//   // $whereClauses[] = "a.sellingdate == open)";
+// } elseif ($biddingStatus === 'closed') {
+//   $whereClauses[] = "a.sellingdate <= DATE_ADD(NOW(), INTERVAL 1 HOUR)";
+//   // $whereClauses[] = "a.sellingdate == closed)";
+// }
 if ($biddingStatus === 'open') {
-  $whereClauses[] = "a.sellingdate > DATE_ADD(NOW(), INTERVAL 1 HOUR)";
+  $whereClauses[] = "a.status = 'open'";
 } elseif ($biddingStatus === 'closed') {
-  $whereClauses[] = "a.sellingdate <= DATE_ADD(NOW(), INTERVAL 1 HOUR)";
+  $whereClauses[] = "a.status = 'closed'";
 }
+
 
 // Filter by crop type
 if ($cropTypeFilter !== 'all') {
@@ -50,7 +70,7 @@ $query = "SELECT a.*, u.name AS farmer_name
           $whereSQL";
 
 
-// We'll sort later based on dropdown
+// Sorting
 switch ($sortOption) {
   case 'price_desc':
     $query .= " ORDER BY a.baseprice DESC";
@@ -413,6 +433,7 @@ while ($row = $result->fetch_assoc()) {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <?php foreach ($filteredRows as $row):
             $approvedId = $row['approvedid'];
+            $status = $row['status'];
 
             // Get current highest bid
             $bidQuery = $conn->prepare("SELECT * FROM crop_bids WHERE approvedid = ? ORDER BY bidamount DESC, bidad ASC LIMIT 1");
@@ -451,6 +472,7 @@ while ($row = $result->fetch_assoc()) {
                   </h3>
                   <span class="inline-flex items-center rounded-full  px-2.5 py-0.5 text-lg font-medium text-green-800">
                     <?= htmlspecialchars($row['quantity']) . ' ' . htmlspecialchars($row['unit']) ?>
+                    <?= htmlspecialchars($row['approvedid']) ?>
                   </span>
                 </div>
                 <hr class="my-5">
@@ -463,6 +485,7 @@ while ($row = $result->fetch_assoc()) {
                   </div>
 
                   <div id="timer-<?= $approvedId ?>" class="text-sm font-medium"></div>
+                  <!-- <span><?= $status ?></span> -->
 
 
                 </div>
@@ -470,15 +493,16 @@ while ($row = $result->fetch_assoc()) {
                 <script>
                   (function countdownTimer() {
                     const timerEl = document.getElementById("timer-<?= $approvedId ?>");
-                    const imgEl = document.getElementById("img-<?= $approvedId ?> ");
+                    const imgEl = document.getElementById("img-<?= $approvedId ?>");
                     const overlayEl = document.getElementById("overlay-<?= $approvedId ?>");
                     const endTime = new Date("<?= $endTime->format('Y-m-d H:i:s') ?>").getTime();
+                    const status = "<?= $status ?>";
 
                     function updateTimer() {
                       const now = new Date().getTime();
                       const diff = endTime - now;
 
-                      if (diff <= 0) {
+                      if (status == "closed") {
 
                         timerEl.innerHTML = "<div class='flex gap-2 items-center text-red-500'>  <i data-lucide='lock' class='w-4 h-4'></i> <span> Bidding Closed</span></div>";
 
@@ -611,6 +635,7 @@ while ($row = $result->fetch_assoc()) {
                           <span class="font-bold text-2xl text-emerald-700">
                             ₱${parseFloat(data.highest_bid.amount).toFixed(2)}
                           </span>
+                          
                           <span class="text-sm text-gray-500">
                             by ${data.highest_bid.name} • ${data.highest_bid.time}
                           </span>

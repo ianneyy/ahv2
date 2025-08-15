@@ -2,7 +2,8 @@
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 require_once '../includes/notify.php';
-
+$toast_message = $_SESSION['toast_message'] ?? null;
+unset($_SESSION['toast_message']);
 
 // Block non-owners
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessOwner') {
@@ -57,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     );
     $stmt->execute();
     $stmt->close();
-
+    $_SESSION['toast_message'] = "Crop has been approved successfully!";
     // ✅ 4. Send Notification AFTER everything is ready
     notify(
       $conn,
@@ -66,6 +67,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       'Your crop submission has been verified! Base price: ₱' . $basePrice,
 
     );
+    header("Location: verify_crops.php");
+    exit;
   }
 
   if (isset($_POST['action']) && $_POST['action'] === 'reject') {
@@ -371,7 +374,7 @@ require_once '../includes/header.php';
               </div>
 
               <!-- Approve Button -->
-              <button type="button"
+              <button type="button" onclick="approveModal<?= $row['submissionid'] ?>.showModal()"
                 class="inline-flex items-center px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 whitespace-nowrap gap-2"
                 data-bs-toggle="modal" data-bs-target="#approveModal<?= $row['submissionid'] ?>">
 
@@ -385,22 +388,56 @@ require_once '../includes/header.php';
 
       </div>
       <!-- Modal -->
-      <div class="modal fade" id="approveModal<?= $row['submissionid'] ?>" tabindex="-1"
-        aria-labelledby="approveLabel<?= $row['submissionid'] ?>" aria-hidden="true">
-        <div class="modal-dialog">
+      <dialog id="approveModal<?= $row['submissionid'] ?>" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+
+
           <form method="POST" action="verify_crops.php">
             <input type="hidden" name="submissionid" value="<?= $row['submissionid'] ?>">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="approveLabel<?= $row['submissionid'] ?>">Approve Crop Submission</h5>
+                <h5 class="text-lg text-gray-500" id="approveLabel<?= $row['submissionid'] ?>">Approve Crop Submission</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="p-5 border rounded-md mb-5 italic gap-3">
+
+
+                <div class="flex gap-20 items-center">
+
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs font-medium text-gray-600">Farmer:</span>
+                    <span
+                      class="text-sm text-gray-900"><?= ucfirst(strtolower(htmlspecialchars($row['farmer_name']))) ?></span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs font-medium text-gray-600">Crop</span>
+                    <span class="text-sm text-gray-900"><?= ucfirst(strtolower(htmlspecialchars($row['croptype']))) ?>
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-medium text-gray-600">Quantity:</span>
+                  <span
+                    class="text-sm text-gray-900"><?= htmlspecialchars($row['quantity']) . ' ' . htmlspecialchars($row['unit']) ?></span>
+                </div>
+
               </div>
               <div class="modal-body">
                 <div class="mb-3">
-                  <label class="form-label">Base Price (₱)</label>
-                  <input type="number" name="baseprice" class="form-control" required min="0" step="0.01">
+                  <fieldset class="fieldset">
+                    <legend class="fieldset-legend text-emerald-900">Base Price</legend>
+
+                    <label class="input mt-2 border w-full">
+                      <i data-lucide="philippine-peso" class="w-4 h-4 text-gray-500"></i>
+                      <input type="number" name="baseprice" required min="0" step="0.01">
+
+                    </label>
+
+                  </fieldset>
+                  <!-- <label class="form-label">Base Price (₱)</label>
+                  <input type="number" name="baseprice" class="form-control" required min="0" step="0.01"> -->
                 </div>
-                <div class="mb-3">
+                <!-- <div class="mb-3">
                   <label class="form-label">Selling Date</label>
                   <?php
                   $minDateTime = date('Y-m-d\TH:i', strtotime('+3 days 08:00')); // start from 8AM
@@ -408,23 +445,166 @@ require_once '../includes/header.php';
                   ?>
                   <input type="datetime-local" name="sellingdate" class="form-control" required min="<?= $minDateTime ?>"
                     max="<?= $maxDateTime ?>">
+                </div> -->
+
+
+                <div class="space-y-2">
+                  <fieldset class="fieldset">
+                    <legend class="fieldset-legend text-emerald-900"> Selling Date & Time</legend>
+
+                    <div class="relative mt-2">
+                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <?php
+                      $minDateTime = date('Y-m-d\TH:i', strtotime('+3 days 08:00'));
+                      $maxDateTime = date('Y-m-d\TH:i', strtotime('+10 days 17:00'));
+                      ?>
+                      <input type="datetime-local" name="sellingdate"
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                        required min="<?= $minDateTime ?>" max="<?= $maxDateTime ?>">
+                    </div>
+                    <p class="text-xs text-gray-500">Available: 3-10 days from now, 8AM-5PM</p>
+                  </fieldset>
                 </div>
+
               </div>
-              <div class="modal-footer">
-                <button type="submit" name="confirm_approve" class="btn btn-primary">Confirm Approve</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <div class="flex justify-end gap-4 mt-5">
+                <button onclick="document.getElementById('approveModal<?= $row['submissionid'] ?>').close()" type="button"
+                  class="text-sm px-4 py-2 text-gray-400 hover:text-gray-600" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" name="confirm_approve"
+                  class="text-sm px-5 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-full text-white">Confirm
+                  Approve</button>
               </div>
             </div>
           </form>
         </div>
-      </div>
+      </dialog>
     </div>
   <?php endwhile; ?>
 <?php else: ?>
-  <p>No pending submissions to verify.</p>
+  <!-- Enhanced Empty State -->
+  <div class="flex flex-col items-center justify-center py-16 px-4 min-h-[400px]">
+    <!-- Animated Icon Container -->
+    <div class="relative mb-6">
+      <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-full p-8 animate-float">
+        <i data-lucide="folder-open" class="h-16 w-16 text-emerald-400"></i>
+      </div>
+      <!-- Floating particles -->
+      <div class="absolute -top-2 -right-2 w-3 h-3 bg-emerald-200 rounded-full animate-pulse"></div>
+      <div class="absolute -bottom-1 -left-3 w-2 h-2 bg-emerald-200 rounded-full animate-pulse"
+        style="animation-delay: 1s;"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="text-center space-y-3 max-w-md">
+      <h3 class="text-xl font-semibold text-gray-800">No pending submissions</h3>
+      <p class="text-gray-500 leading-relaxed">
+        All submissions have been processed. New submissions will appear here for verification.
+      </p>
+
+      <!-- Optional Action Button -->
+      <div class="pt-4">
+        <button onclick="window.location.reload()"
+          class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+          <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+          Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alternative: Minimal Version -->
+  
+<!-- <div class="flex flex-col items-center justify-center py-20 px-4 min-h-[300px]">
+    <div class="bg-gray-50 rounded-2xl p-6 mb-6">
+        <i data-lucide="check-circle-2" class="h-12 w-12 text-gray-300"></i>
+    </div>
+    
+    <div class="text-center space-y-2">
+        <h3 class="text-lg font-medium text-gray-800">All caught up!</h3>
+        <p class="text-gray-500 text-sm">No pending submissions to verify.</p>
+    </div>
+</div> -->
+
+
+  <!-- Alternative: With Stats -->
+<!--   
+<div class="flex flex-col items-center justify-center py-16 px-4 min-h-[400px]">
+    <div class="relative mb-8">
+        <div class="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full transform scale-110 animate-pulse"></div>
+        <div class="relative bg-gradient-to-br from-green-100 to-emerald-100 rounded-full p-8">
+            <div class="relative">
+                <i data-lucide="clipboard-check" class="h-16 w-16 text-green-500"></i>
+                <div class="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
+                    <i data-lucide="check" class="h-3 w-3 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center space-y-4 max-w-sm">
+        <h3 class="text-xl font-semibold text-gray-800">Great work!</h3>
+        <p class="text-gray-500">
+            You've reviewed all submissions. Check back later for new ones.
+        </p>
+        
+        <?php if (isset($stats)): ?>
+        <div class="bg-gray-50 rounded-lg p-4 mt-6">
+            <div class="flex items-center justify-center space-x-6 text-sm">
+                <div class="text-center">
+                    <div class="font-semibold text-gray-800"><?= $stats['this_week'] ?? '0' ?></div>
+                    <div class="text-gray-500">This week</div>
+                </div>
+                <div class="w-px h-8 bg-gray-300"></div>
+                <div class="text-center">
+                    <div class="font-semibold text-gray-800"><?= $stats['total'] ?? '0' ?></div>
+                    <div class="text-gray-500">Total</div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+</div> -->
+
+
+<!-- Add these CSS animations if not already included -->
+<style>
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+</style>
 <?php endif; ?>
 
+<?php if ($toast_message): ?>
+  <div class="toast">
+    <div class="alert alert-success">
+      <span class="text-gray-100"><?php echo htmlspecialchars($toast_message); ?></span>
+    </div>
+  </div>
 
+  <script>
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      document.querySelector('.toast')?.remove();
+    }, 3000);
+  </script>
+<?php endif; ?>
 <?php
 require_once '../includes/footer.php';
 ?>

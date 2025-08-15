@@ -2,7 +2,18 @@
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 require_once '../includes/notify.php';
-require_once '../includes/notification_ui.php';
+// require_once '../includes/notification_ui.php';
+
+$userId = $_SESSION['user_id'];
+$userType = $_SESSION['user_type'];
+$sql = "SELECT name FROM users WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$stmt->bind_result($userName);
+$stmt->fetch();
+$stmt->close();
+
 
 
 // Check if farmer is logged in
@@ -67,10 +78,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("isdssssi", $farmerid, $croptype, $quantity, $unit, $imagepath, $status, $submittedat, $submissionid);
 
         if ($stmt->execute()) {
-            $message = "📢 A crop submission has been updated by a farmer on " . date("F j, Y, g:i a");
+            $message = "📢 $userName has resubmitted a crop for review.";
             sendNotificationToUserType($conn, 'businessOwner', $message);
 
-            $_SESSION['toast_message'] = "Crop submission updated successfully!";
+            $_SESSION['toast_message'] = "Your crop has been resubmitted successfully!";
+
             header("Location: http://localhost/AHV2/farmer/dashboard.php");
             exit();
         } else {
@@ -88,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt->execute()) {
 
-            $message = "📢 A new crop submission has been made by a farmer on " . date("F j, Y, g:i a");
+            $message = "📢 A new crop submission has been made by $userName";
             sendNotificationToUserType($conn, 'businessOwner', $message);
             $_SESSION['toast_message'] = "Crop submitted successfully!";
             header("Location: http://localhost/AHV2/farmer/dashboard.php");
