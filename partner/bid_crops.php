@@ -1,6 +1,10 @@
 <?php
 require_once '../includes/session.php';
 require_once '../includes/db.php';
+$toast_message = $_SESSION['toast_message'] ?? null;
+unset($_SESSION['toast_message']);
+
+
 
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessPartner') {
   header("Location: ../auth/login.php");
@@ -165,7 +169,7 @@ while ($row = $result->fetch_assoc()) {
 
         </div>
       </div>
-      <div class="max-w-4xl mb-10 bg-white rounded-2xl shadow-sm border border-gray-200">
+      <div class="max-w-4xl mb-10 bg-white rounded-2xl shadow-sm border  border-b-[7px] border-l-[4px] border-emerald-900 ">
         <form method="GET">
           <!-- Header with Sort and View buttons -->
           <div class="flex items-center gap-2 p-4 border-gray-200">
@@ -447,8 +451,8 @@ while ($row = $result->fetch_assoc()) {
             $biddingClosed = $endTime < new DateTime(); // Check if bidding is already closed
           ?>
             <div
-              class="bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
-
+              class="bg-white rounded-2xl border border-slate-300 shadow-sm overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow duration-200 ">
+              <!-- 6 78 59 -->
               <!-- Crop Image -->
               <div id="img-wrap-<?= $approvedId ?>" class=" relative h-48">
                 <img id="img-<?= $approvedId ?>" src=" ../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
@@ -522,7 +526,7 @@ while ($row = $result->fetch_assoc()) {
                           Bidding ends in:
                         </span> 
                          <span class='font-mono text-lg'>
-                          ${days}d ${hours}:${minutes}:${seconds}
+                          ${days}d ${hours}h ${minutes}m ${seconds}s
                         </span> 
                       </div>
                       
@@ -742,7 +746,20 @@ while ($row = $result->fetch_assoc()) {
     </div>
   </div>
 
+  <?php if ($toast_message): ?>
+    <div class="toast">
+      <div class="alert alert-success">
+        <span class="text-emerald-900 "><?php echo htmlspecialchars($toast_message); ?></span>
+      </div>
+    </div>
 
+    <script>
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        document.querySelector('.toast')?.remove();
+      }, 3000);
+    </script>
+  <?php endif; ?>
 
 
   <script src="https://unpkg.com/lucide@latest"></script>

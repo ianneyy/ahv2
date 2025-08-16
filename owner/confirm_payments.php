@@ -37,7 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             require_once '../includes/notify.php';
             notify($conn, $bpartnerId, 'businessPartner', "Your payment for $croptype has been approved.");
         }
-
     }
 
     if (isset($_POST['reject']) && isset($_POST['transactionid'])) {
@@ -64,7 +63,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             require_once '../includes/notify.php';
             notify($conn, $bpartnerId, 'businessPartner', "Your payment for $croptype was rejected. Reason: $reason");
         }
-
     }
 
     header("Location: confirm_payments.php");
@@ -120,7 +118,7 @@ require_once '../includes/header.php';
 
     </div>
 
-    <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+    <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
         <form method="GET">
             <!-- Header with Sort and View buttons -->
             <div class="flex items-center gap-2 p-4 border-gray-200">
@@ -148,7 +146,7 @@ require_once '../includes/header.php';
                     <option value="rejected" <?= (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'selected' : '' ?>>Rejected
                     </option>
                 </select>
-              
+
             </div>
             <!-- Dropdown Menu -->
             <div class="relative">
@@ -319,8 +317,8 @@ require_once '../includes/header.php';
                                 <input type="hidden" name="transactionid" value="<?= $row['transactionid'] ?>">
                                 <button type="submit" name="confirm" <?= $isAwaiting ? '' : 'disabled' ?> class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full font-medium text-sm transition-all
                              <?= $isAwaiting
-                                 ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                                 : 'bg-gray-200 text-gray-400 cursor-not-allowed' ?>">
+                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed' ?>">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
                                         </path>
@@ -334,8 +332,8 @@ require_once '../includes/header.php';
                                 <input type="hidden" name="rejectionreason" class="reject-reason">
                                 <button type="submit" name="reject" <?= $isAwaiting ? '' : 'disabled' ?> class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full font-medium text-sm transition-all
                              <?= $isAwaiting
-                                 ? 'bg-red-600 hover:bg-red-700 text-white'
-                                 : 'bg-gray-200 text-gray-400 cursor-not-allowed' ?>">
+                                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed' ?>">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M6 18L18 6M6 6l12 12">
@@ -397,6 +395,7 @@ require_once '../includes/header.php';
             button.textContent = "🔽 View Reason";
         }
     }
+
     function togglePaymentProof(elementId) {
         const element = document.getElementById(elementId);
         if (element.classList.contains('hidden')) {

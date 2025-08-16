@@ -2,7 +2,7 @@
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 require_once '../includes/notify.php';
-require_once '../includes/notification_ui.php';
+// require_once '../includes/notification_ui.php';
 
 
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessPartner') {
@@ -99,6 +99,8 @@ if ($existingBid) {
 if ($stmt->execute()) {
     $stmt->close();
     $conn->close();
+    $_SESSION['toast_message'] = "Your bid on $cropType was placed successfully!";
+
     header("Location: bid_crops.php?success=1");
     exit();
 } else {

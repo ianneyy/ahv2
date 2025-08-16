@@ -53,13 +53,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
   </div>
 
 
-  <div class="mx-auto max-w-2xl py-8 px-4 border border-slate-200 shadow-md bg-white rounded-2xl mt-10">
+  <div class="mx-auto max-w-2xl py-8 px-4 border border-b-[10px] border-l-[6px] border-emerald-900 shadow-md bg-white rounded-3xl mt-10">
     <div class="flex flex-col gap-5 px-5">
       <form action="submit_crop_action.php" method="POST" enctype="multipart/form-data" class="space-y-6">
         <!-- Crop Type Field -->
         <div class="flex flex-col space-y-2">
           <fieldset class="fieldset space-y-2">
-            <legend class="fieldset-legend">Crop Type</legend>
+            <legend class="fieldset-legend text-emerald-900">Crop Type</legend>
             <!-- <input type="text" class="input" placeholder="Type here" /> -->
             <!-- <p class="label">Optional</p>
             <label for="croptype" class="text-sm font-medium text-gray-700">Crop Type</label> -->
@@ -67,13 +67,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
               class="w-full border border-slate-300 focus:border-green-500 focus:ring-green-500 rounded-lg py-3 px-3 appearance-none bg-white bg-no-repeat bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22w-6%20h-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19.5%208.25l-7.5%207.5-7.5-7.5%22%20%2F%3E%3C%2Fsvg%3E')] bg-[length:1em_1em] bg-[right_0.5em_center]">
               <option value="" class="text-slate-500">Select a crop</option>
               <option value="buko" <?php if ($croptype === 'buko')
-                echo 'selected'; ?>>Buko</option>
+                                      echo 'selected'; ?>>Buko</option>
               <option value="saba" <?php if ($croptype === 'saba')
-                echo 'selected'; ?>>Saba</option>
+                                      echo 'selected'; ?>>Saba</option>
               <option value="lanzones" <?php if ($croptype === 'lanzones')
-                echo 'selected'; ?>>Lanzones</option>
+                                          echo 'selected'; ?>>Lanzones</option>
               <option value="rambutan" <?php if ($croptype === 'rambutan')
-                echo 'selected'; ?>>Rambutan</option>
+                                          echo 'selected'; ?>>Rambutan</option>
             </select>
           </fieldset>
 
@@ -85,7 +85,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
           <div class="flex flex-col w-full">
 
             <fieldset class="fieldset space-y-2">
-              <legend class="fieldset-legend">Quantity</legend>
+              <legend class="fieldset-legend text-emerald-900">Quantity</legend>
               <input type="number" step="0.01" name="quantity" id="quantity" placeholder="Enter quantity"
                 value="<?php echo htmlspecialchars($quantity); ?>" required
                 class="w-full border border-slate-300 focus:border-green-500 focus:ring-green-500 rounded-lg py-2 px-3">
@@ -96,7 +96,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
           <!-- Unit Field -->
           <div class="flex flex-col space-y-2  w-full">
             <fieldset class="fieldset space-y-2">
-              <legend class="fieldset-legend">Unit</legend>
+              <legend class="fieldset-legend text-emerald-900">Unit</legend>
               <!-- <label for="unit" class="text-sm font-medium text-gray-700">Unit</label> -->
               <input type="text" name="unit" id="unit" value="<?php echo htmlspecialchars($unit); ?>" readonly required
                 placeholder="Unit will be set automatically"
@@ -109,7 +109,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
         <!-- Image Upload Field -->
         <div class="flex flex-col space-y-2">
           <fieldset class="fieldset space-y-2">
-            <legend class="fieldset-legend">Upload Image</legend>
+            <legend class="fieldset-legend text-emerald-900">Upload Image</legend>
             <!-- <label for="image" class="text-sm font-medium text-gray-700">Upload Image</label> -->
           </fieldset>
 
@@ -124,7 +124,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
 
           <input type="file" name="image" id="image" accept="image/*"
             class="w-full border border-slate-300 focus:border-green-500 focus:ring-green-500 rounded-lg py-2 px-3
-                   file:bg-green-50 file:text-green-700 file:border-green-500 file:rounded-lg file:py-1 file:px-3 cursor-pointer">
+                   file:bg-[#BFF49B] file:text-emerald-900 file:border-green-500 file:rounded-lg file:py-1 file:px-3 cursor-pointer">
           </fieldset>
 
         </div>
@@ -133,7 +133,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
         <div class="pt-4">
           <?php if ($submissionid): ?>
             <button type="submit"
-              class="w-full bg-emerald-600 text-white py-2 px-4 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors">
+              class="w-full bg-emerald-900 text-white py-2 px-4 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors">
               Resubmit Crop
             </button>
             <input type="hidden" name="submissionid" value="<?php echo htmlspecialchars($submissionid); ?>">
@@ -141,7 +141,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
 
           <?php else: ?>
             <button type="submit"
-              class="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors">
+              class="w-full bg-emerald-900 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors">
               Submit Crop
             </button>
           <?php endif; ?>

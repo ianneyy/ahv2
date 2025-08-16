@@ -70,7 +70,7 @@ require_once '../includes/header.php';
     <h2 class="text-4xl text-emerald-900 font-semibold ">Verified Crops</h2>
     <span class="text-lg text-gray-600 ">All crops approved and ready for bidding.</span>
   </div>
-  <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+  <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
     <form method="GET">
       <!-- Header with Sort and View buttons -->
       <div class="flex items-center gap-2 p-4 border-gray-200">

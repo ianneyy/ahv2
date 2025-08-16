@@ -87,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // $message = "🧾 A payment proof for Transaction #$transactionId was submitted. ($dateNow)";
 
             // Redirect after successful transaction and notification
-            header("Location: wond_bids.php");
+            header("Location: won_bids.php");
             exit();
         } else {
             echo "Failed to insert transaction: " . $insert_stmt->error;

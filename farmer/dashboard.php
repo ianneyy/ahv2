@@ -25,46 +25,48 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
 </head>
 
 <body class="p-10">
-  <div id="bar" class="mx-auto  max-w-2xl flex justify-between items-center mt-8 mb-10 bg-[#ECF5E9] px-8 py-4 rounded-full">
-   
-      <h2 class="text-2xl font-semibold text-emerald-800">Welcome,
-        <?php echo htmlspecialchars($_SESSION["user_name"]); ?>!
-      </h2>
-      <div class="relative">
-        <div
-          class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
+  <div id="bar" class="mx-auto  max-w-2xl flex justify-between items-center mt-8 mb-10  px-8 py-4 rounded-full">
 
-          <?php include '../includes/notification_ui.php'; ?>
-        </div>
+    <h2 class="text-2xl font-semibold text-emerald-800">Welcome,
+      <?php echo htmlspecialchars($_SESSION["user_name"]); ?>!
+    </h2>
+    <div class="relative">
+      <div
+        class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
 
+        <?php include '../includes/notification_ui.php'; ?>
       </div>
-    
+
+    </div>
+
   </div>
 
-  <div class=" mx-auto max-w-2xl py-8 px-4 border border-slate-200 shadow-md bg-white rounded-2xl mt-10">
+  <div class="max-w-2xl mx-auto py-8 lg:px-4 border border-b-[10px] border-l-[6px] border-emerald-900 shadow-md bg-[#BFF49B] rounded-3xl ">
 
     <div class="flex flex-col gap-5 px-5">
 
       <a href="submit_crop.php"
-        class="flex gap-2 text-slate-700 hover:bg-green-50 hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+        class="flex gap-2  text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center">
 
         <i data-lucide="plus" class="w-5 h-5"></i>
         <span>Submit New Crop</span>
       </a>
 
-      <hr>
+      <hr class="border-emerald-600">
+
 
       <a href="my_submissions.php"
-        class="flex gap-2 text-slate-700 hover:bg-green-50 hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+        class="flex gap-2  text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center">
 
         <i data-lucide="file-text" class="w-5 h-5"></i>
         <span>My Submissions</span>
       </a>
 
-      <hr>
+      <hr class="border-emerald-600">
+
 
       <a href="../auth/logout.php"
-        class="flex gap-2 text-slate-700 hover:bg-red-50 hover:text-red-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+        class="flex gap-2 text-gray-500 hover:text-red-400  py-4 px-4 cursor-pointer rounded-lg items-center">
 
         <i data-lucide="log-out" class="w-5 h-5"></i>
         <span>Logout</span>
@@ -78,7 +80,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
   <?php if ($toast_message): ?>
     <div class="toast">
       <div class="alert alert-success">
-        <span><?php echo htmlspecialchars($toast_message); ?></span>
+        <span class="text-emerald-900 "><?php echo htmlspecialchars($toast_message); ?></span>
       </div>
     </div>
 
@@ -90,17 +92,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
     </script>
   <?php endif; ?>
   <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
     lucide.createIcons();
-     anime({
-      targets: '#bar',
-      width: ['30%', '100%'],
-      duration: 1500,
-      // easing: 'easeInOutSine'
-      // easing: 'easeInOutCirc'
-      easing: 'easeInExpo'
-    });
+    // anime({
+    //   targets: '#bar',
+    //   width: ['30%', '100%'],
+    //   duration: 1500,
+    //   // easing: 'easeInOutSine'
+    //   // easing: 'easeInOutCirc'
+    //   easing: 'easeInExpo'
+    // });
   </script>
 
 </body>

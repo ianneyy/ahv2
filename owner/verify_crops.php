@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $basePrice = $_POST['baseprice'];
     $sellingDate = $_POST['sellingdate']; // will be in YYYY-MM-DDTHH:MM format
-// optional: validate format if you want to be strict
+    // optional: validate format if you want to be strict
 
     // Get original crop details
     $stmt = $conn->prepare("SELECT * FROM crop_submissions WHERE submissionid = ?");
@@ -94,7 +94,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       'Your crop submission was rejected. Reason: ' . $reason
     );
   }
-
 }
 
 // Fetch pending submissions
@@ -153,7 +152,7 @@ require_once '../includes/header.php';
     <h2 class="text-4xl text-emerald-900 font-semibold ">Verify Crop Submissions</h2>
     <span class="text-lg text-gray-600 ">Review and approve farmer crop submissions</span>
   </div>
-  <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+  <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
     <form method="GET">
       <!-- Header with Sort and View buttons -->
       <div class="flex items-center gap-2 p-4 border-gray-200">
@@ -518,8 +517,8 @@ require_once '../includes/header.php';
   </div>
 
   <!-- Alternative: Minimal Version -->
-  
-<!-- <div class="flex flex-col items-center justify-center py-20 px-4 min-h-[300px]">
+
+  <!-- <div class="flex flex-col items-center justify-center py-20 px-4 min-h-[300px]">
     <div class="bg-gray-50 rounded-2xl p-6 mb-6">
         <i data-lucide="check-circle-2" class="h-12 w-12 text-gray-300"></i>
     </div>
@@ -532,7 +531,7 @@ require_once '../includes/header.php';
 
 
   <!-- Alternative: With Stats -->
-<!--   
+  <!--   
 <div class="flex flex-col items-center justify-center py-16 px-4 min-h-[400px]">
     <div class="relative mb-8">
         <div class="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full transform scale-110 animate-pulse"></div>
@@ -571,30 +570,30 @@ require_once '../includes/header.php';
 </div> -->
 
 
-<!-- Add these CSS animations if not already included -->
-<style>
-  @keyframes float {
+  <!-- Add these CSS animations if not already included -->
+  <style>
+    @keyframes float {
 
-    0%,
-    100% {
-      transform: translateY(0px);
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
-    50% {
-      transform: translateY(-10px);
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
     }
-  }
-
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-</style>
+  </style>
 <?php endif; ?>
 
 <?php if ($toast_message): ?>
   <div class="toast">
     <div class="alert alert-success">
-      <span class="text-gray-100"><?php echo htmlspecialchars($toast_message); ?></span>
+      <span class="text-emerald-900 "><?php echo htmlspecialchars($toast_message); ?></span>
     </div>
   </div>
 

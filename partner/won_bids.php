@@ -26,12 +26,13 @@ if (in_array($status_filter, $allowed_statuses)) {
 
 
 // Get all winning bids by this user
-$sql = "SELECT ab.approvedid, ab.croptype, ab.quantity, ab.unit, ab.imagepath,
+$sql = "SELECT ab.approvedid, ab.croptype, ab.quantity, ab.unit, ab.imagepath, cbid.reason as cancel_reason, cbid.status as cancel_status,
                cb.bidamount AS winningbidprice,
                t.transactionid, t.payment_proof, t.status, t.rejectionreason
         FROM approved_submissions ab
        
         JOIN crop_bids cb ON ab.approvedid = cb.approvedid
+        LEFT JOIN cancel_bid cbid  ON ab.approvedid = cbid.approvedid
         LEFT JOIN transactions t ON ab.approvedid = t.approvedid AND t.bpartnerid = cb.bpartnerid
         WHERE cb.bpartnerid = ?
           AND ab.status = 'closed'
@@ -53,6 +54,21 @@ if (!empty($status_condition)) {
 }
 $stmt->execute();
 $result = $stmt->get_result();
+
+
+// $query = "SELECT ";
+// $request = '';
+
+
+// while ($row = $result->fetch_assoc()) {
+
+//     echo "<pre>";
+//     var_dump($row);   // dumps all columns (approvedid, croptype, etc.)
+//     echo "</pre>";
+// }
+
+
+
 ?>
 
 
@@ -67,6 +83,8 @@ $result = $stmt->get_result();
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 
 <body class="bg-gray-50">
@@ -88,7 +106,8 @@ $result = $stmt->get_result();
                         <h2 class="text-4xl text-emerald-900 font-semibold ">Bid on Available Crops</h2>
                         <span class="text-lg text-gray-600 ">Browse and bid on listed crops.</span>
                     </div>
-                    <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+                    <div
+                        class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
                         <form method="GET">
                             <!-- Header with Sort and View buttons -->
                             <div class="flex items-center gap-2 p-4 border-gray-200">
@@ -101,7 +120,8 @@ $result = $stmt->get_result();
                                     Status
                                     <svg id="statusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
                                         stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
                                 <select name="status" id="status" class="hidden" onchange="this.form.submit()"
@@ -109,7 +129,8 @@ $result = $stmt->get_result();
                                     <option value="">All</option>
                                     <option value="pending" <?= (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'selected' : '' ?>>
                                         Pending</option>
-                                    <option value="awaiting_verification" <?= (isset($_GET['status']) && $_GET['status'] === 'awaiting_verification') ? 'selected' : '' ?>>Awaiting Verification
+                                    <option value="awaiting_verification" <?= (isset($_GET['status']) && $_GET['status'] === 'awaiting_verification') ? 'selected' : '' ?>>Awaiting
+                                        Verification
                                     </option>
                                     <option value="verified" <?= (isset($_GET['status']) && $_GET['status'] === 'verified') ? 'selected' : '' ?>>Verified
                                     </option>
@@ -163,25 +184,10 @@ $result = $stmt->get_result();
             </div>
 
 
-            <!-- <div class="flex justify-between items-center mb-8">
-                <form method="GET" class="flex items-center gap-2">
-                    <label for="status" class="text-sm font-medium text-gray-700">Filter by Status:</label>
-                    <select name="status" id="status" onchange="this.form.submit()"
-                        class="rounded-md border border-gray-300 py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                        <option value="all" <?= $status_filter === 'all' ? 'selected' : '' ?>>All</option>
-                        <option value="pending" <?= $status_filter === 'pending' ? 'selected' : '' ?>>Pending</option>
-                        <option value="awaiting_verification" <?= $status_filter === 'awaiting_verification' ? 'selected' : '' ?>>Awaiting Verification</option>
-                        <option value="verified" <?= $status_filter === 'verified' ? 'selected' : '' ?>>Verified</option>
-                        <option value="rejected" <?= $status_filter === 'rejected' ? 'selected' : '' ?>>Rejected</option>
-                    </select>
-                </form>
-            </div> -->
 
             <!-- No Results Message -->
             <?php if ($result->num_rows === 0): ?>
-                <!-- <div class="rounded-lg bg-blue-50 p-4 text-sm text-blue-600">
-                    You haven't won any bids yet or all your transactions are complete.
-                </div> -->
+
                 <div class="text-center py-12">
                     <div class="max-w-md mx-auto">
                         <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -192,7 +198,7 @@ $result = $stmt->get_result();
                             </svg>
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Empty</h3>
-                       
+
                     </div>
                 </div>
             <?php endif; ?>
@@ -200,26 +206,32 @@ $result = $stmt->get_result();
             <!-- Bids Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                 <?php while ($row = $result->fetch_assoc()): ?>
-                    <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
-                        <!-- Card Header -->
-                        <div class="bg-green-50 px-4 py-3 border-b">
+                    <div
+                        class="bg-white rounded-2xl border border-slate-300 hover:shadow-lg transition-all duration-300 ease-in-out shadow-sm overflow-auto max-h-150 flex flex-col">
+
+                        <div class="flex justify-center relative h-52">
+                            <img src="../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>" alt="Crop Image"
+                                class="h-full w-full object-cover">
+                        </div>
+
+                        <div class="bg-green-50 px-4 py-3 border-b border-t border-green-200">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-lg font-medium text-green-900">
-                                    <?= htmlspecialchars($row['croptype']) ?>
+                                    <?= ucfirst(htmlspecialchars($row['croptype'])) ?>
                                 </h3>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
-                                    Won
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
+                                        Won
+                                    </span>
+
+
+                                </div>
                             </div>
                         </div>
 
                         <!-- Card Content -->
-                        <div class="p-4 space-y-4">
-                            <div class="flex justify-center">
-                                <img src="../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>" alt="Crop Image"
-                                    class="h-48 w-48 object-cover rounded-lg">
-                            </div>
+                        <div class="p-4 space-y-4 flex flex-col justify-between flex-1">
 
                             <div class="space-y-2">
                                 <div class="flex justify-between text-sm">
@@ -235,19 +247,117 @@ $result = $stmt->get_result();
 
                             <!-- Transaction Actions -->
                             <?php if ($row['transactionid'] === null): ?>
-                                <form action="proceed_transaction.php" method="POST">
-                                    <input type="hidden" name="approvedid" value="<?= $row['approvedid'] ?>">
-                                    <input type="hidden" name="winningbidprice" value="<?= $row['winningbidprice'] ?>">
-                                    <button type="submit"
-                                        class="w-full bg-emerald-600 text-white py-2 px-4 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
-                                        Proceed to Transaction
-                                    </button>
-                                </form>
+
+                                <?php if ($row['cancel_reason'] === null || $row['cancel_status'] === 'rejected'): ?>
+                                    <!-- Only show the primary action button -->
+                                    <div class="mt-auto">
+                                        <form action="proceed_transaction.php" method="POST">
+                                            <input type="hidden" name="approvedid" value="<?= $row['approvedid'] ?>">
+                                            <input type="hidden" name="winningbidprice" value="<?= $row['winningbidprice'] ?>">
+                                            <button type="submit"
+                                                class="w-full bg-emerald-600 text-white py-3 px-4 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors font-medium">
+                                                Proceed to Transaction
+                                            </button>
+                                        </form>
+
+                                        <?php if ($row['cancel_status'] === null): ?>
+
+                                            <!-- Alternative: If you prefer a text link approach -->
+                                            <div class="mt-2 text-center">
+                                                <button onclick="withdrawModal<?= $row['approvedid'] ?>.showModal()" type="button"
+                                                    class="text-xs text-gray-400 hover:text-red-500 transition-colors underline">
+                                                    Need to withdraw this bid?
+                                                </button>
+                                            </div>
+                                        <?php endif; ?>
+
+                                    </div>
+
+                                    <!-- Withdraw Modal (unchanged but improved) -->
+                                    <dialog id="withdrawModal<?= $row['approvedid'] ?>" class="modal modal-bottom sm:modal-middle">
+                                        <div class="modal-box">
+                                            <form action="withdraw_bid.php" method="POST" class="mt-2">
+                                                <!-- Header -->
+                                                <h3 class="text-xl font-semibold text-red-600 flex items-center gap-2">
+                                                    <i data-lucide="triangle-alert" class="w-6 h-6"></i>
+                                                    Withdraw Bid
+                                                </h3>
+                                                <input type="hidden" name="approvedid" value="<?= $row['approvedid'] ?>">
+                                                <input type="hidden" name="winningbidprice" value="<?= $row['winningbidprice'] ?>">
+
+                                                <!-- Warning -->
+                                                <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                                                    <p class="flex items-center gap-2 text-red-600 font-medium">
+                                                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                                                        Warning!
+                                                    </p>
+                                                    <p class="text-sm text-red-500 mt-2 leading-relaxed">
+                                                        By submitting a cancellation request, your winning bid will need to be verified by the owner.
+                                                        If you change your mind after submitting this request, please contact the owner directly.
+                                                        <span class="font-semibold">This action cannot be undone automatically.</span>
+                                                    </p>
+                                                </div>
+
+                                                <!-- Confirmation -->
+                                                <p class="mt-6 text-gray-700 text-sm leading-relaxed">
+                                                    Are you absolutely sure you want to withdraw your winning bid for
+                                                    <strong><?= ucfirst(htmlspecialchars($row['croptype'])) ?></strong>?
+                                                </p>
+
+                                                <!-- Reason Input -->
+                                                <fieldset class="mt-4 space-y-2">
+                                                    <legend class="text-sm font-medium text-gray-700 mb-2">Please provide your reason for withdrawal</legend>
+                                                    <textarea name="reason"
+                                                        class="w-full h-24 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                        placeholder="Explain why you need to withdraw this bid..." required></textarea>
+                                                </fieldset>
+
+                                                <!-- Actions -->
+                                                <div class="mt-6 flex justify-end gap-3">
+                                                    <button onclick="withdrawModal<?= $row['approvedid'] ?>.close()" type="button"
+                                                        class="px-5 py-2.5 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-full transition-colors">
+                                                        Cancel
+                                                    </button>
+                                                    <button type="submit"
+                                                        class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-full shadow-sm transition-colors">
+                                                        Yes, Withdraw Bid
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <!-- Click outside to close -->
+                                        <form method="dialog" class="modal-backdrop">
+                                            <button>close</button>
+                                        </form>
+                                    </dialog>
+
+
+                                <?php else: ?>
+                                    <?php if ($row['cancel_status'] === 'rejected'): ?>
+                                        <div class="flex items-center justify-center py-4">
+                                            <div class="text-center">
+                                                <i data-lucide="x-circle" class="w-8 h-8 text-red-400 mx-auto mb-2"></i>
+                                                <span class="text-sm text-red-600 font-medium">Cancel request rejected</span>
+                                                <p class="text-xs text-gray-500 mt-1">You can proceed with the transaction</p>
+                                            </div>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="flex items-center justify-center py-4">
+                                            <div class="text-center">
+                                                <i data-lucide="clock" class="w-8 h-8 text-yellow-400 mx-auto mb-2"></i>
+                                                <span class="text-sm text-yellow-600 font-medium">Cancel request under review</span>
+                                                <p class="text-xs text-gray-500 mt-1">Please wait for admin approval</p>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+
                             <?php else: ?>
+                                <!-- Transaction-related content (unchanged) -->
                                 <?php if (empty($row['payment_proof']) && $row['status'] === 'pending'): ?>
                                     <form action="upload_payment.php" method="POST" enctype="multipart/form-data" class="space-y-3">
                                         <input type="hidden" name="transactionid" value="<?= $row['transactionid'] ?>">
-                                        <div class="flex items-center justify-center w-full">
+                                        <div class="flex flex-col w-full">
                                             <label
                                                 class="flex flex-col w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                                                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -258,15 +368,18 @@ $result = $stmt->get_result();
                                                     </svg>
                                                     <p class="mb-2 text-sm text-gray-500">Click to upload payment proof</p>
                                                 </div>
-                                                <input type="file" name="payment_proof" accept="image/*" class="hidden" required>
+                                                <input id="paymentProof" type="file" name="payment_proof" accept="image/*" class="hidden" required>
                                             </label>
+                                            <!-- File name display -->
+                                            <div id="selectedFile" class="mt-2 text-blue-600 text-sm ax-w-full overflow-hidden whitespace-nowrap text-ellipsis"></div>
                                         </div>
                                         <button type="submit"
-                                            class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
+                                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
                                             Upload Payment Proof
                                         </button>
                                     </form>
                                 <?php endif; ?>
+
                                 <?php
                                 $statusClass = match ($row['status']) {
                                     'rejected' => 'bg-red-50 text-red-700',
@@ -274,7 +387,8 @@ $result = $stmt->get_result();
                                     default => 'bg-yellow-50 text-yellow-700'
                                 };
                                 ?>
-                                <!-- Status Badges -->
+
+                                <!-- Status Badges (rest of the code unchanged) -->
                                 <?php if (!empty($row['payment_proof'])): ?>
                                     <div class="rounded-md p-4 <?= $statusClass ?>">
                                         <?php if ($row['status'] === 'awaiting_verification'): ?>
@@ -286,11 +400,9 @@ $result = $stmt->get_result();
                                                 </svg>
                                                 <p class="text-sm text-yellow-700">Awaiting verification</p>
                                             </div>
-
                                         <?php elseif ($row['status'] === 'verified'): ?>
                                             <div class="flex items-center gap-2">
                                                 <i data-lucide="check" class="w-5 h-5 text-green-700"></i>
-
                                                 <p class="text-sm text-green-700">Verified</p>
                                             </div>
                                         <?php elseif ($row['status'] === 'rejected'): ?>
@@ -337,7 +449,7 @@ $result = $stmt->get_result();
     <?php if ($toast_message): ?>
         <div class="toast">
             <div class="alert alert-success">
-                <span><?php echo htmlspecialchars($toast_message); ?></span>
+                <span class="text-emerald-900 "><?php echo htmlspecialchars($toast_message); ?></span>
             </div>
         </div>
 
@@ -352,6 +464,19 @@ $result = $stmt->get_result();
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         lucide.createIcons();
+
+        const fileInput = document.getElementById('paymentProof');
+        const fileDisplay = document.getElementById('selectedFile');
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                // Create a link that opens the file in a new tab
+                fileDisplay.innerHTML = `<a href="${URL.createObjectURL(file)}" target="_blank" class="underline">${file.name}</a>`;
+            } else {
+                fileDisplay.textContent = '';
+            }
+        });
     </script>
 </body>
 

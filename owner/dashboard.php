@@ -134,15 +134,15 @@ while ($row = $res->fetch_assoc()) {
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
- 
+
 </head>
 
 <body>
   <div class="max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
     <div class="flex items-center justify-center">
 
-      <div id="bar" class="flex justify-between items-center mt-8 mb-10 bg-[#ECF5E9] px-8 py-4 rounded-full">
-        <h2 class="text-2xl font-semibold text-emerald-800">Welcome, <?= htmlspecialchars($_SESSION["user_name"]) ?>!
+      <div id="bar" class="flex w-full justify-between items-center mt-8 mb-10 px-8 py-4 rounded-full">
+        <h2 class="text-2xl font-semibold text-emerald-800">Welcome, <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
         </h2>
 
         <div class="relative">
@@ -161,38 +161,46 @@ while ($row = $res->fetch_assoc()) {
     <section class="flex gap-5">
 
 
-      <div class="w-full  border border-slate-200 shadow-md bg-white rounded-2xl flex items-center ">
+      <div class="w-full  border border-b-[10px] border-l-[6px] border-emerald-900 shadow-md bg-[#BFF49B] rounded-3xl flex items-center ">
 
-        <div class="flex flex-col gap-5 px-5 w-full gap-7">
+        <div class="flex flex-col gap-5 px-5 w-full ">
 
           <a href="verify_crops.php"
-            class="flex gap-2 text-slate-700 hover:bg-[#ECF5E9] hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100  py-4 px-4 cursor-pointer rounded-lg items-center">
 
             <i data-lucide="clipboard-list" class="w-5 h-5"></i>
             <span>Verify Crop Submission</span>
           </a>
 
-          <hr>
+          <hr class="border-emerald-600">
 
           <a href="verified_crops.php"
-            class="flex gap-2 text-slate-700 hover:bg-[#ECF5E9] hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center">
 
             <i data-lucide="book-check" class="w-5 h-5"></i>
             <span>View Verified Crops</span>
           </a>
 
-          <hr>
+          <hr class="border-emerald-600">
           <a href="confirm_payments.php"
-            class="flex gap-2 text-slate-700 hover:bg-[#ECF5E9] hover:text-green-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center">
 
             <i data-lucide="credit-card" class="w-5 h-5"></i>
             <span>Confirm Payments</span>
           </a>
 
-          <hr>
+          <hr class="border-emerald-600">
+          <a href="bid_cancellations.php"
+            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center">
+
+            <i data-lucide="ban" class="w-5 h-5"></i>
+            <span>Bid Cancellations</span>
+          </a>
+
+          <hr class="border-emerald-600">
 
           <a href="../auth/logout.php"
-            class="flex gap-2 text-slate-700 hover:bg-red-50 hover:text-red-700 py-4 px-4 cursor-pointer rounded-lg items-center">
+            class="flex gap-2 text-gray-500 hover:text-red-400 py-4 px-4 cursor-pointer rounded-lg items-center">
 
             <i data-lucide="log-out" class="w-5 h-5"></i>
             <span>Logout</span>
@@ -389,12 +397,12 @@ while ($row = $res->fetch_assoc()) {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script>
     lucide.createIcons();
-    anime({
-      targets: '#bar',
-      width: ['60%', '100%'],
-      duration: 1500,
-      easing: 'easeInExpo'
-    });
+    // anime({
+    //   targets: '#bar',
+    //   width: ['60%', '100%'],
+    //   duration: 1500,
+    //   easing: 'easeInExpo'
+    // });
   </script>
 </body>
 
@@ -423,7 +431,14 @@ while ($row = $res->fetch_assoc()) {
       maintainAspectRatio: false,
       responsive: true,
 
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
     }
   });
   const colors = ['#065f46', '#B9F4A0'];
@@ -437,7 +452,16 @@ while ($row = $res->fetch_assoc()) {
         backgroundColor: <?= json_encode(array_values($topFarmers)) ?>.map((_, i) => colors[i % 2])
       }]
     },
-    options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
+    }
   });
 
   new Chart(document.getElementById('topBiddersChart'), {
@@ -451,7 +475,11 @@ while ($row = $res->fetch_assoc()) {
       }]
     },
     options: {
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
       scales: {
         y: {
           beginAtZero: true,
@@ -473,10 +501,20 @@ while ($row = $res->fetch_assoc()) {
         backgroundColor: <?= json_encode(array_values($topFarmers)) ?>.map((_, i) => colors[i % 2])
       }]
     },
-    options:
-    {
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    options: {
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
     }
   });
 

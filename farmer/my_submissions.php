@@ -10,14 +10,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
 
 $farmerid = $_SESSION['user_id'];
 
-// Get submissions from the database
-$stmt = $conn->prepare("SELECT * FROM crop_submissions WHERE farmerid = ? ORDER BY submittedat DESC");
-$stmt->bind_param("i", $farmerid);
-$stmt->execute();
-$result = $stmt->get_result();
-
 $statusFilter = $_GET['status'] ?? 'all';
-$farmerid = $_SESSION['user_id'];
 
 // Build the query based on filter
 if ($statusFilter === 'all') {
@@ -30,8 +23,48 @@ if ($statusFilter === 'all') {
 $stmt->execute();
 $result = $stmt->get_result();
 
-?>
+// Store all data in an array first
+$allData = [];
+while ($row = $result->fetch_assoc()) {
+  $allData[] = $row;
+}
 
+// Build grid data from the stored array
+$gridData = [];
+foreach ($allData as $row) {
+  $statusClass = match ($row['status']) {
+    'pending' => 'bg-yellow-100 text-yellow-800',
+    'verified' => 'bg-green-100 text-green-800',
+    'rejected' => 'bg-red-100 text-red-800',
+    default => 'bg-gray-100 text-gray-800'
+  };
+
+  $gridData[] = [
+    htmlspecialchars($row['croptype']),
+    htmlspecialchars($row['quantity']),
+    htmlspecialchars($row['unit']),
+    "<img src='../assets/uploads/" . htmlspecialchars($row['imagepath']) . "' class='h-16 w-16 object-cover rounded-md'>",
+    "<span class='inline-flex rounded-full px-2 text-xs font-semibold leading-5 $statusClass'>" . ucfirst(htmlspecialchars($row['status'])) . "</span>",
+    htmlspecialchars($row['submittedat']),
+    $row['verifiedat'] ? htmlspecialchars($row['verifiedat']) : '-',
+    $row['rejectionreason'] ? htmlspecialchars($row['rejectionreason']) : '-',
+    $row['status'] === 'rejected' ?
+    "<form action='submit_crop.php' method='GET' class='flex justify-end'>
+                <input type='hidden' name='submissionid' value='" . htmlspecialchars($row['submissionid']) . "'>
+                <input type='hidden' name='croptype' value='" . htmlspecialchars($row['croptype']) . "'>
+                <input type='hidden' name='quantity' value='" . htmlspecialchars($row['quantity']) . "'>
+                <input type='hidden' name='unit' value='" . htmlspecialchars($row['unit']) . "'>
+                <input type='hidden' name='imagepath' value='" . htmlspecialchars($row['imagepath']) . "'>
+                <button type='submit' class='inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'>
+                    <svg class='w-4 h-4 mr-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+                    </svg>
+                    Resubmit
+                </button>
+            </form>" : ""
+  ];
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -41,6 +74,32 @@ $result = $stmt->get_result();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Submissions</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+
+  <style>
+    .gridjs-table,
+    .gridjs-th,
+    .gridjs-td,
+    .gridjs-tr {
+      border: none !important;
+    }
+
+    /* Optional: remove inner borders (grid lines) */
+    .gridjs-tr>.gridjs-td,
+    .gridjs-th {
+      border: none !important;
+    }
+
+    .gridjs-pages {
+      font-size: 12px;
+      /* equivalent to Tailwind text-xs */
+    }
+
+    .gridjs-summary {
+      font-size: 12px;
+    }
+  </style>
 </head>
 
 <body class="p-10 bg-gray-50 max-w-7xl mx-auto">
@@ -56,11 +115,12 @@ $result = $stmt->get_result();
 
       <div>
         <h2 class="text-4xl text-emerald-900 font-semibold">My Submission</h2>
-        <span class="text-lg text-gray-600">View the list of submitted crops and track your verification or rejection status.</span>
+        <span class="text-lg text-gray-600">View the list of submitted crops and track your verification or rejection
+          status.</span>
       </div>
 
 
-      <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-gray-200">
+      <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
         <form method="GET">
           <div class="flex items-center gap-2 p-4 border-gray-200">
             <!-- View Button -->
@@ -113,7 +173,7 @@ $result = $stmt->get_result();
 
                 Pending
               </div>
-            
+
               <div data-status-value="verified"
                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
                 <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
@@ -132,99 +192,93 @@ $result = $stmt->get_result();
     </div>
   </div>
 
-  <!-- Table -->
+  <!-- GridJS Table -->
   <div class="mt-4 flex flex-col">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div class="inline-block min-w-full py-2 align-middle">
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-muted/100">
-              <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 border-l">Crop
-                  Type</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Quantity</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Unit</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Image</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Submitted At</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Verified At</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 border-r">Rejection
-                  Reason
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
-              <?php while ($row = $result->fetch_assoc()): ?>
-                <tr class="hover:bg-gray-50">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 border-l">
-                    <?php echo htmlspecialchars($row['croptype']); ?>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <?php echo htmlspecialchars($row['quantity']); ?>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <?php echo htmlspecialchars($row['unit']); ?>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <img src="../assets/uploads/<?php echo htmlspecialchars($row['imagepath']); ?>"
-                      class="h-16 w-16 object-cover rounded-md" alt="Crop Image">
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm">
-                    <span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 
-                                            <?php echo match ($row['status']) {
-                                              'pending' => 'bg-yellow-100 text-yellow-800',
-                                              'verified' => 'bg-green-100 text-green-800',
-                                              'rejected' => 'bg-red-100 text-red-800',
-                                              default => 'bg-gray-100 text-gray-800'
-                                            }; ?>">
-                      <?php echo htmlspecialchars($row['status']); ?>
-                    </span>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <?php echo htmlspecialchars($row['submittedat']); ?>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <?php echo $row['verifiedat'] ? htmlspecialchars($row['verifiedat']) : '-'; ?>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 border-r">
-                    <?php echo $row['rejectionreason'] ? htmlspecialchars($row['rejectionreason']) : '-'; ?>
-                  </td>
-                </tr>
-
-                <?php if ($row['status'] === 'rejected'): ?>
-                  <tr class="bg-gray-50">
-                    <td colspan="8" class="px-3 py-2">
-                      <form action="submit_crop.php" method="GET" class="flex justify-end">
-                        <input type="hidden" name="submissionid"
-                          value="<?php echo htmlspecialchars($row['submissionid']); ?>">
-
-                        <input type="hidden" name="croptype" value="<?php echo htmlspecialchars($row['croptype']); ?>">
-                        <input type="hidden" name="quantity" value="<?php echo htmlspecialchars($row['quantity']); ?>">
-                        <input type="hidden" name="unit" value="<?php echo htmlspecialchars($row['unit']); ?>">
-                        <input type="hidden" name="imagepath" value="<?php echo htmlspecialchars($row['imagepath']); ?>">
-                        <button type="submit"
-                          class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Resubmit
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                <?php endif; ?>
-              <?php endwhile; ?>
-            </tbody>
-          </table>
-        </div>
+        <div id="my-grid"></div>
       </div>
     </div>
   </div>
-  </div>
+
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
     lucide.createIcons();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+  <script>
+    new gridjs.Grid({
+      columns: [{
+        name: 'Crop Type',
+        sort: true
+      },
+      {
+        name: 'Quantity',
+        sort: true
+      },
+      {
+        name: 'Unit',
+        sort: true
+      },
+      {
+        name: 'Image',
+        sort: false,
+        formatter: (_, row) => gridjs.html(row.cells[3].data)
+      },
+      {
+        name: 'Status',
+        sort: true,
+        formatter: (_, row) => gridjs.html(row.cells[4].data)
+      },
+      {
+        name: 'Submitted At',
+        sort: true
+      },
+      {
+        name: 'Verified At',
+        sort: true
+      },
+      {
+        name: 'Rejection Reason',
+        sort: true
+      },
+      {
+        name: 'Actions',
+        sort: false,
+        formatter: (_, row) => gridjs.html(row.cells[8].data)
+      }
+      ],
+      data: <?= json_encode($gridData) ?>,
+      search: {
+        enabled: true,
+        placeholder: 'Search bids...'
+      },
+      sort: true,
+      pagination: {
+        enabled: true,
+        limit: 5
+      },
+      className: {
+        row: 'bg-gray-100 hover:bg-gray-200',
+      },
+      style: {
+        table: {
+          'border': '1px solid #e5e7eb',
+          'border-radius': '0.5rem',
+          'font-size': '14px',
+        },
+        th: {
+          'background-color': 'rgba(16,185,129,0.2)',
+          'color': '#065f46',
+          'font-weight': '600',
+          'font-size': '12px',
+        },
+        td: {
+          'font-size': '12px',
+        }
+      },
+      resizable: true
+    }).render(document.getElementById("my-grid"));
   </script>
   <script src="./assets/my_submission.js"></script>
 </body>

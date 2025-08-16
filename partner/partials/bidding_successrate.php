@@ -17,7 +17,9 @@ $successBidsQuery = mysqli_query($conn, "
         FROM crop_bids
         GROUP BY approvedid
     ) max_bids ON b.approvedid = max_bids.approvedid AND b.bidamount = max_bids.max_bid
-    WHERE b.bpartnerid = $partnerId
+     JOIN approved_submissions ON b.approvedid = approved_submissions.approvedid
+    WHERE approved_submissions.status = 'closed'
+    AND b.bpartnerid = $partnerId
 ");
 $successfulBids = mysqli_fetch_assoc($successBidsQuery)['successful'] ?? 0;
 
@@ -28,8 +30,8 @@ $lostBids = $totalBids - $successfulBids;
 $successRate = $totalBids > 0 ? round(($successfulBids / $totalBids) * 100, 2) : 0;
 ?>
 
-<div class="bg-white max-w-2xl  rounded-3xl border shadow-md p-6">
-  <h2 class="text-lg font-semibold mb-6">Bidding Performance Overview</h2>
+<div class="bg-white max-w-2xl  rounded-3xl border border-emerald-900 p-4 lg:p-6">
+  <h2 class="text-md lg:text-lg font-semibold mb-6 text-slate-600">Bidding Performance Overview</h2>
 
   <div class="flex flex-col gap-8">
     <!-- Chart Column -->
@@ -58,28 +60,7 @@ $successRate = $totalBids > 0 ? round(($successfulBids / $totalBids) * 100, 2) :
         </div>
 
         <div class="flex flex-col gap-4 mt-5">
-          <!-- Successful Bids Card -->
-          <!-- <div class=" rounded-lg p-4 w-full">
-            <div class="text-sm text-gray-500">Successful Bids</div>
-            <div class="flex items-center gap-2">
-              <div class="text-4xl font-bold text-gray-900"><?= $successfulBids ?></div>
-              <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          </div>
-
-          <div class=" rounded-lg p-4 w-full">
-            <div class="text-sm text-gray-500">Lost Bids</div>
-            <div class="flex items-center gap-2">
-              <div class="text-4xl font-bold text-gray-900"><?= $lostBids ?></div>
-              <div class="bg-red-200 p-y-2 px-4 rounded-full">
-                <i class="w-4 h-4 text-red-500" data-lucide="x"></i>
-
-              </div>
-
-            </div>
-          </div> -->
+    
 
           <div class="flex justify-between items-center gap-4 px-5">
             <div class="flex items-center gap-2">
@@ -118,8 +99,8 @@ $successRate = $totalBids > 0 ? round(($successfulBids / $totalBids) * 100, 2) :
       labels: ['Successful Bids', 'Lost Bids'],
       datasets: [{
         data: [<?= $successfulBids ?>, <?= $lostBids ?>],
-        backgroundColor: ['#dcfce7', '#fee2e2'],
-        borderColor: ['#22c55e', '#ef4444'],
+        backgroundColor: ['#BFF49B', '#fee2e2'],
+        borderColor: ['#064E3B', '#ef4444'],
         borderWidth: 2,
         cutout: '75%'
       }]
@@ -140,7 +121,7 @@ $successRate = $totalBids > 0 ? round(($successfulBids / $totalBids) * 100, 2) :
         },
         tooltip: {
           callbacks: {
-            label: function (context) {
+            label: function(context) {
               const label = context.label || '';
               const value = context.raw;
               const total = <?= $totalBids ?>;
