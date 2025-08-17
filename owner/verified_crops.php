@@ -154,10 +154,23 @@ require_once '../includes/header.php';
 
           <!-- Image Container with Overlay -->
           <div class="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-            <img src="../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
+            <img onclick="imgModal<?= $row['approvedid'] ?>.showModal()" src="../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
               class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
               alt="<?= ucfirst($row['croptype']) ?>">
 
+            <dialog id="imgModal<?= $row['approvedid'] ?>" class="modal modal-bottom sm:modal-middle">
+              <div class="modal-box">
+
+                <img
+                  src="../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
+                  alt="Crop Image Preview"
+                  class="w-full h-auto rounded-md mt-2">
+
+              </div>
+              <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+              </form>
+            </dialog>
             <!-- Floating Price Badge -->
             <div class="absolute top-4 right-4">
               <div class="bg-[#B9F4A0] text-gray-700 px-3 py-1 rounded-full text-sm font-semibold shadow-lg">

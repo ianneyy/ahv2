@@ -8,6 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id = $_POST['id'];
     $reason = $_POST['reason'];
 
+    // var_dump($reason);
     try {
         $query = "UPDATE cancel_bid 
               SET status = 'rejected', updated_at = NOW(), rej_reason = ?
@@ -19,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($stmt->execute()) {
             // echo "Cancel request rejected successfully.";
             $_SESSION['toast_message'] = "You’ve rejected the cancel request. The bidder has been notified.";
-            $message = "";
+            $message = 'Your cancellation request has been rejected. You are still responsible for completing your winning bid.';
             sendNotificationToUserType($conn, 'businessPartner', $message);
             header("Location: bid_cancellations.php");
 

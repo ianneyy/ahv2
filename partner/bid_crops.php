@@ -455,9 +455,23 @@ while ($row = $result->fetch_assoc()) {
               <!-- 6 78 59 -->
               <!-- Crop Image -->
               <div id="img-wrap-<?= $approvedId ?>" class=" relative h-48">
-                <img id="img-<?= $approvedId ?>" src=" ../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
+                <img onclick="imgModal<?= $approvedId ?>.showModal()" id="img-<?= $approvedId ?>" src=" ../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
                   class="w-full h-full object-cover <?= $biddingClosed ? 'opacity-30' : '' ?>"
                   alt="<?= ucfirst(htmlspecialchars($row['croptype'])) ?>">
+
+                <dialog id="imgModal<?= $approvedId ?>" class="modal modal-bottom sm:modal-middle">
+                  <div class="modal-box">
+
+                    <img
+                      src=" ../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
+                      alt="Crop Image Preview"
+                      class="w-full h-auto rounded-md mt-2">
+
+                  </div>
+                  <form method="dialog" class="modal-backdrop">
+                    <button>close</button>
+                  </form>
+                </dialog>
                 <?php if ($biddingClosed): ?>
                   <div class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center">
                     <span class="text-white text-xl font-bold tracking-wider">

@@ -32,25 +32,24 @@ $sql = "SELECT ab.approvedid, ab.croptype, ab.quantity, ab.unit, ab.imagepath, c
         FROM approved_submissions ab
        
         JOIN crop_bids cb ON ab.approvedid = cb.approvedid
-        LEFT JOIN cancel_bid cbid  ON ab.approvedid = cbid.approvedid
+        LEFT JOIN cancel_bid cbid  ON ab.approvedid = cbid.approvedid AND cbid.userid = ?
         LEFT JOIN transactions t ON ab.approvedid = t.approvedid AND t.bpartnerid = cb.bpartnerid
         WHERE cb.bpartnerid = ?
           AND ab.status = 'closed'
-          AND cb.bidamount = (
-              SELECT MAX(bidamount)
-              FROM crop_bids
-              WHERE approvedid = ab.approvedid
-            
-          )" . $status_condition;
+          AND ab.winner_id = ?
+         " . $status_condition;
 
+// $sql = "SELECT * FROM approved_submissions
+// WHERE winner_id = ?
 
+// " . $status_condition;
 
 if (!empty($status_condition)) {
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("is", $user_id, $status_filter);
+    $stmt->bind_param("iiis", $user_id, $user_id, $user_id, $status_filter);
 } else {
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
+    $stmt->bind_param("iii", $user_id, $user_id, $user_id);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -210,8 +209,24 @@ $result = $stmt->get_result();
                         class="bg-white rounded-2xl border border-slate-300 hover:shadow-lg transition-all duration-300 ease-in-out shadow-sm overflow-auto max-h-150 flex flex-col">
 
                         <div class="flex justify-center relative h-52">
-                            <img src="../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>" alt="Crop Image"
+                            <img
+                                onclick="my_modal_5<?= htmlspecialchars($row['approvedid']) ?>.showModal()"
+                                src="../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>" alt="Crop Image"
                                 class="h-full w-full object-cover">
+
+                            <dialog id="my_modal_5<?= htmlspecialchars($row['approvedid']) ?>" class="modal modal-bottom sm:modal-middle">
+                                <div class="modal-box">
+
+                                    <img
+                                        src="../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
+                                        alt="Crop Image Preview"
+                                        class="w-full h-auto rounded-md mt-2">
+
+                                </div>
+                                <form method="dialog" class="modal-backdrop">
+                                    <button>close</button>
+                                </form>
+                            </dialog>
                         </div>
 
                         <div class="bg-green-50 px-4 py-3 border-b border-t border-green-200">
@@ -339,6 +354,14 @@ $result = $stmt->get_result();
                                                 <i data-lucide="x-circle" class="w-8 h-8 text-red-400 mx-auto mb-2"></i>
                                                 <span class="text-sm text-red-600 font-medium">Cancel request rejected</span>
                                                 <p class="text-xs text-gray-500 mt-1">You can proceed with the transaction</p>
+                                            </div>
+                                        </div>
+                                    <?php elseif ($row['cancel_status'] === 'approved'): ?>
+                                        <div class="flex items-center justify-center py-4">
+                                            <div class="text-center">
+                                                <i data-lucide="check" class="w-8 h-8 text-green-400 mx-auto mb-2"></i>
+                                                <span class="text-sm text-green-600 font-medium">Cancel request approved</span>
+                                                <p class="text-xs text-gray-500 mt-1">The crop has been passed to the second highest bidder</p>
                                             </div>
                                         </div>
                                     <?php else: ?>

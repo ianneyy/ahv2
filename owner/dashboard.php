@@ -213,7 +213,7 @@ while ($row = $res->fetch_assoc()) {
       <div class="w-full flex flex-col gap-3">
         <!-- <h3>Crop Submission Summary</h3> -->
 
-        <div class="bg-white w-full border border-slate-200  flex flex-col rounded-xl ">
+        <div class="bg-white w-full border border-slate-300  flex flex-col rounded-xl ">
           <div class="flex item-center justify-between px-10 pt-6">
 
             <span class="text-slate-600 font-semibold">Total</span>
@@ -230,7 +230,7 @@ while ($row = $res->fetch_assoc()) {
             </span>
           </div>
         </div>
-        <div class="bg-white w-full border border-slate-200  flex flex-col rounded-xl">
+        <div class="bg-white w-full border border-slate-300  flex flex-col rounded-xl">
           <div class="flex item-center justify-between px-10 pt-6">
 
             <span class="text-slate-600 font-semibold">Pending</span>
@@ -247,7 +247,7 @@ while ($row = $res->fetch_assoc()) {
             </span>
           </div>
         </div>
-        <div class="bg-white w-full border border-slate-200  flex flex-col rounded-xl">
+        <div class="bg-white w-full border border-slate-300  flex flex-col rounded-xl">
           <div class="flex item-center justify-between px-10 pt-6">
 
             <span class="text-slate-600 font-semibold">Verified</span>
@@ -264,7 +264,7 @@ while ($row = $res->fetch_assoc()) {
             </span>
           </div>
         </div>
-        <div class="bg-white w-full border border-slate-200  flex flex-col rounded-xl">
+        <div class="bg-white w-full border border-slate-300  flex flex-col rounded-xl">
           <div class="flex item-center justify-between px-10 pt-6">
 
             <span class="text-slate-600 font-semibold ">Rejected</span>
@@ -286,13 +286,13 @@ while ($row = $res->fetch_assoc()) {
 
     </section>
 
-    <div class="mt-10 w-full border border-slate-200 p-10 rounded-2xl">
+    <div class="mt-10 w-full border border-slate-300 p-10 rounded-2xl">
       <?php include 'partials/transaction_summary.php'; ?>
     </div>
 
 
 
-    <div class="mt-10 w-full border border-slate-200 p-10 rounded-2xl">
+    <div class="mt-10 w-full border border-slate-300 p-10 rounded-2xl">
 
       <div class="flex justify-between items-center">
 
@@ -315,7 +315,7 @@ while ($row = $res->fetch_assoc()) {
     <section class="mt-10 flex gap-5">
 
 
-      <div class="w-full border border-slate-200  p-10 rounded-2xl">
+      <div class="w-full border border-slate-300  p-10 rounded-2xl">
         <h3 class="text-slate-700 text-lg font-semibold mb-4">Top 3 Paying Business Partners</h3>
         <div class="w-7/8" style=" height:300px; margin:auto;">
 
@@ -323,7 +323,7 @@ while ($row = $res->fetch_assoc()) {
         </div>
       </div>
       <!-- 👨‍🌾 Top Farmers -->
-      <div class="w-full border border-slate-200  p-10 rounded-2xl">
+      <div class="w-full border border-slate-300  p-10 rounded-2xl">
         <h3 class="text-slate-700 text-lg font-semibold mb-4">Top Contributing Farmers</h3>
         <div style="max-width:600px; height:300px; margin:auto;">
           <canvas id="topFarmersChart"></canvas>
@@ -348,7 +348,7 @@ while ($row = $res->fetch_assoc()) {
 
 
     <section class="mt-10 flex gap-5">
-      <div class="w-full border border-slate-200  p-10 rounded-2xl">
+      <div class="w-full border border-slate-300  p-10 rounded-2xl">
         <div class="flex justify-between items-center">
 
           <h3 class="text-slate-700 text-lg font-semibold mb-4">Total Revenue per Crop Type
@@ -365,7 +365,7 @@ while ($row = $res->fetch_assoc()) {
           <canvas id="revenueChart"></canvas>
         </div>
       </div>
-      <div class="w-full border border-slate-200  p-10 rounded-2xl">
+      <div class="w-full border border-slate-300  p-10 rounded-2xl">
         <h3 class="text-slate-700 text-lg font-semibold mb-4">Crop Type Breakdown</h3>
         <div style="max-width:600px; height:300px; margin:auto;">
           <canvas id="cropChart"></canvas>

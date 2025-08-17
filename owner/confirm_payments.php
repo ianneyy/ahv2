@@ -4,6 +4,8 @@ require_once '../includes/session.php';
 require_once '../includes/notify.php';
 // require_once '../includes/notification_ui.php';
 
+$toast_message = $_SESSION['toast_message'] ?? null;
+unset($_SESSION['toast_message']);
 
 // Ensure only owner is accessing
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessOwner') {
