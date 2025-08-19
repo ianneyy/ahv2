@@ -26,7 +26,7 @@ if (in_array($status_filter, $allowed_statuses)) {
 
 
 // Get all winning bids by this user
-$sql = "SELECT ab.approvedid, ab.croptype, ab.quantity, ab.unit, ab.imagepath, cbid.reason as cancel_reason, cbid.status as cancel_status,
+$sql = "SELECT ab.approvedid, ab.croptype, ab.quantity, ab.unit, ab.imagepath, cbid.reason as cancel_reason, cbid.status as cancel_status, t.verifiedat, t.signature,
                cb.bidamount AS winningbidprice,
                t.transactionid, t.payment_proof, t.status, t.rejectionreason
         FROM approved_submissions ab
@@ -424,9 +424,14 @@ $result = $stmt->get_result();
                                                 <p class="text-sm text-yellow-700">Awaiting verification</p>
                                             </div>
                                         <?php elseif ($row['status'] === 'verified'): ?>
-                                            <div class="flex items-center gap-2">
-                                                <i data-lucide="check" class="w-5 h-5 text-green-700"></i>
-                                                <p class="text-sm text-green-700">Verified</p>
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div class="flex items-center gap-2">
+
+                                                    <i data-lucide="check" class="w-5 h-5 text-green-700"></i>
+                                                    <p class="text-sm text-green-700">Verified</p>
+                                                </div>
+
+                                                <span class="text-sm text-gray-400"> <?= date("M d, Y h:i A", strtotime($row['verifiedat'])) ?></span>
                                             </div>
                                         <?php elseif ($row['status'] === 'rejected'): ?>
                                             <div class="space-y-2">
@@ -460,6 +465,27 @@ $result = $stmt->get_result();
                                             </div>
                                         <?php endif; ?>
                                     </div>
+                                    <?php if ($row['status'] === 'verified'): ?>
+                                    <div class="flex justify-center">
+                                        <button
+                                            onclick="signatureModal<?= htmlspecialchars($row['approvedid']) ?>.showModal()"
+                                        type=" button" class="text-xs text-gray-400 hover:text-green-500 transition-colors underline">View proof of delivery</button>
+
+                                        <dialog id="signatureModal<?= htmlspecialchars($row['approvedid']) ?>" class="modal modal-bottom sm:modal-middle">
+                                            <div class="modal-box">
+
+                                                <img
+                                                    src="../assets/signatures/<?= htmlspecialchars($row['signature']) ?>"
+                                                    alt="Crop Image Preview"
+                                                    class="w-full h-auto rounded-md mt-2">
+
+                                            </div>
+                                            <form method="dialog" class="modal-backdrop">
+                                                <button>close</button>
+                                            </form>
+                                        </dialog>
+                                    </div>
+                                     <?php endif; ?>
                                 <?php endif; ?>
                             <?php endif; ?>
                         </div>

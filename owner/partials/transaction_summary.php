@@ -110,7 +110,7 @@ $selectedBP = $_GET['bp'] ?? '';
                     <span class="py-1 px-2 rounded-full text-white text-xs <?= $badgeClass ?>"><?= $labelClass ?></span>
                   </td>
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900">
-                    <?= $row['delivery_received_at'] ? '<span class="text-success">✔ Received</span>' : '<span class="text-danger">❌ Not Received</span>' ?>
+                    <?= $row['delivery_received_at'] ? '<span class=" text-emerald-600 font-semibold">Received</span>' : '<span class="text-red-400 font-semibold">Not Received</span>' ?>
                   </td>
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 border-r">
                     <?= date('M d, Y', strtotime($row['submittedat'])) ?>
