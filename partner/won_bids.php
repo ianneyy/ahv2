@@ -26,7 +26,7 @@ if (in_array($status_filter, $allowed_statuses)) {
 
 
 // Get all winning bids by this user
-$sql = "SELECT ab.approvedid, ab.croptype, ab.quantity, ab.unit, ab.imagepath, cbid.reason as cancel_reason, cbid.status as cancel_status, t.verifiedat, t.signature,
+$sql = "SELECT ab.approvedid, ab.croptype, ab.quantity, ab.unit, ab.imagepath, cbid.reason as cancel_reason, cbid.status as cancel_status, t.verifiedat, t.signature, ab.sellingdate, ab.expired_at,
                cb.bidamount AS winningbidprice,
                t.transactionid, t.payment_proof, t.status, t.rejectionreason
         FROM approved_submissions ab
@@ -54,6 +54,36 @@ if (!empty($status_condition)) {
 $stmt->execute();
 $result = $stmt->get_result();
 
+
+function hasNextHighestBidder($conn, $approvedid, $userid)
+{
+    $nextHighest = "
+        SELECT approved_submissions.*, crop_bids.*, users.name
+        FROM approved_submissions
+        JOIN crop_bids ON approved_submissions.approvedid = crop_bids.approvedid
+        JOIN users ON crop_bids.bpartnerid = users.id
+        WHERE approved_submissions.approvedid = ?
+        AND crop_bids.bpartnerid != ? 
+        AND crop_bids.bidamount < (
+            SELECT bidamount 
+            FROM crop_bids 
+            WHERE approvedid = ? 
+            AND bpartnerid = ?
+        )
+        ORDER BY crop_bids.bidamount DESC
+        LIMIT 1
+    ";
+
+    $nextHigheststmt = $conn->prepare($nextHighest);
+    $nextHigheststmt->bind_param("iiii", $approvedid, $userid, $approvedid, $userid);
+    $nextHigheststmt->execute();
+    $nextHighestResult = $nextHigheststmt->get_result();
+
+    $hasNext = ($nextHighestResult && $nextHighestResult->num_rows > 0);
+    $nextHigheststmt->close();
+
+    return $hasNext;
+}
 
 // $query = "SELECT ";
 // $request = '';
@@ -264,88 +294,154 @@ $result = $stmt->get_result();
                             <?php if ($row['transactionid'] === null): ?>
 
                                 <?php if ($row['cancel_reason'] === null || $row['cancel_status'] === 'rejected'): ?>
-                                    <!-- Only show the primary action button -->
-                                    <div class="mt-auto">
-                                        <form action="proceed_transaction.php" method="POST">
-                                            <input type="hidden" name="approvedid" value="<?= $row['approvedid'] ?>">
-                                            <input type="hidden" name="winningbidprice" value="<?= $row['winningbidprice'] ?>">
-                                            <button type="submit"
-                                                class="w-full bg-emerald-600 text-white py-3 px-4 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors font-medium">
-                                                Proceed to Transaction
-                                            </button>
-                                        </form>
+                                    <?php if ($row['sellingdate']): ?>
+                                        <?php
+                                        $expired_at = new DateTime($row['expired_at']);
 
-                                        <?php if ($row['cancel_status'] === null): ?>
-
-                                            <!-- Alternative: If you prefer a text link approach -->
-                                            <div class="mt-2 text-center">
-                                                <button onclick="withdrawModal<?= $row['approvedid'] ?>.showModal()" type="button"
-                                                    class="text-xs text-gray-400 hover:text-red-500 transition-colors underline">
-                                                    Need to withdraw this bid?
-                                                </button>
+                                        $now = new DateTime();
+                                        ?>
+                                        <?php if ($now > $expired_at): ?>
+                                            <div class="text-center">
+                                                <h3 class="text-lg font-semibold text-red-600 mb-2 ">Transaction Expired</h3>
+                                                <p class="text-red-300 text-sm mb-6">Your transaction session has timed out.</p>
                                             </div>
-                                        <?php endif; ?>
+                                            <?php if (hasNextHighestBidder($conn, (int)$row['approvedid'], (int)$user_id)): ?>
+                                                <form id="expiredForm<?= htmlspecialchars($row['approvedid']) ?>" action="expired_transaction.php" method="POST" class="hidden">
+                                                    <input type="hidden" name="approvedid" value="<?= htmlspecialchars($row['approvedid']) ?>">
+                                                </form>
+                                                <script>
+                                                    // Auto-submit the form once this block renders (only if next bidder exists)
+                                                    document.getElementById("expiredForm<?= htmlspecialchars($row['approvedid']) ?>").submit();
+                                                </script>
+                                            <?php else: ?>
+                                                <div class="text-center">
+                                                    <p class="text-gray-500 text-sm">No next bidder available. Transaction closed.</p>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <?php
+                                            // Current time
+                                            $now = new DateTime();
+                                            $expire = new DateTime($row['expired_at']);
+                                            $interval = $now->diff($expire);
 
-                                    </div>
+                                            // Check if still active
+                                            if ($expire > $now) {
+                                                if ($interval->d > 0) {
+                                                    $remaining = $interval->d . "d " . $interval->h . "h left";
+                                                } elseif ($interval->h > 0) {
+                                                    $remaining = $interval->h . "h " . $interval->i . "m left";
+                                                } else {
+                                                    $remaining = $interval->i . "m left";
+                                                }
+                                            } else {
+                                                $remaining = "Expired";
+                                            }
+                                            ?>
+                                            <!-- Only show the primary action button -->
+                                            <div class="mt-auto">
+                                                <div class="text-center">
 
-                                    <!-- Withdraw Modal (unchanged but improved) -->
-                                    <dialog id="withdrawModal<?= $row['approvedid'] ?>" class="modal modal-bottom sm:modal-middle">
-                                        <div class="modal-box">
-                                            <form action="withdraw_bid.php" method="POST" class="mt-2">
-                                                <!-- Header -->
-                                                <h3 class="text-xl font-semibold text-red-600 flex items-center gap-2">
-                                                    <i data-lucide="triangle-alert" class="w-6 h-6"></i>
-                                                    Withdraw Bid
-                                                </h3>
-                                                <input type="hidden" name="approvedid" value="<?= $row['approvedid'] ?>">
-                                                <input type="hidden" name="winningbidprice" value="<?= $row['winningbidprice'] ?>">
+                                                    <span class="text-xs text-gray-500 ">
+                                                        <?php
+                                                        $now = new DateTime();
+                                                        $expiredAt = new DateTime($row['expired_at']);
+                                                        $interval = $now->diff($expiredAt);
 
-                                                <!-- Warning -->
-                                                <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                                                    <p class="flex items-center gap-2 text-red-600 font-medium">
-                                                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
-                                                        Warning!
-                                                    </p>
-                                                    <p class="text-sm text-red-500 mt-2 leading-relaxed">
-                                                        By submitting a cancellation request, your winning bid will need to be verified by the owner.
-                                                        If you change your mind after submitting this request, please contact the owner directly.
-                                                        <span class="font-semibold">This action cannot be undone automatically.</span>
-                                                    </p>
+                                                        if ($expiredAt > $now) {
+                                                            if ($interval->h > 0) {
+                                                                echo $interval->h . "h " . $interval->i . "m left before this transaction expires.";
+                                                            } else {
+                                                                echo $interval->i . " minutes left before this transaction expires.";
+                                                            }
+                                                        } else {
+                                                            echo "This transaction has expired.";
+                                                        }
+                                                        ?>
+                                                    </span>
                                                 </div>
 
-                                                <!-- Confirmation -->
-                                                <p class="mt-6 text-gray-700 text-sm leading-relaxed">
-                                                    Are you absolutely sure you want to withdraw your winning bid for
-                                                    <strong><?= ucfirst(htmlspecialchars($row['croptype'])) ?></strong>?
-                                                </p>
-
-                                                <!-- Reason Input -->
-                                                <fieldset class="mt-4 space-y-2">
-                                                    <legend class="text-sm font-medium text-gray-700 mb-2">Please provide your reason for withdrawal</legend>
-                                                    <textarea name="reason"
-                                                        class="w-full h-24 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                                        placeholder="Explain why you need to withdraw this bid..." required></textarea>
-                                                </fieldset>
-
-                                                <!-- Actions -->
-                                                <div class="mt-6 flex justify-end gap-3">
-                                                    <button onclick="withdrawModal<?= $row['approvedid'] ?>.close()" type="button"
-                                                        class="px-5 py-2.5 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-full transition-colors">
-                                                        Cancel
-                                                    </button>
+                                                <form action="proceed_transaction.php" method="POST">
+                                                    <input type="hidden" name="approvedid" value="<?= $row['approvedid'] ?>">
+                                                    <input type="hidden" name="winningbidprice" value="<?= $row['winningbidprice'] ?>">
                                                     <button type="submit"
-                                                        class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-full shadow-sm transition-colors">
-                                                        Yes, Withdraw Bid
+                                                        class="w-full bg-emerald-600 text-white py-3 px-4 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors font-medium">
+                                                        Proceed to Transaction
                                                     </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <!-- Click outside to close -->
-                                        <form method="dialog" class="modal-backdrop">
-                                            <button>close</button>
-                                        </form>
-                                    </dialog>
+                                                </form>
 
+                                                <?php if ($row['cancel_status'] === null): ?>
+
+                                                    <!-- Alternative: If you prefer a text link approach -->
+                                                    <div class="mt-2 text-center">
+                                                        <button onclick="withdrawModal<?= $row['approvedid'] ?>.showModal()" type="button"
+                                                            class="text-xs text-gray-400 hover:text-red-500 transition-colors underline">
+                                                            Need to withdraw this bid?
+                                                        </button>
+                                                    </div>
+                                                <?php endif; ?>
+
+                                            </div>
+
+                                            <!-- Withdraw Modal (unchanged but improved) -->
+                                            <dialog id="withdrawModal<?= $row['approvedid'] ?>" class="modal modal-bottom sm:modal-middle">
+                                                <div class="modal-box">
+                                                    <form action="withdraw_bid.php" method="POST" class="mt-2">
+                                                        <!-- Header -->
+                                                        <h3 class="text-xl font-semibold text-red-600 flex items-center gap-2">
+                                                            <i data-lucide="triangle-alert" class="w-6 h-6"></i>
+                                                            Withdraw Bid
+                                                        </h3>
+                                                        <input type="hidden" name="approvedid" value="<?= $row['approvedid'] ?>">
+                                                        <input type="hidden" name="winningbidprice" value="<?= $row['winningbidprice'] ?>">
+
+                                                        <!-- Warning -->
+                                                        <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                                                            <p class="flex items-center gap-2 text-red-600 font-medium">
+                                                                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                                                                Warning!
+                                                            </p>
+                                                            <p class="text-sm text-red-500 mt-2 leading-relaxed">
+                                                                By submitting a cancellation request, your winning bid will need to be verified by the owner.
+                                                                If you change your mind after submitting this request, please contact the owner directly.
+                                                                <span class="font-semibold">This action cannot be undone automatically.</span>
+                                                            </p>
+                                                        </div>
+
+                                                        <!-- Confirmation -->
+                                                        <p class="mt-6 text-gray-700 text-sm leading-relaxed">
+                                                            Are you absolutely sure you want to withdraw your winning bid for
+                                                            <strong><?= ucfirst(htmlspecialchars($row['croptype'])) ?></strong>?
+                                                        </p>
+
+                                                        <!-- Reason Input -->
+                                                        <fieldset class="mt-4 space-y-2">
+                                                            <legend class="text-sm font-medium text-gray-700 mb-2">Please provide your reason for withdrawal</legend>
+                                                            <textarea name="reason"
+                                                                class="w-full h-24 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                                placeholder="Explain why you need to withdraw this bid..." required></textarea>
+                                                        </fieldset>
+
+                                                        <!-- Actions -->
+                                                        <div class="mt-6 flex justify-end gap-3">
+                                                            <button onclick="withdrawModal<?= $row['approvedid'] ?>.close()" type="button"
+                                                                class="px-5 py-2.5 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-full transition-colors">
+                                                                Cancel
+                                                            </button>
+                                                            <button type="submit"
+                                                                class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-full shadow-sm transition-colors">
+                                                                Yes, Withdraw Bid
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <!-- Click outside to close -->
+                                                <form method="dialog" class="modal-backdrop">
+                                                    <button>close</button>
+                                                </form>
+                                            </dialog>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
 
                                 <?php else: ?>
                                     <?php if ($row['cancel_status'] === 'rejected'): ?>
@@ -466,28 +562,30 @@ $result = $stmt->get_result();
                                         <?php endif; ?>
                                     </div>
                                     <?php if ($row['status'] === 'verified'): ?>
-                                    <div class="flex justify-center">
-                                        <button
-                                            onclick="signatureModal<?= htmlspecialchars($row['approvedid']) ?>.showModal()"
-                                        type=" button" class="text-xs text-gray-400 hover:text-green-500 transition-colors underline">View proof of delivery</button>
+                                        <div class="flex justify-center">
+                                            <button
+                                                onclick="signatureModal<?= htmlspecialchars($row['approvedid']) ?>.showModal()"
+                                                type=" button" class="text-xs text-gray-400 hover:text-green-500 transition-colors underline">View proof of delivery</button>
 
-                                        <dialog id="signatureModal<?= htmlspecialchars($row['approvedid']) ?>" class="modal modal-bottom sm:modal-middle">
-                                            <div class="modal-box">
+                                            <dialog id="signatureModal<?= htmlspecialchars($row['approvedid']) ?>" class="modal modal-bottom sm:modal-middle">
+                                                <div class="modal-box">
 
-                                                <img
-                                                    src="../assets/signatures/<?= htmlspecialchars($row['signature']) ?>"
-                                                    alt="Crop Image Preview"
-                                                    class="w-full h-auto rounded-md mt-2">
+                                                    <img
+                                                        src="../assets/signatures/<?= htmlspecialchars($row['signature']) ?>"
+                                                        alt="Crop Image Preview"
+                                                        class="w-full h-auto rounded-md mt-2">
 
-                                            </div>
-                                            <form method="dialog" class="modal-backdrop">
-                                                <button>close</button>
-                                            </form>
-                                        </dialog>
-                                    </div>
-                                     <?php endif; ?>
+                                                </div>
+                                                <form method="dialog" class="modal-backdrop">
+                                                    <button>close</button>
+                                                </form>
+                                            </dialog>
+                                        </div>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             <?php endif; ?>
+
+
                         </div>
                     </div>
                 <?php endwhile; ?>

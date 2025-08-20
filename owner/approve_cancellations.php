@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($nextHighestResult && $row = $nextHighestResult->fetch_assoc()) {
         $bpartnerId = $row['bpartnerid'];
         // use $bpartnerId here
-        var_dump($bpartnerId);
+        // var_dump($bpartnerId);
 
     }
     $croptype = $row['croptype'];

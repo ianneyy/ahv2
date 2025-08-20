@@ -10,23 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $reason = $_POST['reason'];
 
 
-    // echo "<pre>";
-    // print_r([
-    //     'userid'      => $userid,
-    //     'approvedid'      => $approvedid,
-    //     'winningbidprice' => $winningbidprice,
-    //     'reason' => $reason,
-    //     // 'query_result'    => $data,
-    // ]);
-    // echo "</pre>";
-    // var_dump($bpartnerid, $approvedid, $winningbidprice);
-    // exit;
-
-    // $query = "SELECT * FROM approved_submissions
-    //  JOIN crop_bids ON approved_submissions.approvedid = crop_bids.approvedid
-    //     WHERE approved_submissions.approvedid = ? 
-    //     GROUP BY crop_bids.bidamount DESC
-    //  ";
+  
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
     try {
