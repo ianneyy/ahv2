@@ -2,6 +2,8 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/session.php';
+$wrong_password = "";
+$wrong_email = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
@@ -39,10 +41,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     exit();
             }
         } else {
-            echo "❌ Incorrect password.";
+            // echo "❌ Incorrect password.";
+            $wrong_password = "Incorrect password.";
         }
     } else {
-        echo "❌ Email not found.";
+        $wrong_email = "Email not found.";
     }
 }
 ?>
@@ -65,18 +68,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <form method="POST" class="mt-8 space-y-6">
-                <div class="rounded-md shadow-sm -space-y-px">
+                <div class="rounded-md -space-y-px">
                     <div class="mb-4">
                         <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                         <input type="email" name="email" required
                             class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm">
                     </div>
-                    <div class="mb-4">
+                    <?php if ($wrong_email != null): ?>
+                        <div class="text-right">
+                            <span class="text-xs text-red-500 font-semibold">
+                                <?php echo $wrong_email; ?>
+                            </span>
+                        </div>
+                    <?php endif; ?>
+                    <div class="mb-4 ">
                         <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                         <input type="password" name="password" required
                             class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm">
                     </div>
+                    <?php if ($wrong_password != null): ?>
+                        <div class="text-right">
+                            <span class="text-xs text-red-500 font-semibold">
+                                <?php echo $wrong_password; ?>
+                            </span>
+                        </div>
+                    <?php endif; ?>
                 </div>
+
 
                 <div>
                     <button type="submit"

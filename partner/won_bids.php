@@ -85,6 +85,8 @@ function hasNextHighestBidder($conn, $approvedid, $userid)
     return $hasNext;
 }
 
+
+
 // $query = "SELECT ";
 // $request = '';
 
@@ -305,19 +307,15 @@ function hasNextHighestBidder($conn, $approvedid, $userid)
                                                 <h3 class="text-lg font-semibold text-red-600 mb-2 ">Transaction Expired</h3>
                                                 <p class="text-red-300 text-sm mb-6">Your transaction session has timed out.</p>
                                             </div>
-                                            <?php if (hasNextHighestBidder($conn, (int)$row['approvedid'], (int)$user_id)): ?>
-                                                <form id="expiredForm<?= htmlspecialchars($row['approvedid']) ?>" action="expired_transaction.php" method="POST" class="hidden">
-                                                    <input type="hidden" name="approvedid" value="<?= htmlspecialchars($row['approvedid']) ?>">
-                                                </form>
-                                                <script>
-                                                    // Auto-submit the form once this block renders (only if next bidder exists)
-                                                    document.getElementById("expiredForm<?= htmlspecialchars($row['approvedid']) ?>").submit();
-                                                </script>
-                                            <?php else: ?>
-                                                <div class="text-center">
-                                                    <p class="text-gray-500 text-sm">No next bidder available. Transaction closed.</p>
-                                                </div>
-                                            <?php endif; ?>
+
+                                            <!-- Always submit to expired_transaction.php to handle database updates -->
+                                            <form id="expiredForm<?= htmlspecialchars($row['approvedid']) ?>" action="expired_transaction.php" method="POST" class="hidden">
+                                                <input type="hidden" name="approvedid" value="<?= htmlspecialchars($row['approvedid']) ?>">
+                                            </form>
+                                            <script>
+                                                // Auto-submit the form once this block renders to handle both cases
+                                                document.getElementById("expiredForm<?= htmlspecialchars($row['approvedid']) ?>").submit();
+                                            </script>
                                         <?php else: ?>
                                             <?php
                                             // Current time

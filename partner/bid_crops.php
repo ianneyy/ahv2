@@ -71,7 +71,12 @@ if (!empty($whereClauses)) {
 $query = "SELECT a.*, u.name AS farmer_name
           FROM approved_submissions a
           JOIN users u ON a.farmerid = u.id
-          $whereSQL";
+          $whereSQL
+           AND a.approvedid NOT IN (
+              SELECT b.approvedid 
+              FROM blocklist b 
+              WHERE b.userid = {$partnerId}
+          )";
 
 
 // Sorting
