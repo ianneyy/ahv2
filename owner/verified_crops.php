@@ -12,47 +12,32 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessOwner') 
 $ownerId = $_SESSION['user_id'];
 $cropFilter = $_GET['croptype'] ?? 'all';
 
-// Fetch verified crops for this owner
-// $query = "SELECT a.*, u.name AS farmer_name 
-//           FROM approved_submissions a
-//           JOIN users u ON a.farmerid = u.id
-//           WHERE a.verifiedby = ?";
-$query = "
 
-SELECT 
-    transactions.*,
-    approved_submissions.*,
-    users.name AS farmer_name
-FROM transactions
-JOIN approved_submissions 
-    ON transactions.approvedid = approved_submissions.approvedid
-JOIN users 
-    ON approved_submissions.farmerid = users.id;
+$query = "SELECT approved_submissions.*, users.name AS farmer_name FROM approved_submissions
 
-
-
+JOIN users ON approved_submissions.farmerid = users.id
 ";
-$params = [$ownerId];
-$types = "i";
+
+$params = [];
+$types = "";
+
 
 if ($cropFilter !== 'all') {
-  $query .= " AND a.croptype = ?";
+  $query .= " WHERE approved_submissions.croptype = ?";
   $params[] = $cropFilter;
-  $types .= "s";
+  $types = "s";
 }
 
-// $query .= " ORDER BY a.sellingdate ASC";
+
 
 $stmt = $conn->prepare($query);
-// $stmt->bind_param($types, ...$params);
-// $stmt->bind_param($types, ...$params);
+if (!empty($params)) {
+  $stmt->bind_param($types, ...$params);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 
-// echo "<pre>";
-// print_r($result->fetch_all(MYSQLI_ASSOC));
-// echo "</pre>";
-// exit;
+
 ?>
 
 <?php
