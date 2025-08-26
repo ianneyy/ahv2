@@ -9,20 +9,32 @@ $totalBidsQuery = mysqli_query($conn, "SELECT COUNT(*) as total FROM crop_bids W
 $totalBids = mysqli_fetch_assoc($totalBidsQuery)['total'] ?? 0;
 
 // Successful Bids (highest bid per approved crop)
-$successBidsQuery = mysqli_query($conn, "
-    SELECT COUNT(DISTINCT b.approvedid) as successful
-    FROM crop_bids b
-    JOIN (
-        SELECT approvedid, MAX(bidamount) AS max_bid
-        FROM crop_bids
-        GROUP BY approvedid
-    ) max_bids ON b.approvedid = max_bids.approvedid AND b.bidamount = max_bids.max_bid
-     JOIN approved_submissions ON b.approvedid = approved_submissions.approvedid
-    WHERE approved_submissions.status = 'closed'
-    AND b.bpartnerid = $partnerId
-");
-$successfulBids = mysqli_fetch_assoc($successBidsQuery)['successful'] ?? 0;
+// $successBidsQuery = mysqli_query($conn, "
+//     SELECT COUNT(DISTINCT b.approvedid) as successful
+//     FROM crop_bids b
+//     JOIN (
+//         SELECT approvedid, MAX(bidamount) AS max_bid
+//         FROM crop_bids
+//         GROUP BY approvedid
+//     ) max_bids ON b.approvedid = max_bids.approvedid AND b.bidamount = max_bids.max_bid
+//      JOIN approved_submissions ON b.approvedid = approved_submissions.approvedid
+//     WHERE approved_submissions.status = 'closed'
+//     AND b.bpartnerid = $partnerId
+// ");
 
+$successBidsQuery = "SELECT COUNT(*) AS successful 
+                     FROM approved_submissions 
+                     WHERE winner_id = ?";
+
+$stmt = $conn->prepare($successBidsQuery);
+$stmt->bind_param("i", $partnerId); // assuming $userid is an integer
+$stmt->execute();
+
+$result = $stmt->get_result();
+$row = $result->fetch_assoc();
+
+$successfulBids = $row['successful'] ?? 0;
+$stmt->close();
 // Lost Bids = Total - Successful
 $lostBids = $totalBids - $successfulBids;
 

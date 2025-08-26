@@ -46,11 +46,12 @@ $response = [
     ]
 ];
 
-// Get highest bid
+// Get highest eligible (non-blocklisted) bid
 $stmt = $conn->prepare("SELECT cb.*, u.name 
                         FROM crop_bids cb 
                         JOIN users u ON cb.bpartnerid = u.id 
-                        WHERE cb.approvedid = ? 
+                        LEFT JOIN blocklist bl ON cb.bpartnerid = bl.userid AND cb.approvedid = bl.approvedid
+                        WHERE cb.approvedid = ? AND bl.userid IS NULL
                         ORDER BY cb.bidamount DESC, cb.bidad ASC LIMIT 1");
 $stmt->bind_param("i", $approvedId);
 $stmt->execute();
@@ -153,11 +154,13 @@ if ($highest) {
 }
 
 // Get bid history (with pagination)
-$stmt = $conn->prepare("SELECT cb.*, u.name 
+$stmt = $conn->prepare("SELECT cb.*, u.name, 
+                        CASE WHEN bl.userid IS NOT NULL THEN 1 ELSE 0 END as is_blocklisted
                         FROM crop_bids cb 
                         JOIN users u ON cb.bpartnerid = u.id 
+                        LEFT JOIN blocklist bl ON cb.bpartnerid = bl.userid AND cb.approvedid = bl.approvedid
                         WHERE cb.approvedid = ? 
-                        ORDER BY cb.bidamount DESC, cb.bidad ASC
+                        ORDER BY bl.userid IS NOT NULL ASC, cb.bidamount DESC, cb.bidad ASC
                         LIMIT ? OFFSET ?");
 $stmt->bind_param("iii", $approvedId, $limit, $offset);
 $stmt->execute();
@@ -170,16 +173,27 @@ $result = $stmt->get_result();
 // var_dump($result);
 // echo "</pre>";
 // die;
-$historyHTML = '<ul class="list-group list-group-flush">';
+$historyHTML = '<ul class="list-group list-group-flush flex flex-col gap-2">';
 $first = $offset === 0;
+$bidCount = 0;
 
 while ($bid = $result->fetch_assoc()) {
-    $class = $first ? 'bg-[#ECF5E9] border border-emerald-900/20' : '';
+    $bidCount++;
+
+    // Determine background color based on position and blocklist status
+    if ($bid['is_blocklisted']) {
+        $class = 'bg-red-100 border border-red-300'; // Red for blocklisted users
+    } elseif ($bidCount === 1) {
+        $class = 'bg-[#ECF5E9] border border-emerald-900/20'; // Green for first/highest bidder
+    } else {
+        $class = ''; // Default for other bidders
+    }
+
 
     $historyHTML .= "
-        <div class='list-group-item $class text-slate-600 px-3 py-2 rounded-md'>
+        <div class='list-group-item $class text-slate-600 px-3 py-2 rounded-md  gap-2'>
             <div class='flex items-center justify-between'>
-                <div class='flex flex-col'>
+                <div class='flex flex-col gap-2'>
                     <div class=' font-semibold text-slate-700'>" . htmlspecialchars($bid['name']) . "</div>
                     <div>" . date("M j, g:i A", strtotime($bid['bidad'])) . "</div>
                 </div>

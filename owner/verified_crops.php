@@ -11,23 +11,35 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessOwner') 
 
 $ownerId = $_SESSION['user_id'];
 $cropFilter = $_GET['croptype'] ?? 'all';
+$statusFilter = $_GET['status'] ?? 'all';
 
+
+// Build WHERE clauses similar to bid_crops
+$whereClauses = [];
+$params = [];
+$types = "";
+
+if ($cropFilter !== 'all') {
+  $whereClauses[] = "approved_submissions.croptype = ?";
+  $params[] = $cropFilter;
+  $types .= "s";
+}
+
+if ($statusFilter !== 'all') {
+  $whereClauses[] = "approved_submissions.status = ?";
+  $params[] = $statusFilter;
+  $types .= "s";
+}
+
+$whereSQL = "";
+if (!empty($whereClauses)) {
+  $whereSQL = "WHERE " . implode(" AND ", $whereClauses);
+}
 
 $query = "SELECT approved_submissions.*, users.name AS farmer_name FROM approved_submissions
 
 JOIN users ON approved_submissions.farmerid = users.id
-";
-
-$params = [];
-$types = "";
-
-
-if ($cropFilter !== 'all') {
-  $query .= " WHERE approved_submissions.croptype = ?";
-  $params[] = $cropFilter;
-  $types = "s";
-}
-
+$whereSQL";
 
 
 $stmt = $conn->prepare($query);
@@ -39,7 +51,6 @@ $result = $stmt->get_result();
 
 
 ?>
-
 <?php
 require_once '../includes/header.php';
 ?>
@@ -61,23 +72,42 @@ require_once '../includes/header.php';
       <div class="flex items-center gap-2 p-4 border-gray-200">
 
 
-        <!-- View Button -->
+        <!-- Crop Button -->
         <button type="button" id="cropButton"
           class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
           <i data-lucide="wheat" class="h-4 w-4"></i>
-          Crop
+          <span><?php echo ucfirst(htmlspecialchars($_GET['croptype'] ?? 'Crop')); ?></span>
           <svg id="cropArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
+
+        <!-- Status Button -->
+        <button type="button" id="statusButton"
+          class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+          <i data-lucide="badge-check" class="h-4 w-4"></i>
+          <span><?php echo ucfirst(htmlspecialchars($_GET['status'] ?? 'Status')); ?></span>
+          <svg id="statusArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+
         <fieldset class="fieldset">
-          <select name="croptype" class="hidden select">
+          <select name="croptype" id="cropSelect" class="hidden select">
             <option value="all" <?= $cropFilter === 'all' ? 'selected' : '' ?>>All</option>
             <option value="buko" <?= $cropFilter === 'buko' ? 'selected' : '' ?>>Buko</option>
             <option value="saba" <?= $cropFilter === 'saba' ? 'selected' : '' ?>>Saba</option>
             <option value="lanzones" <?= $cropFilter === 'lanzones' ? 'selected' : '' ?>>Lanzones</option>
             <option value="rambutan" <?= $cropFilter === 'rambutan' ? 'selected' : '' ?>>Rambutan</option>
+          </select>
+
+          <select name="status" id="statusSelect" class="hidden select">
+            <option value="all" <?= $statusFilter === 'all' ? 'selected' : '' ?>>All</option>
+            <option value="open" <?= $statusFilter === 'open' ? 'selected' : '' ?>>Open</option>
+            <option value="closed" <?= $statusFilter === 'closed' ? 'selected' : '' ?>>Closed</option>
           </select>
 
         </fieldset>
@@ -86,25 +116,21 @@ require_once '../includes/header.php';
           <span>Apply</span>
         </button>
       </div>
-      <!-- Dropdown Menu -->
+      <!-- Dropdown Menus -->
       <div class="relative">
-        <!-- Dropdown -->
+        <!-- Crop Dropdown -->
         <div id="cropDropdown"
           class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-          <!-- Sort Options -->
           <div data-crop-value="all"
             class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
             <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-
             All
           </div>
           <div data-crop-value="buko"
             class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
             <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-
             Buko
           </div>
-          <!-- Order Options -->
           <div data-crop-value="saba"
             class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
             <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
@@ -120,7 +146,28 @@ require_once '../includes/header.php';
             <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
             Rambutan
           </div>
+        </div>
+      </div>
 
+      <div class="relative">
+        <!-- Status Dropdown -->
+        <div id="statusDropdown"
+          class="hidden absolute left-40 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+          <div data-status-value="all"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-blue-400 rounded-full mr-3 hidden"></div>
+            All
+          </div>
+          <div data-status-value="open"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
+            Open
+          </div>
+          <div data-status-value="closed"
+            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <div class="w-2 h-2 bg-red-400 rounded-full mr-3 hidden"></div>
+            Closed
+          </div>
         </div>
       </div>
 
@@ -128,6 +175,7 @@ require_once '../includes/header.php';
 
   </div>
 </div>
+
 
 
 <?php if ($result->num_rows > 0): ?>
@@ -218,16 +266,13 @@ require_once '../includes/header.php';
             </div>
             <?php
             $statusLabel = match ($row['status']) {
-              'rejected' => 'Rejected',
-              'verified' => 'Verified',
-              'awaiting_verification' => 'Pending Verification',
-              default => 'Pending'
+              'open' => 'Open',
+
+              default => 'Closed'
             };
             $statusColor = match ($row['status']) {
-              'rejected' => 'bg-red-500',
-              'verified' => 'bg-green-500',
-              'awaiting_verification' => 'bg-yellow-500',
-              default => 'bg-blue-500'
+              'open' => 'bg-green-500',
+              default => 'bg-red-500'
             };
 
             ?>
@@ -287,5 +332,5 @@ require_once '../includes/header.php';
 <?php
 require_once '../includes/footer.php';
 ?>
-<script src="./assets/script2.js"></script>
+<script src="./assets/verified_crops.js"></script>
 <?php $conn->close(); ?>

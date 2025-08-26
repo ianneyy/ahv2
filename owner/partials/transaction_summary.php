@@ -52,6 +52,7 @@ $selectedBP = $_GET['bp'] ?? '';
   JOIN crop_bids b ON a.approvedid = b.approvedid
   LEFT JOIN transactions p ON a.approvedid = p.approvedid
   WHERE b.bpartnerid = $selectedBP
+  AND a.winner_id != 0
     AND b.bidamount = (
       SELECT MAX(b2.bidamount)
       FROM crop_bids b2

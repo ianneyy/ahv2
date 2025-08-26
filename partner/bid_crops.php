@@ -29,7 +29,7 @@ $conn->query("
 
 // Get filter values from dropdowns
 $cropTypeFilter = $_GET['croptype'] ?? 'all';
-$biddingStatus = $_GET['status'] ?? 'all';      // For open/closed bidding filter
+$biddingStatus = $_GET['status'] ?? 'open';      // For open/closed bidding filter
 $statusFilter = $_GET['userstatus'] ?? 'all';  // For winning/outbid filter
 $sortOption = $_GET['sort'] ?? 'newest';
 
@@ -174,7 +174,8 @@ while ($row = $result->fetch_assoc()) {
 
         </div>
       </div>
-      <div class="max-w-4xl mb-10 bg-white rounded-2xl shadow-sm border  border-b-[7px] border-l-[4px] border-emerald-900 ">
+      <div
+        class="max-w-4xl mb-10 bg-white rounded-2xl shadow-sm border  border-b-[7px] border-l-[4px] border-emerald-900 ">
         <form method="GET">
           <!-- Header with Sort and View buttons -->
           <div class="flex items-center gap-2 p-4 border-gray-200">
@@ -454,22 +455,21 @@ while ($row = $result->fetch_assoc()) {
             $isHighest = $highestBid && $highestBid['bpartnerid'] == $partnerId;
             $endTime = new DateTime($row['sellingdate']);
             $biddingClosed = $endTime < new DateTime(); // Check if bidding is already closed
-          ?>
+            ?>
             <div
               class="bg-white rounded-2xl border border-slate-300 shadow-sm overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow duration-200 ">
               <!-- 6 78 59 -->
               <!-- Crop Image -->
               <div id="img-wrap-<?= $approvedId ?>" class=" relative h-48">
-                <img onclick="imgModal<?= $approvedId ?>.showModal()" id="img-<?= $approvedId ?>" src=" ../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
-                  class="w-full h-full object-cover <?= $biddingClosed ? 'opacity-30' : '' ?>"
+                <img onclick="imgModal<?= $approvedId ?>.showModal()" id="img-<?= $approvedId ?>"
+                  src=" ../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
+                  class="w-full h-full object-cover <?= $status === 'closed' ? 'opacity-30' : '' ?>"
                   alt="<?= ucfirst(htmlspecialchars($row['croptype'])) ?>">
 
                 <dialog id="imgModal<?= $approvedId ?>" class="modal modal-bottom sm:modal-middle">
                   <div class="modal-box">
 
-                    <img
-                      src=" ../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>"
-                      alt="Crop Image Preview"
+                    <img src=" ../assets/uploads/<?= htmlspecialchars($row['imagepath']) ?>" alt="Crop Image Preview"
                       class="w-full h-auto rounded-md mt-2">
 
                   </div>
@@ -477,7 +477,7 @@ while ($row = $result->fetch_assoc()) {
                     <button>close</button>
                   </form>
                 </dialog>
-                <?php if ($biddingClosed): ?>
+                <?php if ($status === 'closed'): ?>
                   <div class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center">
                     <span class="text-white text-xl font-bold tracking-wider">
                       AUCTION ENDED
@@ -594,7 +594,7 @@ while ($row = $result->fetch_assoc()) {
                             <i data-lucide="philippine-peso" class="w-4 h-4 text-gray-500"></i>
                             <input type="number" name="bidamount" step="0.01"
                               min="<?= $highestBid ? ($highestBid['bidamount'] + 0.01) : ($row['baseprice'] + 0.01) ?>"
-                              class="grow input-md " <?= $biddingClosed ? 'disabled' : '' ?> required
+                              class="grow input-md " <?= $status === 'closed' ? 'disabled' : '' ?> required
                               placeholder="Starting from ₱<?= number_format($highestBid ? ($highestBid['bidamount'] + 0.01) : ($row['baseprice'] + 0.01), 2) ?>">
                           </label>
 
@@ -602,7 +602,7 @@ while ($row = $result->fetch_assoc()) {
                       </div>
                       <button type="submit"
                         class="w-full flex justify-center items-center gap-3 bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                        <?= $biddingClosed ? 'disabled' : '' ?>>
+                        <?= $status === 'closed' ? 'disabled' : '' ?>>
                         <i data-lucide="gavel" class="w-4 h-4"></i>
                         <span>Place Bid</span>
 
@@ -747,11 +747,10 @@ while ($row = $result->fetch_assoc()) {
 
 
                 <!-- You're Highest Message -->
-                <div id="you-highest-<?= $approvedId ?>"
-                  class="hidden p-3 bg-green-50 text-green-700 rounded-md text-sm font-medium">
-                  You are currently the highest bidder!
-                </div>
-
+                  <div id="you-highest-<?= $approvedId ?>"
+                    class="hidden p-3 bg-green-50 text-green-700 rounded-md text-sm font-medium">
+                    You are currently the highest bidder!
+                  </div>
 
               </div>
             </div>
