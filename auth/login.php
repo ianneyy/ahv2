@@ -2,6 +2,11 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/session.php';
+$toast_message = $_SESSION['toast_message'] ?? null;
+unset($_SESSION['toast_message']);
+
+
+
 $wrong_password = "";
 $wrong_email = "";
 
@@ -57,6 +62,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - AHV2</title>
     <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 
 <body class="bg-gray-50">
@@ -85,6 +94,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                         <input type="password" name="password" required
                             class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm">
+                        <div class="flex justify-end text-sm mt-2 font-medium text-gray-700 hover:text-red-500">
+                            <a href="forgot_password.php">Forgot Password?</a>
+                        </div>
                     </div>
                     <?php if ($wrong_password != null): ?>
                         <div class="text-right">
@@ -114,6 +126,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
+    <?php if ($toast_message): ?>
+        <div class="toast">
+            <div class="alert alert-success">
+                <span class="text-emerald-900"><?php echo htmlspecialchars($toast_message); ?></span>
+            </div>
+        </div>
+
+        <script>
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                document.querySelector('.toast')?.remove();
+            }, 3000);
+        </script>
+    <?php endif; ?>
 </body>
 
 </html>

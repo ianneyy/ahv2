@@ -1,7 +1,8 @@
 <?php
 require_once '../includes/db.php';
 require_once '../includes/session.php';
-
+$toast_message = $_SESSION['toast_message'] ?? null;
+unset($_SESSION['toast_message']);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST["name"];
@@ -12,9 +13,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "INSERT INTO users (name, email, password, user_type) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssss", $name, $email, $password, $user_type);
-    $stmt->execute();
 
-    echo "User registered successfully!";
+    if ($stmt->execute()) {
+        $new_user_id = $stmt->insert_id; // Get ID of newly registered user
+        $stmt->close();
+
+        // ✅ Log the user in right after registration
+        $_SESSION["user_id"] = $new_user_id;
+        $_SESSION["user_name"] = $name;
+        $_SESSION["user_type"] = $user_type;
+
+        // ✅ Redirect based on user type
+        switch ($user_type) {
+            case 'farmer':
+                header("Location: ../farmer/dashboard.php");
+                exit;
+            case 'businessOwner':
+                header("Location: ../owner/dashboard.php");
+                exit;
+            case 'businessPartner':
+                header("Location: ../partner/dashboard.php");
+                exit;
+            case 'transactionVerifier':
+                header("Location: ../verifier/dashboard.php");
+                exit;
+            default:
+                // If somehow user_type is invalid
+                $_SESSION['toast_error'] = "Unknown user type.";
+                header("Location: register.php");
+                exit;
+        }
+    } else {
+        $_SESSION['toast_error'] = "Registration failed. Please try again.";
+        header("Location: register.php");
+        exit;
+    }
 }
 ?>
 
@@ -27,6 +60,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Login - AHV2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../assets/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body class="bg-gray-50">
@@ -87,6 +124,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
+    <?php if ($toast_message): ?>
+        <div class="toast">
+            <div class="alert alert-success">
+                <span class="text-emerald-900"><?php echo htmlspecialchars($toast_message); ?></span>
+            </div>
+        </div>
+    
+        <script>
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                document.querySelector('.toast')?.remove();
+            }, 3000);
+        </script>
+    <?php endif; ?>
 </body>
 
 

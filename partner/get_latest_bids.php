@@ -180,7 +180,7 @@ $bidCount = 0;
 while ($bid = $result->fetch_assoc()) {
     $bidCount++;
 
-    // Determine background color based on position and blocklist status
+    // * Determine background color based on position and blocklist status
     if ($bid['is_blocklisted']) {
         $class = 'bg-red-100 border border-red-300'; // Red for blocklisted users
     } elseif ($bidCount === 1) {
