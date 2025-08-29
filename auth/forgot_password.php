@@ -241,7 +241,7 @@ require_once '../includes/header.php';
 
 
 <div class="min-h-screen flex items-center justify-center">
-    <div class="max-w-sm w-full space-y-8 p-8 bg-white rounded-2xl shadow-md border">
+    <div class="max-w-sm w-full space-y-8 p-8 bg-white rounded-2xl shadow-md border border-emerald-900" style="box-shadow: 6px 6px 0px #28453E;">
         <div class="text-center">
             <h2 class="text-2xl font-bold text-[#28453E]">Forgot Password?</h2>
             <p class="mt-2 text-gray-500">No worries, we'll send you reset information</p>

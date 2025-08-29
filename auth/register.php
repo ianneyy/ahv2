@@ -64,11 +64,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
 
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="../assets/style.css">
+
 </head>
 
 <body class="bg-gray-50">
     <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-sm w-full space-y-8 p-8 bg-white rounded-2xl shadow-md">
+        <div class="max-w-sm w-full space-y-8 p-8 bg-white border border-emerald-900 rounded-3xl shadow-lg"
+            style="box-shadow: 6px 6px 0px #28453E;">
             <div class="text-center">
                 <h2 class="text-3xl font-bold text-[#28453E]">Register</h2>
                 <p class="mt-2 text-gray-600">Create your account</p>
@@ -77,25 +80,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form method="POST" class="mt-8 space-y-6">
                 <div class="rounded-md  flex flex-col gap-3">
                     <div class="mb-4">
-                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <label for="name" class="block text-sm font-semibold text-emerald-700">Name</label>
                         <input type="text" name="name" required
                             class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
                     </div>
 
                     <div class="mb-4">
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <label for="email" class="block text-sm font-semibold text-emerald-700">Email</label>
                         <input type="email" name="email" required
                             class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
                     </div>
 
-                    <div class="mb-4">
-                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" name="password" required
-                            class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
-                    </div>
 
+                    <div class="mb-4 relative">
+                        <label class="block text-sm font-semibold text-emerald-700">Password</label>
+                        <input type="password" name="password" required pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                            title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+                            class="input validator  appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                        <p
+                            class="validator-hint text-xs absolute p-4 w-full rounded-md mt-2 border border-red-500 bg-white">
+                            Must be more than 8 characters, including
+                            <br />At least one number
+                            <br />At least one lowercase letter
+                            <br />At least one uppercase letter
+                        </p>
+
+                    </div>
                     <div class="mb-4">
-                        <label for="user_type" class="block text-sm font-medium text-gray-700">User Type</label>
+                        <label for="user_type" class="block text-sm font-semibold text-emerald-700">User Type</label>
                         <select name="user_type" required
                             class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
                             <option value="businessOwner">Business Owner</option>
@@ -130,7 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <span class="text-emerald-900"><?php echo htmlspecialchars($toast_message); ?></span>
             </div>
         </div>
-    
+
         <script>
             // Hide toast after 3 seconds
             setTimeout(() => {

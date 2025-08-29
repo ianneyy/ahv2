@@ -61,16 +61,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - AHV2</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-      <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 
 <body class="bg-gray-50">
     <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-sm w-full space-y-8 p-8 bg-white rounded-2xl shadow-md">
+        <div class="max-w-sm w-full space-y-8 p-8 bg-white border border-emerald-900 rounded-3xl shadow-lg"
+         style="box-shadow: 6px 6px 0px #28453E;">
             <div class="text-center">
                 <h2 class="text-3xl font-bold text-[#28453E]">Login</h2>
                 <p class="mt-2 text-gray-600">Please enter your credentials</p>
@@ -79,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form method="POST" class="mt-8 space-y-6">
                 <div class="rounded-md -space-y-px">
                     <div class="mb-4">
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <label for="email" class="block text-sm font-semibold text-emerald-700">Email</label>
                         <input type="email" name="email" required
                             class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm">
                     </div>
@@ -91,12 +93,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                     <?php endif; ?>
                     <div class="mb-4 ">
-                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" name="password" required
-                            class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm">
-                        <div class="flex justify-end text-sm mt-2 font-medium text-gray-700 hover:text-red-500">
-                            <a href="forgot_password.php">Forgot Password?</a>
+                        <div class="flex justify-between">
+                            <label for="password" class="block text-sm font-semibold text-emerald-700">Password</label>
+                            <a href="forgot_password.php"
+                                class="text-xs font-medium text-gray-700 hover:text-red-500">Forgot Password?</a>
                         </div>
+
+                        <input type="password" name="password" required 
+                            class="input validator mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm">
+
+
+                        <!-- <p class="validator-hint text-xs">
+                            Must be more than 8 characters, including
+                            <br />At least one number
+                            <br />At least one lowercase letter
+                            <br />At least one uppercase letter
+                        </p> -->
                     </div>
                     <?php if ($wrong_password != null): ?>
                         <div class="text-right">
@@ -140,6 +152,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }, 3000);
         </script>
     <?php endif; ?>
+    <script>
+        tailwind.config = {
+            plugins: [daisyui],
+        }
+    </script>
+
 </body>
 
 </html>
