@@ -147,12 +147,13 @@ require_once '../includes/header.php';
 </a>
 
 
-<div class="flex justify-between items-center ml-4 mt-5">
+<div class="flex flex-col lg:flex-row justify-between items-center ml-4 mt-5">
   <div>
-    <h2 class="text-4xl text-emerald-900 font-semibold ">Verify Crop Submissions</h2>
-    <span class="text-lg text-gray-600 ">Review and approve farmer crop submissions</span>
+    <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Verify Crop Submissions</h2>
+    <span class="text-md lg:text-lg text-gray-600 ">Review and approve farmer crop submissions</span>
   </div>
-  <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
+  <div
+    class="mt-3 lg:mt-0 max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
     <form method="GET">
       <!-- Header with Sort and View buttons -->
       <div class="flex items-center gap-2 p-4 border-gray-200">
@@ -203,12 +204,13 @@ require_once '../includes/header.php';
 
 
         <!-- More Options Button -->
-        <button type="submit" class="ml-auto text-gray-400 hover:text-gray-600 p-2 hover:bg-[#ECF5E9] rounded-lg px-4">
+        <a href="verify_crops.php"
+          class="ml-auto text-gray-400 hover:text-gray-600 p-2 hover:bg-[#ECF5E9] rounded-lg px-4">
           <!-- <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
       </svg> -->
-          <span>Apply</span>
-        </button>
+          <span>Default</span>
+        </a>
       </div>
       <!-- Dropdown Menu -->
       <div class="relative">
@@ -359,16 +361,19 @@ require_once '../includes/header.php';
                   onsubmit="return confirmReject(this);">
                   <input type="hidden" name="submissionid" value="<?= $row['submissionid'] ?>">
                   <input type="hidden" name="action" value="reject">
+                  <div class="flex justify-between gap-2">
 
-                  <input type="text" name="rejectionreason" placeholder="Enter rejection reason..." required
-                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm min-w-0 sm:w-48">
+                    <input type="text" name="rejectionreason" placeholder="Enter rejection reason..." required
+                      class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm ">
 
-                  <button type="submit"
-                    class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 whitespace-nowrap gap-2">
-                    <i data-lucide="x" class="h-4 w-4"></i>
+                    <button type="submit"
+                      class="inline-flex items-center px-4 py-2 bg-red-600/80 hover:bg-red-700 text-white text-sm font-medium rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 whitespace-nowrap gap-2">
+                      <i data-lucide="x" class="h-4 w-4"></i>
 
-                    Reject
-                  </button>
+                      Reject
+                    </button>
+                  </div>
+
                 </form>
               </div>
 
@@ -376,9 +381,12 @@ require_once '../includes/header.php';
               <button type="button" onclick="approveModal<?= $row['submissionid'] ?>.showModal()"
                 class="inline-flex items-center px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 whitespace-nowrap gap-2"
                 data-bs-toggle="modal" data-bs-target="#approveModal<?= $row['submissionid'] ?>">
+                <div class="flex justify-center items-center gap-2 w-full">
 
-                <i data-lucide="stamp" class="h-4 w-4"></i>
-                <span>Approve</span>
+                  <i data-lucide="stamp" class="h-4 w-4"></i>
+                  <span>Approve</span>
+                </div>
+
               </button>
 
             </div>
@@ -426,7 +434,7 @@ require_once '../includes/header.php';
                   <fieldset class="fieldset">
                     <legend class="fieldset-legend text-emerald-900">Base Price</legend>
 
-                    <label class="input mt-2 border w-full">
+                    <label class="input input-success mt-2 border w-full">
                       <i data-lucide="philippine-peso" class="w-4 h-4 text-gray-500"></i>
                       <input type="number" name="baseprice" required min="0" step="0.01">
 
@@ -448,6 +456,7 @@ require_once '../includes/header.php';
 
 
                 <div class="space-y-2">
+
                   <fieldset class="fieldset">
                     <legend class="fieldset-legend text-emerald-900"> Selling Date & Time</legend>
 
@@ -463,7 +472,7 @@ require_once '../includes/header.php';
                       $maxDateTime = date('Y-m-d\TH:i', strtotime('+10 days 17:00'));
                       ?>
                       <input type="datetime-local" name="sellingdate"
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                        class=" w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-gray-900"
                         required min="<?= $minDateTime ?>" max="<?= $maxDateTime ?>">
                     </div>
                     <p class="text-xs text-gray-500">Available: 3-10 days from now, 8AM-5PM</p>

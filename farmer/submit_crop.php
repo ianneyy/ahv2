@@ -53,7 +53,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
   </div>
 
 
-  <div class="mx-auto max-w-2xl py-8 px-4 border border-b-[10px] border-l-[6px] border-emerald-900 shadow-md bg-white rounded-3xl mt-10">
+  <div class="mx-auto max-w-2xl py-8 px-4 border  border-emerald-900 shadow-lg bg-white rounded-3xl mt-10"
+    style="box-shadow: 6px 6px 0px #28453E;">
     <div class="flex flex-col gap-5 px-5">
       <form action="submit_crop_action.php" method="POST" enctype="multipart/form-data" class="space-y-6">
         <!-- Crop Type Field -->
@@ -64,16 +65,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
             <!-- <p class="label">Optional</p>
             <label for="croptype" class="text-sm font-medium text-gray-700">Crop Type</label> -->
             <select name="croptype" id="croptype" required onchange="setUnit(this.value)"
-              class="w-full border border-slate-300 focus:border-green-500 focus:ring-green-500 rounded-lg py-3 px-3 appearance-none bg-white bg-no-repeat bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22w-6%20h-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19.5%208.25l-7.5%207.5-7.5-7.5%22%20%2F%3E%3C%2Fsvg%3E')] bg-[length:1em_1em] bg-[right_0.5em_center]">
+              class="w-full border border-slate-300 focus:border-green-500 focus:ring-green-500 rounded-lg py-3 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none bg-white bg-no-repeat bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22w-6%20h-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19.5%208.25l-7.5%207.5-7.5-7.5%22%20%2F%3E%3C%2Fsvg%3E')] bg-[length:1em_1em] bg-[right_0.5em_center]">
               <option value="" class="text-slate-500">Select a crop</option>
               <option value="buko" <?php if ($croptype === 'buko')
-                                      echo 'selected'; ?>>Buko</option>
+                echo 'selected'; ?>>Buko</option>
               <option value="saba" <?php if ($croptype === 'saba')
-                                      echo 'selected'; ?>>Saba</option>
+                echo 'selected'; ?>>Saba</option>
               <option value="lanzones" <?php if ($croptype === 'lanzones')
-                                          echo 'selected'; ?>>Lanzones</option>
+                echo 'selected'; ?>>Lanzones</option>
               <option value="rambutan" <?php if ($croptype === 'rambutan')
-                                          echo 'selected'; ?>>Rambutan</option>
+                echo 'selected'; ?>>Rambutan</option>
             </select>
           </fieldset>
 
@@ -88,7 +89,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
               <legend class="fieldset-legend text-emerald-900">Quantity</legend>
               <input type="number" step="0.01" name="quantity" id="quantity" placeholder="Enter quantity"
                 value="<?php echo htmlspecialchars($quantity); ?>" required
-                class="w-full border border-slate-300 focus:border-green-500 focus:ring-green-500 rounded-lg py-2 px-3">
+                class="w-full border border-slate-300 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500  rounded-lg py-2 px-3">
             </fieldset>
 
           </div>
@@ -107,24 +108,87 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
         </div>
 
         <!-- Image Upload Field -->
-        <div class="flex flex-col space-y-2">
+        <div class="flex flex-col space-y-3">
           <fieldset class="fieldset space-y-2">
             <legend class="fieldset-legend text-emerald-900">Upload Image</legend>
+            <span class="text-xs text-gray-500">Drag or drop your image here or click to upload</span>
             <!-- <label for="image" class="text-sm font-medium text-gray-700">Upload Image</label> -->
           </fieldset>
 
           <?php if (!empty($imagepath)): ?>
-            <p class="text-xs text-gray-500">Current image:</p>
+            <!-- <p class="text-xs text-gray-500">Current image:</p>
             <img src="../assets/uploads/<?php echo htmlspecialchars($imagepath); ?>" alt="Current"
-              class="w-32 h-32 object-cover rounded border border-gray-300">
+              class="w-32 h-32 object-cover rounded border border-gray-300"> -->
 
             <!-- Store old image path so PHP can keep it if no new file is uploaded -->
+            <!-- <input type="hidden" name="old_image" value="<?php echo htmlspecialchars($imagepath); ?>"> -->
+
+            <!-- If image already exists -->
+            <div id="fileInfo" class="cursor-pointer flex-col w-full rounded-md bg-white p-4 gap-2 border shadow-md mt-4">
+              <div class="flex justify-between text-sm">
+                <span id="fileName" class="text-gray-700">
+                  <?php echo htmlspecialchars(basename($imagepath)); ?>
+                </span>
+                <?php
+                $fileFullPath = "../assets/uploads/" . $imagepath;
+                $sizeMB = file_exists($fileFullPath) ? number_format(filesize($fileFullPath) / (1024 * 1024), 2) . " MB" : "N/A";
+                ?>
+                <span id="fileSize" class="px-2 py-1 shadow-sm bg-white border rounded-md text-gray-500">
+                  <?= $sizeMB ?>
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span id="fileType" class="text-xs bg-gray-200 rounded-md px-1 py-1 text-gray-500">
+                  <?= mime_content_type($fileFullPath) ?>
+                </span>
+                <span id="fileDate" class="text-gray-500 text-sm">
+                  modified <?= date("m/d/Y", filemtime($fileFullPath)) ?>
+                </span>
+              </div>
+            </div>
+
+            <!-- Hidden file input for re-upload -->
+            <input type="file" name="image" id="image" accept="image/*" class="hidden" />
+            <!-- Keep old image reference -->
             <input type="hidden" name="old_image" value="<?php echo htmlspecialchars($imagepath); ?>">
+          <?php else: ?>
+            <div class="w-full flex justify-center">
+              <input type="file" name="image" id="image" accept="image/*" class="hidden" />
+              <div id="box" class="relative group w-32 h-32">
+                <!-- Dashed border -->
+                <div class="absolute inset-0 border-2 border-dashed border-blue-400 rounded-md 
+             opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+
+                <!-- Green box -->
+                <label for="image" class="absolute top-0 right-0 w-32 h-32 border shadow-md bg-white flex justify-center items-center 
+             rounded-md text-zinc-700 cursor-pointer
+             transition-all duration-500 ease-in-out 
+             group-hover:-top-4 group-hover:-right-4">
+
+                  <i data-lucide="upload" class="w-5 h-5"></i>
+                </label>
+              </div>
+
+            </div>
+            <!-- File info (hidden by default) -->
+            <div id="fileInfo"
+              class="hidden cursor-pointer flex-col w-full rounded-md bg-white p-4 gap-2 border shadow-md mt-4">
+              <div class="flex justify-between text-sm">
+                <span id="fileName" class="text-gray-700"></span>
+                <span id="fileSize" class="px-2 py-1 shadow-sm bg-white border rounded-md text-gray-500"></span>
+              </div>
+              <div class="flex justify-between">
+                <span id="fileType" class="text-xs bg-gray-200 rounded-md px-1 py-1 text-gray-500"></span>
+                <span id="fileDate" class="text-gray-500 text-sm"></span>
+              </div>
+            </div>
           <?php endif; ?>
 
-          <input type="file" name="image" id="image" accept="image/*"
-            class="w-full border border-slate-300 focus:border-green-500 focus:ring-green-500 rounded-lg py-2 px-3
-                   file:bg-[#BFF49B] file:text-emerald-900 file:border-green-500 file:rounded-lg file:py-1 file:px-3 cursor-pointer">
+
+
+
+
+
           </fieldset>
 
         </div>
@@ -173,4 +237,40 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
       unitField.value = '';
     }
   }
+</script>
+
+<script>
+  const imageInput = document.getElementById("image");
+  const fileInfoBox = document.getElementById("fileInfo");
+  const fileName = document.getElementById("fileName");
+  const box = document.getElementById("box");
+  const fileSize = document.getElementById("fileSize");
+  const fileType = document.getElementById("fileType");
+  const fileDate = document.getElementById("fileDate");
+
+  imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    if (file) {
+      // Convert size to MB with 2 decimals
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      // Format last modified date
+      const lastModified = new Date(file.lastModified).toLocaleDateString();
+
+      fileName.textContent = file.name;
+      fileSize.textContent = `${sizeMB} MB`;
+      fileType.textContent = file.type || "Unknown type";
+      fileDate.textContent = `modified ${lastModified}`;
+
+      // Show the info box
+      fileInfoBox.classList.remove("hidden");
+      box.classList.add("hidden");
+    } else {
+      box.classList.remove("hidden");
+      fileInfoBox.classList.add("hidden");
+    }
+  });
+  // Allow clicking file info box to re-upload
+  fileInfoBox.addEventListener("click", () => {
+    imageInput.click();
+  });
 </script>

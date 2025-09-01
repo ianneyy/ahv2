@@ -82,21 +82,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="mb-4">
                         <label for="name" class="block text-sm font-semibold text-emerald-700">Name</label>
                         <input type="text" name="name" required
-                            class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                            class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm focus:ring-2">
                     </div>
 
                     <div class="mb-4">
                         <label for="email" class="block text-sm font-semibold text-emerald-700">Email</label>
                         <input type="email" name="email" required
-                            class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                            class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm focus:ring-2">
                     </div>
 
 
                     <div class="mb-4 relative">
                         <label class="block text-sm font-semibold text-emerald-700">Password</label>
-                        <input type="password" name="password" required pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                        <input type="password" name="password" required pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" autocomplete="new-password"
                             title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-                            class="input validator  appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                            class="input validator  appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm focus:ring-2">
                         <p
                             class="validator-hint text-xs absolute p-4 w-full rounded-md mt-2 border border-red-500 bg-white">
                             Must be more than 8 characters, including
