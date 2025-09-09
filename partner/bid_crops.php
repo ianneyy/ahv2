@@ -178,15 +178,15 @@ while ($row = $result->fetch_assoc()) {
         class="max-w-4xl mb-10 bg-white rounded-2xl shadow-sm border  border-b-[7px] border-l-[4px] border-emerald-900 ">
         <form method="GET">
           <!-- Header with Sort and View buttons -->
-          <div class="flex items-center gap-2 p-4 border-gray-200">
+          <div class="flex items-center  gap-1 mx-1 lg:gap-2 p-1 lg:p-4 border-gray-200 overflow-x-auto lg:overflow-hidden">
             <!-- Sort Button -->
 
 
             <!-- View Button -->
             <button type="button" id="cropButton"
-              class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+              class="flex items-center gap-2 bg-white text-gray-600 px-2 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
               <i data-lucide="wheat" class="h-4 w-4"></i>
-              <span id="crop"><?php echo ucfirst(htmlspecialchars($_GET['croptype'] ?? 'Crop')); ?>
+              <span class="text-xs lg:text-md" id="crop"><?php echo ucfirst(htmlspecialchars($_GET['croptype'] ?? 'Crop')); ?>
               </span>
               <svg id="cropArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
@@ -197,7 +197,7 @@ while ($row = $result->fetch_assoc()) {
 
 
             <button type="button" id="sortButton"
-              class="flex items-center gap-2 bg-white text-gray-600   px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+              class="flex items-center gap-2 bg-white text-gray-600  px-2 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
@@ -210,7 +210,7 @@ while ($row = $result->fetch_assoc()) {
                 default => 'Sort'
               };
               ?>
-              <span><?= $sortLabel ?></span>
+              <span class="text-xs lg:text-md"><?= $sortLabel ?></span>
               <svg id="sortArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -218,7 +218,7 @@ while ($row = $result->fetch_assoc()) {
             </button>
 
             <button type="button" id="biddingStatusButton"
-              class="flex items-center gap-2 bg-white text-gray-600   px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+              class="flex items-center gap-2 bg-white text-gray-600 px-2 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
               <i data-lucide="door-open" class="h-4 w-4"></i>
 
               <?php
@@ -229,14 +229,14 @@ while ($row = $result->fetch_assoc()) {
                 default => 'Bidding Status'
               };
               ?>
-              <span><?= $bidLabel ?></span>
+              <span class="text-xs lg:text-md max-w-[50px] lg:max-w-[100px] truncate sm:whitespace-nowrap block"><?= $bidLabel ?></span>
               <svg id="biddingStatusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
                 stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             <button type="button" id="yourStatusButton"
-              class="flex items-center gap-2 bg-white text-gray-600   px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+              class="flex items-center gap-2 bg-white text-gray-600 px-2 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
               <i data-lucide="chart-column" class="h-4 w-4"></i>
               <?php
               $userLabel = match ($_GET['userstatus'] ?? null) {
@@ -246,7 +246,7 @@ while ($row = $result->fetch_assoc()) {
                 default => 'Your Status'
               };
               ?>
-              <span><?= $userLabel ?></span>
+              <span class="text-xs lg:text-md max-w-[50px] lg:max-w-[100px] truncate sm:whitespace-nowrap block"><?= $userLabel ?></span>
               <svg id="yourStatusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
                 stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -304,11 +304,11 @@ while ($row = $result->fetch_assoc()) {
             <button type="button" onclick="window.location.href = 'bid_crops.php';"
               class="ml-auto text-gray-400 hover:text-gray-600 p-2 hover:bg-[#ECF5E9] rounded-lg px-4">
 
-              <span>Default</span>
+              <span class="text-xs lg:text-md">Default</span>
             </button>
           </div>
           <!-- Sort Dropdown Menu -->
-          <div class="relative">
+          <div class="relative z-[999]">
             <!-- Dropdown -->
             <div id="cropDropdown"
               class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
@@ -377,7 +377,7 @@ while ($row = $result->fetch_assoc()) {
           <div class="relative">
             <!-- Dropdown -->
             <div id="biddingStatusDropdown"
-              class="hidden absolute left-60 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              class="hidden absolute left-0 lg:left-60 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
               <!-- Sort Options -->
               <div data-biddingStatus-value="all"
                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
@@ -409,7 +409,7 @@ while ($row = $result->fetch_assoc()) {
           <div class="relative">
             <!-- Dropdown -->
             <div id="yourStatusDropdown"
-              class="hidden absolute left-80 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              class="hidden absolute left-0 lg:left-80 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
               <!-- Sort Options -->
               <div data-yourStatus-value="all"
                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
