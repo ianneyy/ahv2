@@ -365,7 +365,7 @@ while ($row = $res->fetch_assoc()) {
 
 
 
-    <section class="mt-10 flex gap-5">
+    <section class="mt-10 flex flex-col lg:flex-row gap-5">
       <div class="w-full border border-slate-300  p-10 rounded-2xl">
         <div class="flex justify-between items-center">
 
