@@ -138,11 +138,11 @@ while ($row = $res->fetch_assoc()) {
 </head>
 
 <body>
-  <div class="max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+  <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
     <div class="flex items-center justify-center">
 
       <div id="bar" class="flex w-full justify-between items-center mt-8 mb-10 px-8 py-4 rounded-full">
-        <h2 class="text-2xl font-semibold text-emerald-800">Welcome,
+        <h2 class="text-lg lg:text-2xl font-semibold text-emerald-800">Welcome,
           <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
         </h2>
 
@@ -159,16 +159,16 @@ while ($row = $res->fetch_assoc()) {
 
 
 
-    <section class="flex gap-5">
+    <section class="flex flex-col lg:flex-row gap-5">
 
 
-      <div class="w-full  border  border-emerald-900 shadow-lg bg-[#BFF49B] rounded-3xl flex items-center "
+      <div class="w-full  border  border-emerald-900 shadow-lg bg-[#BFF49B] rounded-3xl flex items-center py-4 lg:py-0"
         style="box-shadow: 6px 6px 0px #28453E;">
 
-        <div class="flex flex-col gap-5 px-5 w-full ">
+        <div class="flex flex-col gap-3 lg:gap-5 px-5 w-full ">
 
           <a href="verify_crops.php"
-            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100  py-4 px-4 cursor-pointer rounded-lg items-center transition duration-300 ease-in-out">
+            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center transition duration-300 ease-in-out ">
 
             <i data-lucide="clipboard-list" class="w-5 h-5"></i>
             <span>Verify Crop Submission</span>
@@ -330,7 +330,7 @@ while ($row = $res->fetch_assoc()) {
         <canvas id="trendChart"></canvas>
       </div>
     </div>
-    <section class="mt-10 flex gap-5">
+    <section class="mt-10 flex flex-col lg:flex-row gap-5">
 
 
       <div class="w-full border border-slate-300  p-10 rounded-2xl">
