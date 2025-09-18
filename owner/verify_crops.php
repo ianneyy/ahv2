@@ -147,7 +147,7 @@ require_once '../includes/header.php';
 </a>
 
 
-<div class="flex flex-col lg:flex-row justify-between items-center ml-4 mt-5">
+<div class="flex flex-col lg:flex-row justify-between items-center  lg:ml-4 mt-5">
   <div>
     <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Verify Crop Submissions</h2>
     <span class="text-md lg:text-lg text-gray-600 ">Review and approve farmer crop submissions</span>

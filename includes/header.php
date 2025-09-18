@@ -17,4 +17,4 @@
     <!-- Grid.js JS -->
 </head>
 
-<body class="p-10">
+<body class="p-4 lg:p-10">

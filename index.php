@@ -44,24 +44,24 @@ if (isset($_SESSION['user_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AHV2 System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@100..900&display=swap">
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@100..900&display=swap"> -->
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 px-5 lg:px-0">
     <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+        <div class="max-w-md w-full space-y-8 p-8 bg-white border border-emerald-900 rounded-3xl shadow-lg"  style="box-shadow: 6px 6px 0px #28453E;">
             <div class="text-center">
-                <h2 class="text-3xl font-bold text-green-600">Welcome to AHV2</h2>
+                <h2 class="text-3xl font-bold text-green-600">Welcome to AniHanda</h2>
                 <p class="mt-2 text-gray-600">Please log in to continue</p>
             </div>
             <div class="mt-8 space-y-4">
                 <a href="auth/login.php"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-900 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     Login
                 </a>
                 <a href="auth/register.php"
-                    class="w-full flex justify-center py-2 px-4 border border-green-600 rounded-md shadow-sm text-sm font-medium text-green-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    class="w-full flex justify-center py-2 px-4 border border-emerald-900 rounded-md shadow-sm text-sm font-medium text-emerald-900 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     Register
                 </a>
             </div>

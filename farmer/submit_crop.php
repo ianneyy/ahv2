@@ -28,7 +28,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
 
 </head>
 
-<body class="p-10">
+<body class="p-4 lg:p-10">
   <div class="mx-auto max-w-2xl  ">
 
     <div class="flex gap-4 items-center mb-5">
@@ -41,11 +41,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
 
 
     </div>
-    <div class="  mt-5 mb-10 flex justify-between items-center ">
+    <div class="mt-5 mb-10 flex justify-between items-center ">
 
       <div>
-        <h2 class="text-4xl text-emerald-900 font-semibold">Submit Your Crop</h2>
-        <span class="text-lg text-gray-600">Provide your crop details and await verification</span>
+        <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold">Submit Your Crop</h2>
+        <span class="text-md lg:text-lg text-gray-600">Provide your crop details and await verification</span>
       </div>
 
     </div>

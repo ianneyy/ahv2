@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $croptype = $details['croptype'] ?? '';
             if (!empty($bpartnerId)) {
                 require_once '../includes/notify.php';
-                notify($conn, (int)$bpartnerId, 'businessPartner', "Your payment for $croptype has been approved.");
+                notify($conn, (int) $bpartnerId, 'businessPartner', "Your payment for $croptype has been approved.");
             }
         }
 
@@ -177,86 +177,90 @@ require_once '../includes/header.php';
 </a>
 
 
-<div class=" ml-4 mt-5 mb-10 flex justify-between items-center ">
+<div class=" lg:ml-4 mt-5 mb-10 flex flex-col lg:flex-row lg:justify-between lg:items-center ">
 
     <div>
 
-        <h2 class="text-4xl text-emerald-900 font-semibold ">Payment Confirmations</h2>
-        <span class="text-lg text-gray-600 ">Review and manage payment verification requests</span>
+        <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Payment Confirmations</h2>
+        <span class="text-md lg:text-lg text-gray-600 ">Review and manage payment verification requests</span>
 
     </div>
+    <div class="flex justify-end items-end w-full ">
 
-    <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
-        <form method="GET">
-            <!-- Header with Sort and View buttons -->
-            <div class="flex items-center gap-2 p-4 border-gray-200">
+        <div
+            class="max-w-md mt-3 lg:mt-0  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
+            <form method="GET">
+                <!-- Header with Sort and View buttons -->
+                <div class="flex items-center gap-2 p-4 border-gray-200">
 
 
-                <!-- View Button -->
-                <button type="button" id="statusButton"
-                    class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                    <i data-lucide="wheat" class="h-4 w-4"></i>
-                    Status
-                    <svg id="statusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-                <select name="status" id="status" class="hidden" onchange="this.form.submit()"
-                    class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36">
-                    <option value="">All</option>
-                    <option value="pending" <?= (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'selected' : '' ?>>
-                        Pending</option>
-                    <option value="awaiting_verification" <?= (isset($_GET['status']) && $_GET['status'] === 'awaiting_verification') ? 'selected' : '' ?>>Awaiting Verification
-                    </option>
-                    <option value="verified" <?= (isset($_GET['status']) && $_GET['status'] === 'verified') ? 'selected' : '' ?>>Verified
-                    </option>
-                    <option value="rejected" <?= (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'selected' : '' ?>>Rejected
-                    </option>
-                </select>
-
-            </div>
-            <!-- Dropdown Menu -->
-            <div class="relative">
-                <!-- Dropdown -->
-                <div id="statusDropdown"
-                    class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    <!-- Sort Options -->
-                    <div data-status-value="all"
-                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-
-                        All
-                    </div>
-                    <div data-status-value="pending"
-                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-
-                        Pending
-                    </div>
-                    <!-- Order Options -->
-                    <div data-status-value="awaiting_verification"
-                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-                        Pending Verification
-                    </div>
-                    <div data-status-value="verified"
-                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-                        Verified
-                    </div>
-                    <div data-status-value="rejected"
-                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-                        Rejected
-                    </div>
+                    <!-- View Button -->
+                    <button type="button" id="statusButton"
+                        class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                        <i data-lucide="wheat" class="h-4 w-4"></i>
+                        Status
+                        <svg id="statusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <select name="status" id="status" class="hidden" onchange="this.form.submit()"
+                        class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36">
+                        <option value="">All</option>
+                        <option value="pending" <?= (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'selected' : '' ?>>
+                            Pending</option>
+                        <option value="awaiting_verification" <?= (isset($_GET['status']) && $_GET['status'] === 'awaiting_verification') ? 'selected' : '' ?>>Awaiting Verification
+                        </option>
+                        <option value="verified" <?= (isset($_GET['status']) && $_GET['status'] === 'verified') ? 'selected' : '' ?>>Verified
+                        </option>
+                        <option value="rejected" <?= (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'selected' : '' ?>>Rejected
+                        </option>
+                    </select>
 
                 </div>
-            </div>
+                <!-- Dropdown Menu -->
+                <div class="relative">
+                    <!-- Dropdown -->
+                    <div id="statusDropdown"
+                        class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                        <!-- Sort Options -->
+                        <div data-status-value="all"
+                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
 
-        </form>
+                            All
+                        </div>
+                        <div data-status-value="pending"
+                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
 
+                            Pending
+                        </div>
+                        <!-- Order Options -->
+                        <div data-status-value="awaiting_verification"
+                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                            Pending Verification
+                        </div>
+                        <div data-status-value="verified"
+                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                            Verified
+                        </div>
+                        <div data-status-value="rejected"
+                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                            Rejected
+                        </div>
+
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
     </div>
+
 </div>
 
 
@@ -388,8 +392,7 @@ require_once '../includes/header.php';
                                         <!-- Approve Button -->
                                         <form method="POST" class="flex">
                                             <!-- <input type="hidden" name="transactionid" value="<?= $row['transactionid'] ?>"> -->
-                                            <button type="button"
-                                                name="confirm"
+                                            <button type="button" name="confirm"
                                                 onclick="signModal<?= $row['transactionid'] ?>.showModal()"
                                                 class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-emerald-600 text-white rounded-lg font-medium text-xs transition-all hover:bg-emerald-700 transition duration-300 ease-in-out shadow-sm">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -588,16 +591,16 @@ require_once '../includes/header.php';
                 const dataURL = signaturePads[allocationId].toDataURL(); // base64 PNG
 
                 fetch('confirm_payments.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: new URLSearchParams({
-                            save_signature: '1',
-                            transactionid: allocationId,
-                            signature_image: dataURL
-                        })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        save_signature: '1',
+                        transactionid: allocationId,
+                        signature_image: dataURL
                     })
+                })
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {

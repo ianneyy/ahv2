@@ -141,7 +141,7 @@ while ($row = $res->fetch_assoc()) {
   <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
     <div class="flex items-center justify-center">
 
-      <div id="bar" class="flex w-full justify-between items-center mt-8 mb-10 px-8 py-4 rounded-full">
+      <div id="bar" class="flex w-full justify-between items-center lg:mt-8 mb-10 px-8 py-4 rounded-full">
         <h2 class="text-lg lg:text-2xl font-semibold text-emerald-800">Welcome,
           <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
         </h2>

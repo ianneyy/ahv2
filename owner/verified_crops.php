@@ -61,12 +61,12 @@ require_once '../includes/header.php';
   <span class="text-md">Dashboard</span>
 </a>
 
-<div class="flex justify-between items-center ml-4 mt-5 mb-5">
+<div class="flex flex-col lg:flex-row justify-between items-center ml-0 lg:ml-4 mt-5 mb-5">
   <div>
-    <h2 class="text-4xl text-emerald-900 font-semibold ">Verified Crops</h2>
+    <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Verified Crops</h2>
     <span class="text-lg text-gray-600 ">All crops approved and ready for bidding.</span>
   </div>
-  <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
+  <div class="mt-3 lg:mt-0 max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
     <form method="GET">
       <!-- Header with Sort and View buttons -->
       <div class="flex items-center gap-2 p-4 border-gray-200">

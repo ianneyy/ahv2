@@ -59,16 +59,16 @@ require_once '../includes/header.php';
     }
 </style>
 <a href="dashboard.php"
-    class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-900 px-4 py-1 justify-center rounded-lg">
+    class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-900 lg:px-4 py-1 justify-center rounded-lg">
     <i data-lucide="chevron-left" class="w-6 h-6"></i>
 
     <span class="text-md">Dashboard</span>
 </a>
 
-<div class="flex  justify-between items-center ml-4 mt-5 mb-5">
+<div class="flex  justify-between items-center lg:ml-4 mt-5 mb-5">
     <div>
-        <h2 class="text-4xl text-emerald-900 font-semibold">Bid Cancellations</h2>
-        <span class="text-lg text-gray-600">Track and manage cancellation requests</span>
+        <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold">Bid Cancellations</h2>
+        <span class="text-md lg:text-lg text-gray-600">Track and manage cancellation requests</span>
 
     </div>
 

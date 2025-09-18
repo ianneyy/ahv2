@@ -102,7 +102,7 @@ foreach ($allData as $row) {
   </style>
 </head>
 
-<body class="p-10 bg-gray-50 max-w-7xl mx-auto">
+<body class="p-4 lg:p-10 bg-gray-50 max-w-7xl mx-auto">
   <div class="">
     <a href="dashboard.php"
       class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-900 py-1 justify-center rounded-lg">
@@ -111,90 +111,95 @@ foreach ($allData as $row) {
       <span class="text-md">Home</span>
     </a>
     <!-- Header Section -->
-    <div class="  mt-5 mb-10 flex justify-between items-center ">
+    <div class="  mt-5 mb-10 flex flex-col lg:flex-row lg:justify-between lg:items-center ">
 
       <div>
-        <h2 class="text-4xl text-emerald-900 font-semibold">My Submission</h2>
-        <span class="text-lg text-gray-600">View the list of submitted crops and track your verification or rejection
+        <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold">My Submission</h2>
+        <span class="text-md lg:text-lg text-gray-600">View the list of submitted crops and track your verification or
+          rejection
           status.</span>
       </div>
 
+      <div class="flex justify-end">
 
-      <div class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
-        <form method="GET">
-          <div class="flex items-center gap-2 p-4 border-gray-200">
-            <!-- View Button -->
-            <button type="button" id="statusButton"
-              class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-              <i data-lucide="wheat" class="h-4 w-4"></i>
-              <?php
-              $statusLabel = match ($_GET['status'] ?? null) {
-                'all' => 'All',
-                'pending' => 'Pending',
-                'awaiting_verification' => 'Pending Verification',
-                'verified' => 'Verified',
-                'rejected' => 'Rejected',
-                default => 'Status'
-              };
-              ?>
-              <span><?= $statusLabel ?></span>
-              <svg id="statusArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <select name="status" id="status" class="hidden" onchange="this.form.submit()"
-              class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36">
-              <option value="all" <?php if ($statusFilter === 'all')
-                echo 'selected'; ?>>All</option>
-              <option value="pending" <?php if ($statusFilter === 'pending')
-                echo 'selected'; ?>>Pending</option>
-              <option value="verified" <?php if ($statusFilter === 'verified')
-                echo 'selected'; ?>>Verified</option>
-              <option value="rejected" <?php if ($statusFilter === 'rejected')
-                echo 'selected'; ?>>Rejected</option>
-            </select>
-
-          </div>
-          <div class="relative">
-            <!-- Dropdown -->
-            <div id="statusDropdown"
-              class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-              <!-- Sort Options -->
-              <div data-status-value="all"
-                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-
-                All
-              </div>
-              <div data-status-value="pending"
-                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-
-                Pending
-              </div>
-
-              <div data-status-value="verified"
-                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-                Verified
-              </div>
-              <div data-status-value="rejected"
-                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
-                Rejected
-              </div>
+        <div
+          class="max-w-md mt-3 lg:mt-0  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
+          <form method="GET">
+            <div class="flex items-center gap-2 p-4 border-gray-200">
+              <!-- View Button -->
+              <button type="button" id="statusButton"
+                class="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                <i data-lucide="wheat" class="h-4 w-4"></i>
+                <?php
+                $statusLabel = match ($_GET['status'] ?? null) {
+                  'all' => 'All',
+                  'pending' => 'Pending',
+                  'awaiting_verification' => 'Pending Verification',
+                  'verified' => 'Verified',
+                  'rejected' => 'Rejected',
+                  default => 'Status'
+                };
+                ?>
+                <span><?= $statusLabel ?></span>
+                <svg id="statusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <select name="status" id="status" class="hidden" onchange="this.form.submit()"
+                class="select border border-emerald-600 px-2 bg-transparent focus:border-emerald-900 focus:ring focus:ring-green-200 w-36">
+                <option value="all" <?php if ($statusFilter === 'all')
+                  echo 'selected'; ?>>All</option>
+                <option value="pending" <?php if ($statusFilter === 'pending')
+                  echo 'selected'; ?>>Pending</option>
+                <option value="verified" <?php if ($statusFilter === 'verified')
+                  echo 'selected'; ?>>Verified</option>
+                <option value="rejected" <?php if ($statusFilter === 'rejected')
+                  echo 'selected'; ?>>Rejected</option>
+              </select>
 
             </div>
-          </div>
-        </form>
+            <div class="relative">
+              <!-- Dropdown -->
+              <div id="statusDropdown"
+                class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <!-- Sort Options -->
+                <div data-status-value="all"
+                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                  <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+
+                  All
+                </div>
+                <div data-status-value="pending"
+                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                  <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+
+                  Pending
+                </div>
+
+                <div data-status-value="verified"
+                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                  <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                  Verified
+                </div>
+                <div data-status-value="rejected"
+                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                  <div class="w-2 h-2 bg-orange-400 rounded-full mr-3 hidden"></div>
+                  Rejected
+                </div>
+
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
+
     </div>
   </div>
 
   <!-- GridJS Table -->
   <div class="mt-4 flex flex-col">
-    <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+    <div class="px-2  overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div class="inline-block min-w-full py-2 align-middle">
         <div id="my-grid"></div>
       </div>

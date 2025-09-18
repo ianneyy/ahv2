@@ -156,7 +156,7 @@ while ($row = $result->fetch_assoc()) {
 </style>
 
 <body class="bg-gray-50">
-  <div class="min-h-screen p-8">
+  <div class="min-h-screen p-4 lg:p-8">
     <div class="max-w-7xl mx-auto">
       <!-- Header Section -->
       <div class="flex justify-between items-center mb-8">
@@ -168,8 +168,8 @@ while ($row = $result->fetch_assoc()) {
           </a>
           <div>
 
-            <h2 class="text-4xl text-emerald-900 font-semibold ">Bid on Available Crops</h2>
-            <span class="text-lg text-gray-600 ">Browse and bid on listed crops.</span>
+            <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Bid on Available Crops</h2>
+            <span class="text-md lg:text-lg text-gray-600 ">Browse and bid on listed crops.</span>
           </div>
 
         </div>

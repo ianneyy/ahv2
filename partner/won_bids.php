@@ -119,7 +119,7 @@ function hasNextHighestBidder($conn, $approvedid, $userid)
 </head>
 
 <body class="bg-gray-50">
-    <div class="min-h-screen p-8">
+    <div class="min-h-screen p-4 lg:p-8">
 
         <!-- Header Section -->
         <div class="max-w-7xl mx-auto">
@@ -129,14 +129,16 @@ function hasNextHighestBidder($conn, $approvedid, $userid)
                     <span>Dashboard</span>
 
                 </a>
-                <div class="flex justify-between items-center">
+                <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center">
 
 
                     <div>
 
-                        <h2 class="text-4xl text-emerald-900 font-semibold ">Bid on Available Crops</h2>
-                        <span class="text-lg text-gray-600 ">Browse and bid on listed crops.</span>
+                        <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Bid on Available Crops</h2>
+                        <span class="text-md lg:text-lg text-gray-600 ">Browse and bid on listed crops.</span>
                     </div>
+                    <div class="mt-3 lg:mt-0 flex justify-end">
+
                     <div
                         class="max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
                         <form method="GET">
@@ -211,6 +213,8 @@ function hasNextHighestBidder($conn, $approvedid, $userid)
                         </form>
 
                     </div>
+                    </div>
+
                 </div>
             </div>
 

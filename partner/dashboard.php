@@ -34,8 +34,8 @@ $notifications = get_notifications($conn, $userId, $userType);
 
 </head>
 
-<body class="bg-gray-50 p-10">
-  <div id="bar" class=" max-w-7xl mx-auto flex justify-between items-center mb-10  px-8 py-4 rounded-full">
+<body class="bg-gray-50 p-5 lg:p-10">
+  <div id="bar" class=" max-w-7xl mx-auto flex justify-between items-center mb-10  px-8 lg:py-4 rounded-full">
     <h2 class="text-md lg:text-2xl font-semibold text-emerald-800  ">Partner Dashboard | <span
         class="text-sm lg:text-lg text-emerald-600"> <?php echo ucfirst(htmlspecialchars($userName)); ?></span>
 

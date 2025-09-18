@@ -24,8 +24,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'farmer') {
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
-<body class="p-10">
-  <div id="bar" class="mx-auto  max-w-2xl flex justify-between items-center mt-8 mb-10  px-8 py-4 rounded-full">
+<body class="p-4 lg:p-10">
+  <div id="bar" class="mx-auto  max-w-2xl flex justify-between items-center lg:mt-8 mb-10  px-8 lg:py-4 rounded-full">
 
     <h2 class="text-2xl font-semibold text-emerald-800">Welcome,
       <?php echo htmlspecialchars($_SESSION["user_name"]); ?>!
