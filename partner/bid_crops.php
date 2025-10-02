@@ -135,7 +135,7 @@ require_once '../includes/header.php';
 <div class="flex min-h-screen ">
   <!-- Sidebar -->
   <?php if ($_SESSION['user_type'] === 'businessOwner'): ?>
-    <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col">
+   <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
       <div class="p-4 text-xl font-bold  text-[#28453E]">
         AniHanda
       </div>
@@ -191,7 +191,7 @@ require_once '../includes/header.php';
       </div>
     </aside>
   <?php else: ?>
-    <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col">
+    <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
       <div class="p-4 text-xl font-bold  text-[#28453E]">
         AniHanda
       </div>
@@ -988,6 +988,14 @@ require_once '../includes/header.php';
 
 <script>
   lucide.createIcons();
+    function toggleDropdown(dropdownId, iconId) {
+    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
+
+  }
+  function toggleDropdownSmall(dropdownId, iconId) {
+    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
+
+  }
 </script>
 <script src="./assets/bid_crops.js"></script>
 </body>

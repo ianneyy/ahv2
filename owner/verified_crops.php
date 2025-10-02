@@ -55,7 +55,7 @@ $result = $stmt->get_result();
 require_once '../includes/header.php';
 ?>
 <div class="flex min-h-screen">
-  <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col">
+  <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
     <div class="p-4 text-xl font-bold  text-[#28453E]">
       AniHanda
     </div>
