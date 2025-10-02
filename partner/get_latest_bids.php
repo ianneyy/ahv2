@@ -7,7 +7,7 @@ require_once '../includes/notify.php';
 
 
 
-if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'businessPartner') {
+if (!isset($_SESSION['user_id']) || ($_SESSION['user_type'] !== 'businessPartner' && $_SESSION['user_type'] !== 'businessOwner')) {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized']);
     exit();

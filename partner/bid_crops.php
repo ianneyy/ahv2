@@ -135,7 +135,7 @@ require_once '../includes/header.php';
 <div class="flex min-h-screen ">
   <!-- Sidebar -->
   <?php if ($_SESSION['user_type'] === 'businessOwner'): ?>
-   <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
+    <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
       <div class="p-4 text-xl font-bold  text-[#28453E]">
         AniHanda
       </div>
@@ -234,136 +234,140 @@ require_once '../includes/header.php';
             <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Bid on Available Crops</h2>
             <span class="text-md lg:text-lg text-gray-600 ">Browse and bid on listed crops.</span>
           </div>
-           <!-- Small screen -->
-            <?php if ($_SESSION['user_type'] === 'businessOwner'): ?>
-              <div class="block lg:hidden">
-                <div class="drawer">
-                  <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-                  <div class="drawer-content">
-                    <!-- Page content here -->
-                    <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
+          <!-- Small screen -->
+          <?php if ($_SESSION['user_type'] === 'businessOwner'): ?>
+            <div class="block lg:hidden">
+              <div class="drawer">
+                <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+                <div class="drawer-content">
+                  <!-- Page content here -->
+                  <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
 
-                  </div>
-                  <div class="drawer-side ">
-                    <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+                </div>
+                <div class="drawer-side ">
+                  <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
 
 
-                    <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
-                      <li>
-                        <div class="p-4 text-xl font-bold  text-[#28453E]">
-                          AniHanda
-                        </div>
-                      </li>
-                      <!-- Sidebar content here -->
-                      <li><a href="../owner/dashboard.php" class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
-                          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                          <span>Dashboard</span>
-                        </a></li>
-                      <hr class="border-gray-300">
-
-                          <li><a href="../partner/bid_crops.php" class="flex items-center gap-3 active:bg-[#BFF49B] bg-[#BFF49B] text-[#28453E]">
-                          <i data-lucide="gavel" class="w-5 h-5"></i>
-                          <span>Bidding</span>
-                        </a></li>
-                      <hr class="border-gray-300">
-
-                      <div>
-                        <button onclick="toggleDropdownSmall('cropsDropdownSmall', 'chevronIconSmall')"
-                          class=" w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]">
-                          <span class="flex items-center gap-3"> <i data-lucide="wheat" class="w-5 h-5"></i>
-                            <span>Crops</span>
-                          </span> <i id="chevronIconSmall" data-lucide="chevron-down"
-                            class="w-5 h-5 transition-transform duration-300"></i>
-                        </button> <!-- Dropdown links -->
-                        <div id="cropsDropdownSmall" class="hidden ml-5  border-l border-gray-300">
-                          <div class="ml-3 mt-2 space-y-2">
-
-                            <a href="verify_crops.php"
-                              class="block px-4 py-2 text-sm rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
-                              <span>Crop Submission</span>
-                            </a>
-                            <a href="verified_crops.php"
-                              class="block px-4 py-2 text-sm  rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
-                              <span>Verified Crops</span>
-                            </a>
-                          </div>
-
-                        </div>
+                  <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
+                    <li>
+                      <div class="p-4 text-xl font-bold  text-[#28453E]">
+                        AniHanda
                       </div>
+                    </li>
+                    <!-- Sidebar content here -->
+                    <li><a href="../owner/dashboard.php"
+                        class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        <span>Dashboard</span>
+                      </a></li>
+                    <hr class="border-gray-300">
+
+                    <li><a href="../partner/bid_crops.php"
+                        class="flex items-center gap-3 active:bg-[#BFF49B] bg-[#BFF49B] text-[#28453E]">
+                        <i data-lucide="gavel" class="w-5 h-5"></i>
+                        <span>Bidding</span>
+                      </a></li>
+                    <hr class="border-gray-300">
+
+                    <div>
+                      <button onclick="toggleDropdownSmall('cropsDropdownSmall', 'chevronIconSmall')"
+                        class=" w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]">
+                        <span class="flex items-center gap-3"> <i data-lucide="wheat" class="w-5 h-5"></i>
+                          <span>Crops</span>
+                        </span> <i id="chevronIconSmall" data-lucide="chevron-down"
+                          class="w-5 h-5 transition-transform duration-300"></i>
+                      </button> <!-- Dropdown links -->
+                      <div id="cropsDropdownSmall" class="hidden ml-5  border-l border-gray-300">
+                        <div class="ml-3 mt-2 space-y-2">
+
+                          <a href="verify_crops.php"
+                            class="block px-4 py-2 text-sm rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
+                            <span>Crop Submission</span>
+                          </a>
+                          <a href="verified_crops.php"
+                            class="block px-4 py-2 text-sm  rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
+                            <span>Verified Crops</span>
+                          </a>
+                        </div>
+
+                      </div>
+                    </div>
 
 
 
-                      <hr class="border-gray-300">
+                    <hr class="border-gray-300">
 
-                      <li><a href="confirm_payments.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                          <i data-lucide="credit-card" class="w-5 h-5"></i>
-                          <span>Payments</span>
-                        </a></li>
-                      <hr class="border-gray-300">
+                    <li><a href="confirm_payments.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i>
+                        <span>Payments</span>
+                      </a></li>
+                    <hr class="border-gray-300">
 
-                      <li><a href="bid_cancellations.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                          <i data-lucide="ban" class="w-5 h-5"></i>
-                          <span>Cancellations</span>
-                        </a></li>
-                      <hr class="border-gray-300">
+                    <li><a href="bid_cancellations.php"
+                        class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                        <i data-lucide="ban" class="w-5 h-5"></i>
+                        <span>Cancellations</span>
+                      </a></li>
+                    <hr class="border-gray-300">
 
-                      <li><a onclick="logoutModal.showModal()" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                          <i data-lucide="log-out" class="w-5 h-5"></i>
-                          <span>Logout</span>
-                        </a></li>
-                    </ul>
-                  </div>
+                    <li><a onclick="logoutModal.showModal()"
+                        class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                        <span>Logout</span>
+                      </a></li>
+                  </ul>
                 </div>
               </div>
-              <?php else: ?>
-          <!-- Small screen -->
-          <div class="block lg:hidden">
-            <div class="drawer">
-              <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-              <div class="drawer-content">
-                <!-- Page content here -->
-                <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
+            </div>
+          <?php else: ?>
+            <!-- Small screen -->
+            <div class="block lg:hidden">
+              <div class="drawer">
+                <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+                <div class="drawer-content">
+                  <!-- Page content here -->
+                  <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
 
-              </div>
-              <div class="drawer-side ">
-                <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+                </div>
+                <div class="drawer-side ">
+                  <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
 
 
-                <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
-                  <li>
-                    <div class="p-4 text-xl font-bold  text-[#28453E]">
-                      AniHanda
-                    </div>
-                  </li>
-                  <!-- Sidebar content here -->
-                  <li><a href="dashboard.php" class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
-                      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                      <span>Dashboard</span>
-                    </a></li>
-                  <hr class="border-gray-300">
+                  <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
+                    <li>
+                      <div class="p-4 text-xl font-bold  text-[#28453E]">
+                        AniHanda
+                      </div>
+                    </li>
+                    <!-- Sidebar content here -->
+                    <li><a href="dashboard.php" class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        <span>Dashboard</span>
+                      </a></li>
+                    <hr class="border-gray-300">
 
-                  <li><a href="bid_crops.php"
-                      class="flex active:bg-[#BFF49B] bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                      <i data-lucide="gavel" class="w-5 h-5"></i>
-                      <span>Bidding</span>
-                    </a></li>
-                  <hr class="border-gray-300">
+                    <li><a href="bid_crops.php"
+                        class="flex active:bg-[#BFF49B] bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                        <i data-lucide="gavel" class="w-5 h-5"></i>
+                        <span>Bidding</span>
+                      </a></li>
+                    <hr class="border-gray-300">
 
-                  <li><a href="won_bids.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                      <i data-lucide="sparkles" class="w-5 h-5"></i>
-                      <span>Won</span>
-                    </a></li>
-                  <hr class="border-gray-300">
+                    <li><a href="won_bids.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        <span>Won</span>
+                      </a></li>
+                    <hr class="border-gray-300">
 
-                  <li><a onclick="logoutModal.showModal()"
-                      class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                      <i data-lucide="log-out" class="w-5 h-5"></i>
-                      <span>Logout</span>
-                    </a></li>
-                </ul>
+                    <li><a onclick="logoutModal.showModal()"
+                        class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                        <span>Logout</span>
+                      </a></li>
+                  </ul>
+                </div>
               </div>
             </div>
-          </div>
           <?php endif; ?>
         </div>
 
@@ -434,25 +438,25 @@ require_once '../includes/header.php';
             </svg>
           </button>
           <?php if ($_SESSION['user_type'] !== 'businessOwner'): ?>
-          <button type="button" id="yourStatusButton"
-            class="flex items-center gap-2 bg-white text-gray-600 px-2 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-            <i data-lucide="chart-column" class="h-4 w-4"></i>
-            <?php
-            $userLabel = match ($_GET['userstatus'] ?? null) {
-              'all' => 'All Bids',
-              'winning' => 'Winning',
-              'outbid' => 'Outbid',
-              default => 'Your Status'
-            };
-            ?>
-            <span
-              class="text-xs lg:text-md max-w-[50px] lg:max-w-[100px] truncate sm:whitespace-nowrap block"><?= $userLabel ?></span>
-            <svg id="yourStatusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-<?php endif; ?>
+            <button type="button" id="yourStatusButton"
+              class="flex items-center gap-2 bg-white text-gray-600 px-2 lg:px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+              <i data-lucide="chart-column" class="h-4 w-4"></i>
+              <?php
+              $userLabel = match ($_GET['userstatus'] ?? null) {
+                'all' => 'All Bids',
+                'winning' => 'Winning',
+                'outbid' => 'Outbid',
+                default => 'Your Status'
+              };
+              ?>
+              <span
+                class="text-xs lg:text-md max-w-[50px] lg:max-w-[100px] truncate sm:whitespace-nowrap block"><?= $userLabel ?></span>
+              <svg id="yourStatusArrow" class="w-4 h-4 transition-transform duration-200" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          <?php endif; ?>
           <fieldset class="fieldset space-y-2">
             <select class="hidden select border px-2 focus:border-green-600 focus:ring focus:ring-green-200"
               name="croptype">
@@ -696,7 +700,6 @@ require_once '../includes/header.php';
                 </h3>
                 <span class="inline-flex items-center rounded-full  px-2.5 py-0.5 text-lg font-medium text-green-800">
                   <?= htmlspecialchars($row['quantity']) . ' ' . htmlspecialchars($row['unit']) ?>
-                  <?= htmlspecialchars($row['approvedid']) ?>
                 </span>
               </div>
               <hr class="my-5">
@@ -782,10 +785,11 @@ require_once '../includes/header.php';
                     class="text-xs bg-gray-200 px-2 py-1 rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
                 </div>
               </div>
-              <?php if ($_SESSION['user_type'] !== 'businessOwner'): ?>
-                <div class="mt-auto pt-4">
-                  <!-- Bid Form -->
-                  <div id="bid-form-wrap-<?= $approvedId ?>" class="space-y-3">
+
+              <div class="mt-auto pt-4">
+                <!-- Bid Form -->
+                <div id="bid-form-wrap-<?= $approvedId ?>" class="space-y-3">
+                  <?php if ($_SESSION['user_type'] !== 'businessOwner'): ?>
                     <form method="POST" action="submit_bid.php" class="space-y-3 w-full">
                       <input type="hidden" name="approvedid" value="<?= $approvedId ?>">
                       <div>
@@ -810,9 +814,10 @@ require_once '../includes/header.php';
 
                       </button>
                     </form>
-                  </div>
+                  <?php endif; ?>
+
                 </div>
-              <?php endif; ?>
+              </div>
               <script>
                 (function autoRefreshBids() {
                   const approvedId = <?= $approvedId ?>;
@@ -988,7 +993,7 @@ require_once '../includes/header.php';
 
 <script>
   lucide.createIcons();
-    function toggleDropdown(dropdownId, iconId) {
+  function toggleDropdown(dropdownId, iconId) {
     const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
 
   }
