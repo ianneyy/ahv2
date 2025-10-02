@@ -134,219 +134,293 @@ while ($row = $res->fetch_assoc()) {
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="../assets/style.css">
 
 </head>
 
-<body>
-  <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
-    <div class="flex items-center justify-center">
-
-      <div id="bar" class="flex w-full justify-between items-center lg:mt-8 mb-10 px-8 py-4 rounded-full">
-        <h2 class="text-lg lg:text-2xl font-semibold text-emerald-800">Welcome,
-          <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
-        </h2>
-
-        <div class="relative">
-          <div
-            class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
-
-            <?php include '../includes/notification_ui.php'; ?>
-          </div>
-
-        </div>
+<body class="bg-[#ECF5E9]">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col">
+      <div class="p-4 text-xl font-bold  text-[#28453E]">
+        AniHanda
       </div>
-    </div>
+      <nav class="flex-1 p-4 space-y-4">
+        <a href="dashboard.php"
+          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] bg-[#BFF49B] text-[#28453E] flex items-center gap-3"> <i
+            data-lucide="layout-dashboard" class="w-5 h-5"></i>
+          <span>Dashboard</span></a>
+
+          <a href="../partner/bid_crops.php"
+          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3"> <i
+            data-lucide="gavel" class="w-5 h-5"></i>
+          <span>Bidding</span></a>
+        <!-- Crops Dropdown -->
+        <div>
+          <button onclick="toggleDropdown('cropsDropdown', 'chevronIcon')"
+            class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]">
+            <span class="flex items-center gap-3"> <i data-lucide="wheat" class="w-5 h-5"></i> <span>Crops</span>
+            </span> <i id="chevronIcon" data-lucide="chevron-down"
+              class="w-5 h-5 transition-transform duration-300"></i> </button> <!-- Dropdown links -->
+          <div id="cropsDropdown" class="hidden ml-5  border-l border-gray-300">
+            <div class="ml-3 mt-2 space-y-2">
+
+              <a href="verify_crops.php"
+                class="block px-4 py-2 text-sm rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2">
+                <span>Crop Submission</span>
+              </a>
+              <a href="verified_crops.php"
+                class="block px-4 py-2 text-sm  rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2">
+                <span>Verified Crops</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+        <a href="confirm_payments.php"
+          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
+          <i data-lucide="credit-card" class="w-5 h-5"></i>
+          <span>Payments</span></a>
+        <a href="bid_cancellations.php"
+          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
+          <i data-lucide="ban" class="w-5 h-5"></i>
+          <span>Cancellations</span></a>
+        <a onclick="logoutModal.showModal()"
+          class="block px-4 py-2 rounded-lg cursor-pointer hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
+          <i data-lucide="log-out" class="w-5 h-5"></i>
+          <span>Logout</span>
+        </a>
+
+      </nav>
+      <div class="p-4 border-t border-gray-300 text-sm text-gray-400">
+        © 2025 AniHanda
+      </div>
+    </aside>
+    <!-- Main content -->
+    <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
+      <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+        <div class="flex items-center justify-center">
+
+          <div id="bar" class="flex w-full justify-between items-center  mb-10  rounded-full">
+            <h2 class="text-2xl lg:text-4xl font-semibold text-emerald-800">Welcome,
+              <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
+            </h2>
+            <div class="flex items-center gap-5">
 
 
 
-    <section class="flex flex-col lg:flex-row gap-5">
+              <div class="relative">
+                <div
+                  class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
+
+                  <?php include '../includes/notification_ui.php'; ?>
+                </div>
+
+              </div>
+              <!-- Small screen -->
+              <div class="block lg:hidden">
+                <div class="drawer">
+                  <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+                  <div class="drawer-content">
+                    <!-- Page content here -->
+                    <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
+
+                  </div>
+                  <div class="drawer-side ">
+                    <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
 
 
-      <div class="w-full  border  border-emerald-900 shadow-lg bg-[#BFF49B] rounded-3xl flex items-center py-4 lg:py-0"
-        style="box-shadow: 6px 6px 0px #28453E;">
+                    <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
+                      <li>
+                        <div class="p-4 text-xl font-bold  text-[#28453E]">
+                          AniHanda
+                        </div>
+                      </li>
+                      <!-- Sidebar content here -->
+                      <li><a href="dashboard.php" class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
+                          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                          <span>Dashboard</span>
+                        </a></li>
+                      <hr class="border-gray-300">
 
-        <div class="flex flex-col gap-3 lg:gap-5 px-5 w-full ">
+                      <div>
+                        <button onclick="toggleDropdownSmall('cropsDropdownSmall', 'chevronIconSmall')"
+                          class=" w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]">
+                          <span class="flex items-center gap-3"> <i data-lucide="wheat" class="w-5 h-5"></i>
+                            <span>Crops</span>
+                          </span> <i id="chevronIconSmall" data-lucide="chevron-down"
+                            class="w-5 h-5 transition-transform duration-300"></i>
+                        </button> <!-- Dropdown links -->
+                        <div id="cropsDropdownSmall" class="hidden ml-5  border-l border-gray-300">
+                          <div class="ml-3 mt-2 space-y-2">
 
-          <a href="verify_crops.php"
-            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center transition duration-300 ease-in-out ">
+                            <a href="verify_crops.php"
+                              class="block px-4 py-2 text-sm rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
+                              <span>Crop Submission</span>
+                            </a>
+                            <a href="verified_crops.php"
+                              class="block px-4 py-2 text-sm  rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
+                              <span>Verified Crops</span>
+                            </a>
+                          </div>
 
-            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-            <span>Verify Crop Submission</span>
-          </a>
+                        </div>
+                      </div>
 
-          <hr class="border-emerald-600">
 
-          <a href="verified_crops.php"
-            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center transition duration-300 ease-in-out">
 
-            <i data-lucide="book-check" class="w-5 h-5"></i>
-            <span>View Verified Crops</span>
-          </a>
+                      <hr class="border-gray-300">
 
-          <hr class="border-emerald-600">
-          <a href="confirm_payments.php"
-            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center transition duration-300 ease-in-out">
+                      <li><a href="confirm_payments.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                          <i data-lucide="credit-card" class="w-5 h-5"></i>
+                          <span>Payments</span>
+                        </a></li>
+                      <hr class="border-gray-300">
 
-            <i data-lucide="credit-card" class="w-5 h-5"></i>
-            <span>Confirm Payments</span>
-          </a>
+                      <li><a href="bid_cancellations.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                          <i data-lucide="ban" class="w-5 h-5"></i>
+                          <span>Cancellations</span>
+                        </a></li>
+                      <hr class="border-gray-300">
 
-          <hr class="border-emerald-600">
-          <a href="bid_cancellations.php"
-            class="flex gap-2 text-emerald-900 hover:bg-emerald-800 hover:text-gray-100 py-4 px-4 cursor-pointer rounded-lg items-center transition duration-300 ease-in-out">
-
-            <i data-lucide="ban" class="w-5 h-5"></i>
-            <span>Bid Cancellations</span>
-          </a>
-
-          <hr class="border-emerald-600">
-
-          <a onclick="logoutModal.showModal()"
-            class="flex gap-2 text-gray-500 hover:text-red-400 py-4 px-4 cursor-pointer rounded-lg items-center transition duration-300 ease-in-out">
-
-            <i data-lucide="log-out" class="w-5 h-5"></i>
-            <span>Logout</span>
-          </a>
-          <dialog id="logoutModal" class="modal">
-            <div class="modal-box">
-              <h3 class="text-lg font-bold">Log Out</h3>
-              <p class="py-4">Do you really want to log out now?</p>
-              <div class="mt-6 flex justify-end gap-3">
-                <button onclick="logoutModal.close()" type="button"
-                  class="px-5 py-2.5 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-full transition-colors">
-                  Cancel
-                </button>
-                <a href="../auth/logout.php"
-                  class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-full shadow-sm transition-colors">
-                  Yes, Log Out
-                </a>
+                      <li><a onclick="logoutModal.showModal()" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                          <i data-lucide="log-out" class="w-5 h-5"></i>
+                          <span>Logout</span>
+                        </a></li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
-          </dialog>
 
+          </div>
         </div>
 
 
-      </div>
-      <div class="w-full flex flex-col gap-3">
-        <!-- <h3>Crop Submission Summary</h3> -->
 
-        <div class="bg-white w-full border border-slate-300  flex flex-col rounded-xl ">
-          <div class="flex item-center justify-between px-10 pt-6">
+        <section class="flex flex-col lg:flex-row gap-5">
+          <div class="w-full flex flex-col  gap-3">
+            <!-- <h3>Crop Submission Summary</h3> -->
+            <div class="w-full flex flex-col lg:flex-row gap-5">
 
-            <span class="text-slate-600 font-semibold">Total</span>
-            <div class="p-3">
+              <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl ">
+                <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
 
-              <i data-lucide="clipboard-list" class="w-6 h-6 text-emerald-700"></i>
+                  <span class="text-slate-600 font-semibold">Total</span>
+                  <div class="p-3">
+
+                    <i data-lucide="clipboard-list" class="w-6 h-6 text-emerald-700"></i>
+                  </div>
+
+                </div>
+                <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+
+                  <span class="text-3xl font-semibold text-gray-100">
+                    <?= $total ?>
+                  </span>
+                </div>
+              </div>
+              <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
+                <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
+
+                  <span class="text-slate-600 font-semibold">Pending</span>
+                  <div class="p-3">
+
+                    <i data-lucide="clipboard-clock" class="w-6 h-6 text-emerald-700"></i>
+
+                  </div>
+                </div>
+                <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+
+                  <span class="text-3xl font-semibold text-gray-100">
+                    <?= $pending ?>
+                  </span>
+                </div>
+              </div>
             </div>
+            <div class="flex gap-5 flex-col lg:flex-row">
+              <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
+                <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
 
-          </div>
-          <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+                  <span class="text-slate-600 font-semibold">Verified</span>
+                  <div class="p-3">
 
-            <span class="text-3xl font-semibold text-gray-100">
-              <?= $total ?>
-            </span>
-          </div>
-        </div>
-        <div class="bg-white w-full border border-slate-300  flex flex-col rounded-xl">
-          <div class="flex item-center justify-between px-10 pt-6">
+                    <i data-lucide="clipboard-check" class="w-6 h-6 text-emerald-700"></i>
 
-            <span class="text-slate-600 font-semibold">Pending</span>
-            <div class="p-3">
+                  </div>
+                </div>
+                <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
 
-              <i data-lucide="clipboard-clock" class="w-6 h-6 text-emerald-700"></i>
+                  <span class="text-3xl font-semibold text-gray-100">
+                    <?= $verified ?>
+                  </span>
+                </div>
+              </div>
+              <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
+                <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
 
+                  <span class="text-slate-600 font-semibold ">Rejected</span>
+                  <div class="p-3">
+
+                    <i data-lucide="clipboard-x" class="w-6 h-6 text-emerald-700"></i>
+
+                  </div>
+                </div>
+                <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+
+                  <span class="text-3xl font-semibold text-gray-100">
+                    <?= $rejected ?>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
 
-            <span class="text-3xl font-semibold text-gray-100">
-              <?= $pending ?>
-            </span>
+        </section>
+
+        <div class="mt-10 w-full bg-gray-100 border border-slate-300 p-10 rounded-2xl">
+          <?php include 'partials/transaction_summary.php'; ?>
+        </div>
+
+
+
+        <div class="mt-10 bg-gray-100 w-full border border-slate-300 p-10 rounded-2xl">
+
+          <div class="flex justify-between items-center">
+
+            <h3 class="text-slate-700 text-lg font-semibold">Submissions This <?= ucfirst($range) ?></h3>
+            <form method="get" style="text-align:center; margin:10px 0;">
+              <!-- <label for="range">View:</label> -->
+              <select name="range" onchange="this.form.submit()" class="border rounded-lg px-4 py-2">
+                <option value="week" <?= $range === 'week' ? 'selected' : '' ?>>Week</option>
+                <option value="month" <?= $range === 'month' ? 'selected' : '' ?>>Month</option>
+                <option value="year" <?= $range === 'year' ? 'selected' : '' ?>>Year</option>
+              </select>
+            </form>
+          </div>
+
+
+          <div class="w-full max-w-full  " style=" height:300px; margin:auto; ">
+            <canvas id="trendChart"></canvas>
           </div>
         </div>
-        <div class="bg-white w-full border border-slate-300  flex flex-col rounded-xl">
-          <div class="flex item-center justify-between px-10 pt-6">
+        <section class="mt-10 flex flex-col lg:flex-row gap-5">
 
-            <span class="text-slate-600 font-semibold">Verified</span>
-            <div class="p-3">
 
-              <i data-lucide="clipboard-check" class="w-6 h-6 text-emerald-700"></i>
+          <div class="w-full bg-gray-100 border border-slate-300  p-10 rounded-2xl">
+            <h3 class="text-slate-700 text-lg font-semibold mb-4">Top 3 Paying Business Partners</h3>
+            <div class="w-7/8" style=" height:300px; margin:auto;">
 
+              <canvas id="topBiddersChart"></canvas>
             </div>
           </div>
-          <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
-
-            <span class="text-3xl font-semibold text-gray-100">
-              <?= $verified ?>
-            </span>
-          </div>
-        </div>
-        <div class="bg-white w-full border border-slate-300  flex flex-col rounded-xl">
-          <div class="flex item-center justify-between px-10 pt-6">
-
-            <span class="text-slate-600 font-semibold ">Rejected</span>
-            <div class="p-3">
-
-              <i data-lucide="clipboard-x" class="w-6 h-6 text-emerald-700"></i>
-
+          <!-- 👨‍🌾 Top Farmers -->
+          <div class="w-full bg-gray-100 border border-slate-300  p-10 rounded-2xl">
+            <h3 class="text-slate-700 text-lg font-semibold mb-4">Top Contributing Farmers</h3>
+            <div style="max-width:600px; height:300px; margin:auto;">
+              <canvas id="topFarmersChart"></canvas>
             </div>
-          </div>
-          <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
-
-            <span class="text-3xl font-semibold text-gray-100">
-              <?= $rejected ?>
-            </span>
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <div class="mt-10 w-full border border-slate-300 p-10 rounded-2xl">
-      <?php include 'partials/transaction_summary.php'; ?>
-    </div>
-
-
-
-    <div class="mt-10 w-full border border-slate-300 p-10 rounded-2xl">
-
-      <div class="flex justify-between items-center">
-
-        <h3 class="text-slate-700 text-lg font-semibold">Submissions This <?= ucfirst($range) ?></h3>
-        <form method="get" style="text-align:center; margin:10px 0;">
-          <!-- <label for="range">View:</label> -->
-          <select name="range" onchange="this.form.submit()" class="border rounded-lg px-4 py-2">
-            <option value="week" <?= $range === 'week' ? 'selected' : '' ?>>Week</option>
-            <option value="month" <?= $range === 'month' ? 'selected' : '' ?>>Month</option>
-            <option value="year" <?= $range === 'year' ? 'selected' : '' ?>>Year</option>
-          </select>
-        </form>
-      </div>
-
-
-      <div class="w-full max-w-full  " style=" height:300px; margin:auto; ">
-        <canvas id="trendChart"></canvas>
-      </div>
-    </div>
-    <section class="mt-10 flex flex-col lg:flex-row gap-5">
-
-
-      <div class="w-full border border-slate-300  p-10 rounded-2xl">
-        <h3 class="text-slate-700 text-lg font-semibold mb-4">Top 3 Paying Business Partners</h3>
-        <div class="w-7/8" style=" height:300px; margin:auto;">
-
-          <canvas id="topBiddersChart"></canvas>
-        </div>
-      </div>
-      <!-- 👨‍🌾 Top Farmers -->
-      <div class="w-full border border-slate-300  p-10 rounded-2xl">
-        <h3 class="text-slate-700 text-lg font-semibold mb-4">Top Contributing Farmers</h3>
-        <div style="max-width:600px; height:300px; margin:auto;">
-          <canvas id="topFarmersChart"></canvas>
-        </div>
-        <!-- <table border="1" cellpadding="10" width="100%" style="margin-top:10px;">
+            <!-- <table border="1" cellpadding="10" width="100%" style="margin-top:10px;">
           <tr>
             <th>Farmer Name</th>
             <th>Total Submissions</th>
@@ -358,37 +432,37 @@ while ($row = $res->fetch_assoc()) {
             </tr>
           <?php endforeach; ?>
         </table> -->
-      </div>
+          </div>
 
 
-    </section>
+        </section>
 
 
 
-    <section class="mt-10 flex flex-col lg:flex-row gap-5">
-      <div class="w-full border border-slate-300  p-10 rounded-2xl">
-        <div class="flex justify-between items-center">
+        <section class="mt-10 flex flex-col lg:flex-row gap-5">
+          <div class="w-full border bg-gray-100 border-slate-300  p-10 rounded-2xl">
+            <div class="flex justify-between items-center">
 
-          <h3 class="text-slate-700 text-lg font-semibold mb-4">Total Revenue per Crop Type
-          </h3>
-          <form method="get" style="text-align:center; margin-bottom:10px;">
-            <select name="revRange" onchange="this.form.submit()" class="border rounded-lg px-4 py-2">
-              <option value="month" <?= $revRange === 'month' ? 'selected' : '' ?>>Month</option>
-              <option value="year" <?= $revRange === 'year' ? 'selected' : '' ?>>Year</option>
-            </select>
-          </form>
-        </div>
+              <h3 class="text-slate-700 text-lg font-semibold mb-4">Total Revenue per Crop Type
+              </h3>
+              <form method="get" style="text-align:center; margin-bottom:10px;">
+                <select name="revRange" onchange="this.form.submit()" class="border rounded-lg px-4 py-2">
+                  <option value="month" <?= $revRange === 'month' ? 'selected' : '' ?>>Month</option>
+                  <option value="year" <?= $revRange === 'year' ? 'selected' : '' ?>>Year</option>
+                </select>
+              </form>
+            </div>
 
-        <div style="max-width:600px; height:300px; margin:auto;">
-          <canvas id="revenueChart"></canvas>
-        </div>
-      </div>
-      <div class="w-full border border-slate-300  p-10 rounded-2xl">
-        <h3 class="text-slate-700 text-lg font-semibold mb-4">Crop Type Breakdown</h3>
-        <div style="max-width:600px; height:300px; margin:auto;">
-          <canvas id="cropChart"></canvas>
-        </div>
-        <!-- <table border="1" cellpadding="10" width="100%" style="margin-top:10px;">
+            <div style="max-width:600px; height:300px; margin:auto;">
+              <canvas id="revenueChart"></canvas>
+            </div>
+          </div>
+          <div class="w-full border bg-gray-100 border-slate-300  p-10 rounded-2xl">
+            <h3 class="text-slate-700 text-lg font-semibold mb-4">Crop Type Breakdown</h3>
+            <div style="max-width:600px; height:300px; margin:auto;">
+              <canvas id="cropChart"></canvas>
+            </div>
+            <!-- <table border="1" cellpadding="10" width="100%" style="margin-top:10px;">
           <tr>
             <th>Crop Type</th>
             <th>Total Submissions</th>
@@ -401,32 +475,42 @@ while ($row = $res->fetch_assoc()) {
           <?php endforeach; ?>
         </table> -->
 
+          </div>
+        </section>
+
+
+
+
+
       </div>
-    </section>
-
-
-
-
-
+    </main>
   </div>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-  <script>
-    lucide.createIcons();
-    // anime({
-    //   targets: '#bar',
-    //   width: ['60%', '100%'],
-    //   duration: 1500,
-    //   easing: 'easeInExpo'
-    // });
-  </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+      lucide.createIcons();
+      // anime({
+      //   targets: '#bar',
+      //   width: ['60%', '100%'],
+      //   duration: 1500,
+      //   easing: 'easeInExpo'
+      // });
+    </script>
 </body>
 
 </html>
 
+<script>
+  function toggleDropdown(dropdownId, iconId) {
+    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
 
+  }
+  function toggleDropdownSmall(dropdownId, iconId) {
+    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
+
+  }
+</script>
 <!-- 📊 Chart.js Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

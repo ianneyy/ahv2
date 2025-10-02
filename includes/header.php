@@ -17,4 +17,20 @@
     <!-- Grid.js JS -->
 </head>
 
-<body class="p-4 lg:p-10">
+<body class="bg-[#ECF5E9]">
+     <dialog id="logoutModal" class="modal">
+            <div class="modal-box">
+              <h3 class="text-lg font-bold">Log Out</h3>
+              <p class="py-4">Do you really want to log out now?</p>
+              <div class="mt-6 flex justify-end gap-3">
+                <button onclick="logoutModal.close()" type="button"
+                  class="px-5 py-2.5 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-full transition-colors">
+                  Cancel
+                </button>
+                <a href="../auth/logout.php"
+                  class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-full shadow-sm transition-colors">
+                  Yes, Log Out
+                </a>
+              </div>
+            </div>
+          </dialog>

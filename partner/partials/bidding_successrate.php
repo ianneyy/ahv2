@@ -42,7 +42,86 @@ $lostBids = $totalBids - $successfulBids;
 $successRate = $totalBids > 0 ? round(($successfulBids / $totalBids) * 100, 2) : 0;
 ?>
 
-<div class="bg-white max-w-2xl  rounded-3xl border border-emerald-900 p-4 lg:p-6">
+<section class="flex flex-col lg:flex-row gap-5">
+  <div class="w-full flex flex-col  gap-3">
+    <!-- <h3>Crop Submission Summary</h3> -->
+    <div class="w-full flex flex-col lg:flex-row gap-5">
+
+      <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl ">
+        <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
+
+          <span class="text-slate-600 font-semibold">Total</span>
+          <div class="p-3">
+
+            <i data-lucide="clipboard-list" class="w-6 h-6 text-emerald-700"></i>
+          </div>
+
+        </div>
+        <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+
+          <span class="text-3xl font-semibold text-gray-100">
+            <?= $totalBids ?>
+          </span>
+        </div>
+      </div>
+      <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
+        <div class="flex item-center justify-between  px-5 lg:px-10 pt-6">
+
+          <span class="text-slate-600 font-semibold">Success Rate</span>
+          <div class="p-3">
+
+            <i data-lucide="clipboard-clock" class="w-6 h-6 text-emerald-700"></i>
+
+          </div>
+        </div>
+        <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+
+          <span class="text-3xl font-semibold text-gray-100">
+            <?= $successRate ?>%
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-5 flex-col lg:flex-row">
+      <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
+        <div class="flex item-center justify-between  px-5 lg:px-10 pt-6">
+
+          <span class="text-slate-600 font-semibold">Successful Bids</span>
+          <div class="p-3">
+
+            <i data-lucide="clipboard-check" class="w-6 h-6 text-emerald-700"></i>
+
+          </div>
+        </div>
+        <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+
+          <span class="text-3xl font-semibold text-gray-100">
+            <?= $successfulBids ?>
+          </span>
+        </div>
+      </div>
+      <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
+        <div class="flex item-center justify-between  px-5 lg:px-10 pt-6">
+
+          <span class="text-slate-600 font-semibold ">Lost Bids</span>
+          <div class="p-3">
+
+            <i data-lucide="clipboard-x" class="w-6 h-6 text-emerald-700"></i>
+
+          </div>
+        </div>
+        <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+
+          <span class="text-3xl font-semibold text-gray-100">
+            <?= $lostBids ?>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+<div class="w-full  rounded-3xl border border-slate-300 bg-gray-100 p-4 lg:p-6 mt-5">
   <h2 class="text-md lg:text-lg font-semibold mb-6 text-slate-600">Bidding Performance Overview</h2>
 
   <div class="flex flex-col gap-8">
@@ -53,49 +132,7 @@ $successRate = $totalBids > 0 ? round(($successfulBids / $totalBids) * 100, 2) :
       </div>
     </div>
 
-    <!-- Stats Column -->
-    <div class="space-y-6">
-      <div class="flex flex-col gap-4">
-        <div class="flex justify-between items-center gap-4">
 
-          <!-- Total Bids Card -->
-          <div class=" rounded-lg p-4 w-full">
-            <div class="text-lg text-slate-600">Total Bids</div>
-            <div class="text-4xl font-bold text-gray-900"><?= $totalBids ?></div>
-          </div>
-
-          <!-- Success Rate Card -->
-          <div class=" rounded-lg p-4 w-full">
-            <div class="text-lg text-slate-600">Success Rate</div>
-            <div class="text-4xl font-bold text-green-700"><?= $successRate ?>%</div>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-4 mt-5">
-    
-
-          <div class="flex justify-between items-center gap-4 px-5">
-            <div class="flex items-center gap-2">
-              <i class="w-6 h-6 text-green-500" data-lucide="check"></i>
-              <span class="text-lg text-gray-500 font-semibold">Successful Bids</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-2xl text-green-500 font-bold"><?= $successfulBids ?></span>
-            </div>
-          </div>
-          <hr>
-          <div class="flex justify-between items-center gap-4 px-5">
-            <div class="flex items-center gap-2">
-              <i class="w-6 h-6 text-red-500" data-lucide="x"></i>
-              <span class="text-lg text-gray-500 font-semibold">Lost Bids</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-2xl text-red-500 font-bold"><?= $lostBids ?></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 
 
@@ -133,7 +170,7 @@ $successRate = $totalBids > 0 ? round(($successfulBids / $totalBids) * 100, 2) :
         },
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               const label = context.label || '';
               const value = context.raw;
               const total = <?= $totalBids ?>;
