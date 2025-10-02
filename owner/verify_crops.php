@@ -147,6 +147,10 @@ require_once '../includes/header.php';
         class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B]  text-[#28453E] flex items-center gap-3"> <i
           data-lucide="layout-dashboard" class="w-5 h-5"></i>
         <span>Dashboard</span></a>
+         <a href="../partner/bid_crops.php"
+          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B]  text-[#28453E] flex items-center gap-3"> <i
+            data-lucide="gavel" class="w-5 h-5"></i>
+          <span>Bidding</span></a>
       <!-- Crops Dropdown -->
       <div>
         <button onclick="toggleDropdown('cropsDropdown', 'chevronIcon')"

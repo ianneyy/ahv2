@@ -159,11 +159,11 @@ require_once '../includes/header.php';
           <div id="cropsDropdown" class="hidden ml-5  border-l border-gray-300">
             <div class="ml-3 mt-2 space-y-2">
 
-              <a href="verify_crops.php"
+              <a href="../owner/verify_crops.php"
                 class="block px-4 py-2 text-sm rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2">
                 <span>Crop Submission</span>
               </a>
-              <a href="verified_crops.php"
+              <a href="../owner/verified_crops.php"
                 class="block px-4 py-2 text-sm  rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2">
                 <span>Verified Crops</span>
               </a>
@@ -171,11 +171,11 @@ require_once '../includes/header.php';
 
           </div>
         </div>
-        <a href="confirm_payments.php"
+        <a href="../owner/confirm_payments.php"
           class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
           <i data-lucide="credit-card" class="w-5 h-5"></i>
           <span>Payments</span></a>
-        <a href="bid_cancellations.php"
+        <a href="../owner/bid_cancellations.php"
           class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
           <i data-lucide="ban" class="w-5 h-5"></i>
           <span>Cancellations</span></a>
@@ -280,11 +280,11 @@ require_once '../includes/header.php';
                       <div id="cropsDropdownSmall" class="hidden ml-5  border-l border-gray-300">
                         <div class="ml-3 mt-2 space-y-2">
 
-                          <a href="verify_crops.php"
+                          <a href="../owner/verify_crops.php"
                             class="block px-4 py-2 text-sm rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
                             <span>Crop Submission</span>
                           </a>
-                          <a href="verified_crops.php"
+                          <a href="../owner/verified_crops.php"
                             class="block px-4 py-2 text-sm  rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
                             <span>Verified Crops</span>
                           </a>
@@ -297,13 +297,13 @@ require_once '../includes/header.php';
 
                     <hr class="border-gray-300">
 
-                    <li><a href="confirm_payments.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                    <li><a href="../owner/confirm_payments.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
                         <i data-lucide="credit-card" class="w-5 h-5"></i>
                         <span>Payments</span>
                       </a></li>
                     <hr class="border-gray-300">
 
-                    <li><a href="bid_cancellations.php"
+                    <li><a href="../owner/bid_cancellations.php"
                         class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
                         <i data-lucide="ban" class="w-5 h-5"></i>
                         <span>Cancellations</span>
@@ -662,7 +662,7 @@ require_once '../includes/header.php';
           $biddingClosed = $endTime < new DateTime(); // Check if bidding is already closed
           ?>
           <div
-            class="bg-white rounded-2xl border border-slate-300 shadow-sm overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow duration-200 ">
+            class="bg-gray-100 rounded-2xl border border-slate-300 shadow-sm overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow duration-200 ">
             <!-- 6 78 59 -->
             <!-- Crop Image -->
             <div id="img-wrap-<?= $approvedId ?>" class=" relative h-48">
