@@ -303,7 +303,7 @@ require_once '../includes/header.php';
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <div
-                            class="bg-white rounded-2xl border border-slate-300 hover:shadow-lg transition-all duration-300 ease-in-out shadow-sm overflow-auto max-h-150 flex flex-col">
+                            class="bg-gray-100 rounded-2xl border border-slate-300 hover:shadow-lg transition-all duration-300 ease-in-out shadow-sm overflow-auto max-h-150 flex flex-col">
 
                             <div class="flex justify-center relative h-52">
                                 <img

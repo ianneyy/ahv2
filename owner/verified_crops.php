@@ -325,7 +325,7 @@ require_once '../includes/header.php';
           <?php while ($row = $result->fetch_assoc()): ?>
             <div class="group">
               <div
-                class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 hover:border-gray-200 hover:-translate-y-1">
+                class="bg-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 hover:border-gray-200 hover:-translate-y-1">
 
                 <!-- Image Container with Overlay -->
                 <div class="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">

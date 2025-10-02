@@ -425,7 +425,7 @@ require_once '../includes/header.php';
                         ?>
 
                         <div
-                            class="bg-white rounded-3xl shadow-sm border hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+                            class="bg-gray-100 rounded-3xl shadow-sm border hover:shadow-md transition-shadow flex flex-col justify-between h-full">
 
                             <!-- Card Header -->
                             <div class="p-5 border-b border-gray-100 bg-emerald-900 rounded-tl-3xl rounded-tr-3xl">
