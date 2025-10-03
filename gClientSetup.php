@@ -13,6 +13,8 @@ $dotenv->load();
 
 
 
+
+
 $client->setClientId($_ENV['GOOGLE_CLIENT_ID']);
 $client->setClientSecret($_ENV['GOOGLE_CLIENT_SECRET']);
 $client->setRedirectUri("http://localhost/AHV2/google-auth/authorized.php");
