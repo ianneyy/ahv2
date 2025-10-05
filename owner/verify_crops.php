@@ -181,6 +181,10 @@ require_once '../includes/header.php';
         class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
         <i data-lucide="ban" class="w-5 h-5"></i>
         <span>Cancellations</span></a>
+      <a href="forecasting.php"
+          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
+          <i data-lucide="trending-up-down" class="w-5 h-5"></i>
+          <span>Forecasting</span></a>
       <a onclick="logoutModal.showModal()"
         class="block px-4 py-2 rounded-lg cursor-pointer hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
         <i data-lucide="log-out" class="w-5 h-5"></i>
@@ -280,6 +284,12 @@ require_once '../includes/header.php';
                       <span>Cancellations</span>
                     </a></li>
                   <hr class="border-gray-300">
+
+                      <li><a href="forecasting.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                          <i data-lucide="trending-up-down" class="w-5 h-5"></i>
+                          <span>Forecasting</span>
+                        </a></li>
+                      <hr class="border-gray-300">
 
                   <li><a onclick="logoutModal.showModal()"
                       class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">

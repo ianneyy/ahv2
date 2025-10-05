@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->close();
 
 
-        $resetLink = " http://localhost/AHV2/auth/reset_password.php?token=$token";
+        $resetLink = " http://localhost/AHV2.2/AHV2/auth/reset_password.php?token=$token";
         $mail = new PHPMailer(true);
 
         try {
