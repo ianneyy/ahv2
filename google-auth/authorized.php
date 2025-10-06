@@ -24,6 +24,18 @@ try {
         $email = $userInfo->getEmail();
         $name = $userInfo->getName();
         $googleId = $userInfo->getId();
+        $pictureUrl = $userInfo->getPicture();
+
+
+        // ✅ Save profile image locally
+        $profileDir = '../assets/profile/';
+        if (!is_dir($profileDir)) {
+            mkdir($profileDir, 0755, true);
+        }
+        $profileFileName = $googleId . '.jpg';
+        $profileFilePath = $profileDir . $profileFileName;
+
+        file_put_contents($profileFilePath, file_get_contents($pictureUrl));
 
         // Check if user exists in database
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -32,11 +44,20 @@ try {
         $result = $stmt->get_result();
 
         if ($result->num_rows === 1) {
+
             // User exists, log them in
             $user = $result->fetch_assoc();
+
+            if (empty($user['google_id'])) {
+                $updateStmt = $conn->prepare("UPDATE users SET google_id = ? WHERE email = ?");
+                $updateStmt->bind_param("ss", $googleId, $email);
+                $updateStmt->execute();
+            }
             $_SESSION["user_id"] = $user["id"];
             $_SESSION["user_name"] = $user["name"];
             $_SESSION["user_type"] = $user["user_type"];
+            $_SESSION["user_picture"] = $pictureUrl;
+
 
             // Redirect based on user type
             switch ($user["user_type"]) {
@@ -62,7 +83,8 @@ try {
             $_SESSION['google_user_info'] = [
                 'email' => $email,
                 'name' => $name,
-                'google_id' => $googleId
+                'google_id' => $googleId,
+                'picture' => $picture
             ];
             header("Location: ../auth/register.php?google=1");
         }

@@ -14,12 +14,12 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
             <span>Dashboard</span></a>
 
         <a href="../partner/bid_crops.php"
-            class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_crops.php' ? 'bg-[#BFF49B]' : '' ?>"> <i
-                data-lucide="gavel" class="w-5 h-5"></i>
+            class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_crops.php' ? 'bg-[#BFF49B]' : '' ?>">
+            <i data-lucide="gavel" class="w-5 h-5"></i>
             <span>Bidding</span></a>
         <a href="../owner/bid_records.php"
-            class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_records.php' ? 'bg-[#BFF49B]' : '' ?>"> <i
-                data-lucide="notepad-text" class="w-5 h-5"></i>
+            class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_records.php' ? 'bg-[#BFF49B]' : '' ?>">
+            <i data-lucide="notepad-text" class="w-5 h-5"></i>
             <span>Bid Records</span></a>
         <!-- Crops Dropdown -->
         <div>
@@ -51,6 +51,24 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_cancellations.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="ban" class="w-5 h-5"></i>
             <span>Cancellations</span></a>
+
+        <a href="chat.php"
+            class=" block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'chat.php' ? 'bg-[#BFF49B]' : '' ?>">
+
+            <div class="indicator">
+                <div class="indicator-item bg-[#FF0000] w-5 h-5 text-white text-xs flex items-center justify-center p-1 rounded-full top-0 right-0 translate-x-3 -translate-y-1">3</div>
+
+                <div class="flex gap-3 ">
+
+                    <i data-lucide="message-circle" class="w-5 h-5"></i>
+                    <span>Messages</span>
+                </div>
+
+            </div>
+
+
+        </a>
+
         <a onclick="logoutModal.showModal()"
             class="block px-4 py-2 rounded-lg cursor-pointer hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
             <i data-lucide="log-out" class="w-5 h-5"></i>
@@ -66,13 +84,13 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
 
 
 <script>
-  lucide.createIcons();
-  function toggleDropdown(dropdownId, iconId) {
-    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-90");
+    lucide.createIcons();
+    function toggleDropdown(dropdownId, iconId) {
+        const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-90");
 
-  }
-  function toggleDropdownSmall(dropdownId, iconId) {
-    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-90");
+    }
+    function toggleDropdownSmall(dropdownId, iconId) {
+        const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-90");
 
-  }
+    }
 </script>
