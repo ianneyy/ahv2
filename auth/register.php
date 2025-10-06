@@ -76,6 +76,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h2 class="text-3xl font-bold text-[#28453E]">Register</h2>
                 <p class="mt-2 text-gray-600">Create your account</p>
             </div>
+            <?php if (isset($_SESSION['flash_message'])): ?>
+                <div class="alert alert-warning">
+                    <?= $_SESSION['flash_message']; ?>
+                </div>
+                <?php unset($_SESSION['flash_message']); ?>
+            <?php endif; ?>
 
             <form method="POST" class="mt-8 space-y-6">
                 <div class="rounded-md  flex flex-col gap-3">

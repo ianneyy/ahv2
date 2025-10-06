@@ -58,6 +58,7 @@ try {
             }
         } else {
             // User doesn't exist, redirect to registration with Google info
+            $_SESSION['flash_message'] = "Create an account first";
             $_SESSION['google_user_info'] = [
                 'email' => $email,
                 'name' => $name,

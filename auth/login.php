@@ -136,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="mt-2">
 
                         <a href="<?php echo $client->createAuthUrl(); ?>"
-                            class="w-full flex justify-center py-3 px-4 border rounded-md shadow-sm text-sm font-medium text-black bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 gap-2">
+                            class="w-full flex justify-center py-3 px-4 border rounded-md shadow-sm text-sm font-medium text-black bg-white hover:border-gray-300  gap-2">
                             <img src="../assets/google.png" alt="Google" class="w-4 h-4">
                         </a>
                     </div>
