@@ -381,6 +381,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 <!--rawr-->
 
+<div id="tab-yield">
+
+
 <!-- ====== Part 2: HTML / UI (paste this INSIDE <main> right after the Welcome header) ====== -->
 
 <!-- Flash messages -->
@@ -448,23 +451,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                class="mt-1 block w-full border rounded px-3 py-2" />
       </div>
 
-<div>
-  <label class="block text-sm font-medium text-gray-700">Unit</label>
-  <input id="add_unit" name="unit" type="text" readonly
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Unit</label>
+        <input id="add_unit" name="unit" type="text" readonly
          class="mt-1 block w-full border rounded px-3 py-2 bg-gray-100" />
-</div>
-
+      </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Date Recorded</label>
         <input 
-  name="recorded_at" 
-  type="date" 
-  required 
-  class="mt-1 block w-full border rounded px-3 py-2"
-  min="2016-01-01"
-  max="<?= date('Y-m-d') ?>"
-/>
+          name="recorded_at" 
+          type="date" 
+          required 
+          class="mt-1 block w-full border rounded px-3 py-2"
+          min="2016-01-01"
+          max="<?= date('Y-m-d') ?>"
+          />
       </div>
 
       <div class="md:col-span-4 flex gap-2 mt-2">
@@ -473,6 +475,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <button type="button" id="cancelAddForm"
                 class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Cancel</button>
       </div>
+
     </form>
   </div>
 
@@ -530,21 +533,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       </tbody>
     </table>
 
-<?php if ($total_pages > 1): ?>
-  <div class="mt-4 flex justify-center gap-2">
-    <?php if ($page > 1): ?>
-      <a href="forecasting.php?page=<?= $page - 1 ?>" class="px-3 py-1 bg-gray-100 rounded">⬅ Prev</a>
-    <?php endif; ?>
-    <span class="px-3 py-1 bg-emerald-100 rounded"><?= $page ?> / <?= $total_pages ?></span>
-    <?php if ($page < $total_pages): ?>
-      <a href="forecasting.php?page=<?= $page + 1 ?>" class="px-3 py-1 bg-gray-100 rounded">Next ➡</a>
+    <?php if ($total_pages > 1): ?>
+      <div class="mt-4 flex justify-center gap-2">
+        <?php if ($page > 1): ?>
+          <a href="forecasting.php?page=<?= $page - 1 ?>" class="px-3 py-1 bg-gray-100 rounded">⬅ Prev</a>
+          <?php endif; ?>
+          <span class="px-3 py-1 bg-emerald-100 rounded"><?= $page ?> / <?= $total_pages ?></span>
+          <?php if ($page < $total_pages): ?>
+           <a href="forecasting.php?page=<?= $page + 1 ?>" class="px-3 py-1 bg-gray-100 rounded">Next ➡</a>
+          <?php endif; ?>
+      </div>
     <?php endif; ?>
   </div>
-<?php endif; ?>
 
-
-
-  </div>
 </section>
 
 <!-- ===== Edit Modal (overlay) ===== -->
@@ -671,7 +672,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     </div>
   </div>
 </div>
-
 
 <!-- ====== JavaScript: toggles, modal, populate edit data, auto-set unit ====== -->
 <script>
@@ -908,6 +908,21 @@ previewBtn.addEventListener('click', (e) => {
 
     errorHTML += `</ul></div>`;
     previewErrors.innerHTML = errorHTML;
+    // Make errors dismissible by adding close button
+previewErrors.querySelector('div').insertAdjacentHTML(
+  'afterbegin',
+  `<button id="dismissErrorBtn" class="float-right text-red-500 hover:text-red-700">✖</button>`
+);
+
+document.getElementById('dismissErrorBtn').addEventListener('click', () => {
+  previewErrors.innerHTML = '';
+});
+
+// Auto-clear errors when user edits any field
+tbody.addEventListener('input', () => {
+  previewErrors.innerHTML = '';
+});
+
 previewSection.classList.remove('hidden');
 
 // If errors exist, fully hide the preview table rows
@@ -950,18 +965,27 @@ if (hasErrors) {
 
 <!--rawr-->
 
+</div> <!-- end of tab-yield -->
+
+
+<!--FOR FORECASTING MISMO-->
+
+<div id="tab-forecast" class=""><!--hidden dapat to-->
+    <!-- Forecast results will go here in Step 2 -->
+    <p class="text-gray-500 text-center py-10">No forecast generated yet. Click "Forecast Results" later to view.</p>
+</div>
+
+
+
             <div class="flex items-center gap-5">
-
-
 
               <div class="relative">
                 <div
                   class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
-
                   <?php include '../includes/notification_ui.php'; ?>
                 </div>
-
               </div>
+
               <!-- Small screen -->
               <div class="block lg:hidden">
                 <div class="drawer">
