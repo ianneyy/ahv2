@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         header("Location: forecasting.php");
         exit();
     }
-    
+
     // Basic validation
     if ($yield_id <= 0) {
         $flash['error'] = "Invalid record ID.";
@@ -222,6 +222,74 @@ $total_pages = ceil($total_rows / $limit);
 
 ///
 
+/* ===== Bulk Import Handler (insert after your other handlers in Part 1) ===== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'confirm_bulk') {
+    $flash = ['success' => null, 'error' => null];
+    $bulk_json = isset($_POST['bulk_data']) ? trim($_POST['bulk_data']) : '';
+    if (empty($bulk_json)) {
+        $flash['error'] = "No bulk data received.";
+    } else {
+        $rows = json_decode($bulk_json, true);
+        if (!is_array($rows)) {
+            $flash['error'] = "Invalid bulk data format.";
+        } else {
+            $inserted = 0;
+            $errors = [];
+            $curY = (int)date('Y');
+
+            foreach ($rows as $i => $r) {
+                $crop = isset($r['crop']) ? trim($r['crop']) : '';
+                $qty  = isset($r['quantity']) ? floatval($r['quantity']) : 0;
+                $date = isset($r['recorded_at']) ? trim($r['recorded_at']) : '';
+
+                // derive unit
+                $unit = in_array($crop, ['buko','saba']) ? 'pcs' : 'kg';
+
+                // validation
+                $rowNum = $i + 1;
+                if (!in_array($crop, ['buko','saba','rambutan','lanzones'])) {
+                    $errors[] = "Row {$rowNum}: Invalid crop '{$crop}'.";
+                    continue;
+                }
+                if ($qty <= 0) {
+                    $errors[] = "Row {$rowNum}: Quantity must be > 0.";
+                    continue;
+                }
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                    $errors[] = "Row {$rowNum}: Invalid date format.";
+                    continue;
+                }
+                $year = (int)substr($date,0,4);
+                if ($year < 2016 || $year > $curY) {
+                    $errors[] = "Row {$rowNum}: Date year must be between 2016 and {$curY}.";
+                    continue;
+                }
+
+                // insert (simple, consistent with other handlers)
+                $crop_esc = $conn->real_escape_string($crop);
+                $date_esc = $conn->real_escape_string($date);
+
+                $sql = "
+                  INSERT INTO yield_records (crop_type, quantity, unit, source, recorded_at)
+                  VALUES ('{$crop_esc}', {$qty}, '{$unit}', 'manual', '{$date_esc}')
+                ";
+                if ($conn->query($sql) === TRUE) {
+                    $inserted++;
+                } else {
+                    $errors[] = "Row {$rowNum}: DB error - " . $conn->error;
+                }
+            } // foreach
+
+            if ($inserted > 0) $flash['success'] = "{$inserted} record(s) imported successfully.";
+            if (!empty($errors)) $flash['error'] = implode(' ', $errors);
+        }
+    }
+
+    // persist flash and redirect to avoid resubmission
+    $_SESSION['bulk_flash'] = $flash;
+    header("Location: forecasting.php");
+    exit();
+}
 
 ?>
 
@@ -286,6 +354,10 @@ $total_pages = ceil($total_rows / $limit);
           class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
           <i data-lucide="ban" class="w-5 h-5"></i>
           <span>Cancellations</span></a>
+        <a href="forecasting.php"
+          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
+          <i data-lucide="trending-up-down" class="w-5 h-5"></i>
+          <span>Forecasting</span></a>
         <a onclick="logoutModal.showModal()"
           class="block px-4 py-2 rounded-lg cursor-pointer hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
           <i data-lucide="log-out" class="w-5 h-5"></i>
@@ -333,18 +405,25 @@ $total_pages = ceil($total_rows / $limit);
     <h3 class="text-xl font-semibold text-emerald-700">📁 Historical Yield Records</h3>
 
     <div class="flex items-center gap-3">
-      <!-- Sync button -->
-      <a href="forecasting.php?action=sync"
-         class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">
-        🔄 Sync from AHV2
-      </a>
+  <!-- Sync button -->
+  <a href="forecasting.php?action=sync"
+     class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">
+    🔄 Sync from AHV2
+  </a>
 
-      <!-- Add Manual toggle -->
-      <button id="showAddFormBtn"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200">
-        ➕ Add Manual Record
-      </button>
-    </div>
+  <!-- Add Manual toggle -->
+  <button id="showAddFormBtn"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200">
+    ➕ Add Manual Record
+  </button>
+
+  <!-- Bulk Upload button (new) -->
+  <button id="bulkUploadBtn"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200">
+    📥 Bulk Upload
+  </button>
+</div>
+
   </div>
 
   <!-- Manual Add Form (hidden by default) -->
@@ -528,6 +607,72 @@ $total_pages = ceil($total_rows / $limit);
   </div>
 </div>
 
+<!-- ===== Bulk Upload Modal (full-screen overlay, max-w-5xl) ===== -->
+<div id="bulkModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
+  <div class="bg-white rounded-lg w-full max-w-5xl p-6 shadow-lg">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="text-lg font-semibold text-emerald-700">Bulk Upload — Add Multiple Manual Records</h4>
+      <button id="closeBulkModal" class="text-gray-500 hover:text-gray-800">✖</button>
+    </div>
+
+    <p class="text-sm text-gray-600 mb-4">Add multiple rows below. Units auto-fill and are read-only. Dates allowed: 2016 to today. Click <strong>Preview</strong> to validate before import.</p>
+
+<!-- Dynamic rows table (Scrollable rows only) -->
+<div class="overflow-x-auto mb-4">
+  <table id="bulkTableModal" class="w-full table-auto border-collapse">
+    <thead class="bg-emerald-100 text-emerald-800">
+      <tr>
+        <th class="px-3 py-2 text-left">#</th>
+        <th class="px-3 py-2 text-left">Crop</th>
+        <th class="px-3 py-2 text-right">Quantity</th>
+        <th class="px-3 py-2 text-left">Unit</th>
+        <th class="px-3 py-2 text-left">Date Recorded</th>
+        <th class="px-3 py-2 text-left">Remove</th>
+      </tr>
+    </thead>
+  </table>
+
+  <!-- Scrollable row container -->
+  <div class="max-h-[250px] overflow-y-auto">
+    <table class="w-full table-auto border-collapse">
+      <tbody id="bulkTbodyModal"></tbody>
+    </table>
+  </div>
+</div>
+
+
+    <div class="flex gap-2 mb-4">
+      <button id="addRowModalBtn" class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">+ Add Row</button>
+      <button id="previewModalBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Preview</button>
+      <button id="clearAllModalBtn" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Clear All</button>
+    </div>
+
+    <!-- Preview area (hidden initially) -->
+    <div id="bulkPreviewSection" class="hidden">
+      <h5 class="font-medium text-gray-700 mb-2">Preview</h5>
+      <div id="bulkPreviewErrors" class="mb-3"></div>
+      <div class="overflow-x-auto max-h-64 mb-4">
+        <table id="bulkPreviewTable" class="w-full table-auto text-sm">
+          <thead class="bg-emerald-100"><tr><th class="px-2 py-1">#</th><th class="px-2 py-1">Crop</th><th class="px-2 py-1 text-right">Qty</th><th class="px-2 py-1">Unit</th><th class="px-2 py-1">Date</th><th class="px-2 py-1">Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mt-4 flex justify-end gap-2">
+      <button id="cancelBulkBtn" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Cancel</button>
+
+      <!-- Confirm form posts to this same page -->
+      <form method="POST" id="bulkConfirmForm" class="inline">
+        <input type="hidden" name="action" value="confirm_bulk">
+        <input type="hidden" name="bulk_data" id="bulk_data_input" value="">
+        <button id="confirmBulkImportBtn" type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Confirm & Import</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 <!-- ====== JavaScript: toggles, modal, populate edit data, auto-set unit ====== -->
 <script>
   // Toggle Add Form
@@ -599,6 +744,206 @@ $total_pages = ceil($total_rows / $limit);
   if (c === 'buko' || c === 'saba') editUnit.value = 'pcs';
   else editUnit.value = 'kg';
 });
+
+/* ===== Bulk Upload modal JS ===== */
+(function(){
+  const bulkBtn = document.getElementById('bulkUploadBtn');
+  const bulkModal = document.getElementById('bulkModal');
+  const closeBulk = document.getElementById('closeBulkModal');
+  const cancelBulk = document.getElementById('cancelBulkBtn');
+
+  const addRowBtn = document.getElementById('addRowModalBtn');
+  const previewBtn = document.getElementById('previewModalBtn');
+  const clearBtn = document.getElementById('clearAllModalBtn');
+
+  const tbody = document.getElementById('bulkTbodyModal');
+  const previewSection = document.getElementById('bulkPreviewSection');
+  const previewTableBody = document.querySelector('#bulkPreviewTable tbody');
+  const previewErrors = document.getElementById('bulkPreviewErrors');
+  const bulkDataInput = document.getElementById('bulk_data_input');
+
+  const minDate = '2016-01-01';
+  const maxDate = (new Date()).toISOString().slice(0,10);
+  const allowedCrops = ['buko','saba','rambutan','lanzones'];
+
+  function openModal(){
+    bulkModal.classList.remove('hidden');
+    bulkModal.classList.add('flex');
+    // ensure one row exists
+    if (tbody.children.length === 0) createRow();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function closeModal(){
+    bulkModal.classList.add('hidden');
+    bulkModal.classList.remove('flex');
+    previewSection.classList.add('hidden');
+    previewTableBody.innerHTML = '';
+    previewErrors.innerHTML = '';
+    bulkDataInput.value = '';
+  }
+
+  bulkBtn.addEventListener('click', openModal);
+  closeBulk.addEventListener('click', closeModal);
+  cancelBulk.addEventListener('click', closeModal);
+
+  // create dynamic row
+  let counter = 0;
+  function createRow(data = {}){
+    counter++;
+    const tr = document.createElement('tr');
+    tr.dataset.row = counter;
+
+    const cropVal = data.crop || 'buko';
+    const qtyVal = (data.quantity !== undefined) ? data.quantity : '';
+    const dateVal = data.recorded_at || '';
+
+    tr.innerHTML = `
+      <td class="px-2 py-2 text-sm">${counter}</td>
+      <td class="px-2 py-2">
+        <select class="crop_sel border rounded px-2 py-1 text-sm" required>
+          <option value="buko">Buko</option>
+          <option value="saba">Saba</option>
+          <option value="rambutan">Rambutan</option>
+          <option value="lanzones">Lanzones</option>
+        </select>
+      </td>
+      <td class="px-2 py-2 text-right">
+        <input type="number" step="0.01" min="0" class="qty_input border rounded px-2 py-1 text-sm w-28" value="${qtyVal}" />
+      </td>
+      <td class="px-2 py-2">
+        <input type="text" class="unit_input border rounded px-2 py-1 text-sm bg-gray-100" readonly />
+      </td>
+      <td class="px-2 py-2">
+        <input type="date" class="date_input border rounded px-2 py-1 text-sm" min="${minDate}" max="${maxDate}" value="${dateVal}" />
+      </td>
+      <td class="px-2 py-2">
+        <button class="remove_row_btn px-2 py-1 bg-red-100 text-red-700 rounded text-sm">Remove</button>
+      </td>
+    `;
+
+    const cropSel = tr.querySelector('.crop_sel');
+    cropSel.value = cropVal;
+    const unitIn = tr.querySelector('.unit_input');
+    unitIn.value = (cropVal === 'buko' || cropVal === 'saba') ? 'pcs' : 'kg';
+    const dateIn = tr.querySelector('.date_input');
+    dateIn.setAttribute('max', maxDate);
+    dateIn.setAttribute('min', minDate);
+
+    cropSel.addEventListener('change', ()=> {
+      unitIn.value = (cropSel.value === 'buko' || cropSel.value === 'saba') ? 'pcs' : 'kg';
+    });
+
+    tr.querySelector('.remove_row_btn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      tr.remove();
+      refreshNumbers();
+    });
+
+    tbody.appendChild(tr);
+    refreshNumbers();
+    return tr;
+  }
+
+  function refreshNumbers(){
+    const rows = tbody.querySelectorAll('tr');
+    let i = 1;
+    rows.forEach(r => {
+      r.querySelector('td').textContent = i;
+      i++;
+    });
+    counter = rows.length;
+  }
+
+  addRowBtn.addEventListener('click', (e) => { e.preventDefault(); createRow(); });
+
+  clearBtn.addEventListener('click', (e)=> { e.preventDefault(); tbody.innerHTML=''; counter=0; });
+
+  // Preview: validate client-side and show results in preview table
+// Preview: validate client-side and group errors
+previewBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  const rows = [];
+  const errorGroups = {}; // { 'Missing quantity': [1,4,5], 'Invalid date': [2], ... }
+  const trs = tbody.querySelectorAll('tr');
+  const curYear = new Date().getFullYear();
+
+  trs.forEach((tr, idx) => {
+    const rn = idx + 1;
+    const crop = tr.querySelector('.crop_sel').value;
+    const qty = tr.querySelector('.qty_input').value;
+    const unit = tr.querySelector('.unit_input').value;
+    const date = tr.querySelector('.date_input').value;
+
+    // Helper to record grouped errors
+    function addError(type) {
+      if (!errorGroups[type]) errorGroups[type] = [];
+      errorGroups[type].push(rn);
+    }
+
+    if (!allowedCrops.includes(crop)) addError('Invalid crop');
+    if (Number(qty) <= 0 || qty === '') addError('Missing or invalid quantity');
+    if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      addError('Missing or invalid date');
+    } else {
+      const year = parseInt(date.slice(0,4),10);
+      if (year < 2016 || year > curYear) addError(`Date must be between 2016 and ${curYear}`);
+    }
+
+    rows.push({ crop, quantity: parseFloat(qty || 0), unit, recorded_at: date });
+  });
+
+  previewTableBody.innerHTML = '';
+  previewErrors.innerHTML = '';
+
+  const hasErrors = Object.keys(errorGroups).length > 0;
+
+  if (hasErrors) {
+    let errorHTML = `<div class="p-3 rounded bg-red-50 text-red-700 border border-red-100 mb-3"><strong>Fix the following issues:</strong><ul class="mt-2 list-disc pl-5">`;
+    
+    Object.entries(errorGroups).forEach(([type, rowNumbers]) => {
+      const shown = rowNumbers.slice(0,5).join(', ');
+      const extra = rowNumbers.length > 5 ? `... + ${rowNumbers.length - 5} more` : '';
+      errorHTML += `<li>${type} in rows ${shown}${extra}</li>`;
+    });
+
+    errorHTML += `</ul></div>`;
+    previewErrors.innerHTML = errorHTML;
+previewSection.classList.remove('hidden');
+
+// If errors exist, fully hide the preview table rows
+if (hasErrors) {
+  previewTableBody.innerHTML = ""; // Clear table rows
+  previewTableBody.parentElement.parentElement.classList.add("hidden"); // Hide entire preview table container
+}
+  } else {
+    rows.forEach((r,i)=> {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="px-2 py-1">${i+1}</td><td class="px-2 py-1">${r.crop}</td><td class="px-2 py-1 text-right">${r.quantity}</td><td class="px-2 py-1">${r.unit}</td><td class="px-2 py-1">${r.recorded_at}</td><td class="px-2 py-1 text-green-700">OK</td>`;
+      previewTableBody.appendChild(tr);
+    });
+    bulkDataInput.value = JSON.stringify(rows);
+previewSection.classList.remove('hidden');
+
+// If errors exist, fully hide the preview table rows
+if (hasErrors) {
+  previewTableBody.innerHTML = ""; // Clear table rows
+  previewTableBody.parentElement.parentElement.classList.add("hidden"); // Hide entire preview table container
+}
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+  // ensure the confirm form will have data
+  const confirmForm = document.getElementById('bulkConfirmForm');
+  confirmForm.addEventListener('submit', (e) => {
+    if (!bulkDataInput.value) {
+      e.preventDefault();
+      alert('No valid data to import. Please preview and fix errors first.');
+    }
+  });
+
+})(); // IIFE end
 
 </script>
 
