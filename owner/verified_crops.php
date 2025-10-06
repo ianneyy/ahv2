@@ -55,64 +55,8 @@ $result = $stmt->get_result();
 require_once '../includes/header.php';
 ?>
 <div class="flex min-h-screen">
-  <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
-    <div class="p-4 text-xl font-bold  text-[#28453E]">
-      AniHanda
-    </div>
-    <nav class="flex-1 p-4 space-y-4">
-      <a href="dashboard.php"
-        class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B]  text-[#28453E] flex items-center gap-3"> <i
-          data-lucide="layout-dashboard" class="w-5 h-5"></i>
-        <span>Dashboard</span></a>
-         <a href="../partner/bid_crops.php"
-          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B]  text-[#28453E] flex items-center gap-3"> <i
-            data-lucide="gavel" class="w-5 h-5"></i>
-          <span>Bidding</span></a>
-             <a href="../owner/bid_records.php"
-          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3"> <i
-            data-lucide="notepad-text" class="w-5 h-5"></i>
-          <span>Bid Records</span></a>
-      <!-- Crops Dropdown -->
-      <div>
-        <button onclick="toggleDropdown('cropsDropdown', 'chevronIcon')"
-          class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] bg-[#BFF49B]">
-          <span class="flex items-center gap-3"> <i data-lucide="wheat" class="w-5 h-5"></i> <span>Crops</span>
-          </span> <i id="chevronIcon" data-lucide="chevron-down" class="w-5 h-5 transition-transform duration-300"></i>
-        </button> <!-- Dropdown links -->
-        <div id="cropsDropdown" class="hidden ml-5  border-l border-gray-300">
-          <div class="ml-3 mt-2 space-y-2">
+    <?php include 'includes/sidebar.php'; ?>
 
-            <a href="verify_crops.php"
-              class="block px-4 py-2 text-sm rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2">
-              <span>Crop Submission</span>
-            </a>
-            <a href="verified_crops.php"
-              class="block px-4 py-2 text-sm  rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2 bg-[#BFF49B]">
-              <span>Verified Crops</span>
-            </a>
-          </div>
-
-        </div>
-      </div>
-      <a href="confirm_payments.php"
-        class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
-        <i data-lucide="credit-card" class="w-5 h-5"></i>
-        <span>Payments</span></a>
-      <a href="bid_cancellations.php"
-        class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
-        <i data-lucide="ban" class="w-5 h-5"></i>
-        <span>Cancellations</span></a>
-      <a onclick="logoutModal.showModal()"
-        class="block px-4 py-2 rounded-lg cursor-pointer hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
-        <i data-lucide="log-out" class="w-5 h-5"></i>
-        <span>Logout</span>
-      </a>
-
-    </nav>
-    <div class="p-4 border-t border-gray-300 text-sm text-gray-400">
-      © 2025 AniHanda
-    </div>
-  </aside>
   <!-- <a href="dashboard.php"
   class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-900 px-4 py-1 justify-center rounded-lg">
   <i data-lucide="chevron-left" class="w-6 h-6"></i>
@@ -128,93 +72,8 @@ require_once '../includes/header.php';
             <span class="text-lg text-gray-600 ">All crops approved and ready for bidding.</span>
           </div>
 
-          <!-- Small screen -->
-          <div class="block lg:hidden">
-            <div class="drawer">
-              <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-              <div class="drawer-content">
-                <!-- Page content here -->
-                <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
+                          <?php include 'includes/sm-sidebar.php'; ?>
 
-              </div>
-              <div class="drawer-side ">
-                <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-
-
-                <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
-                  <li>
-                    <div class="p-4 text-xl font-bold  text-[#28453E]">
-                      AniHanda
-                    </div>
-                  </li>
-                  <!-- Sidebar content here -->
-                  <li><a href="dashboard.php" class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
-                      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                      <span>Dashboard</span>
-                    </a></li>
-                  <hr class="border-gray-300">
-                  <li><a href="../partner/bid_crops.php"
-                      class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
-                      <i data-lucide="gavel" class="w-5 h-5"></i>
-                      <span>Bidding</span>
-                    </a></li>
-                   <hr class="border-gray-300">
-                    <li><a href="../owner/bid_records.php"
-                        class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
-                        <i data-lucide="notebook-text" class="w-5 h-5"></i>
-                        <span>Bid Records</span>
-                      </a></li>
-                    <hr class="border-gray-300">
-                  <div>
-                    <button onclick="toggleDropdownSmall('cropsDropdownSmall', 'chevronIconSmall')"
-                      class="bg-[#BFF49B] w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]">
-                      <span class="flex items-center gap-3"> <i data-lucide="wheat" class="w-5 h-5"></i>
-                        <span>Crops</span>
-                      </span> <i id="chevronIconSmall" data-lucide="chevron-down"
-                        class="w-5 h-5 transition-transform duration-300"></i>
-                    </button> <!-- Dropdown links -->
-                    <div id="cropsDropdownSmall" class="hidden ml-5  border-l border-gray-300">
-                      <div class="ml-3 mt-2 space-y-2">
-
-                        <a href="verify_crops.php"
-                          class="block px-4 py-2 text-sm rounded-lg active:bg-[#BFF49B] text-[#28453E]  flex items-center gap-2">
-                          <span>Crop Submission</span>
-                        </a>
-                        <a href="verified_crops.php"
-                          class="block px-4 py-2 text-sm  rounded-lg active:bg-[#BFF49B] text-[#28453E] bg-[#BFF49B] flex items-center gap-2">
-                          <span>Verified Crops</span>
-                        </a>
-                      </div>
-
-                    </div>
-                  </div>
-
-
-
-                  <hr class="border-gray-300">
-
-                  <li><a href="confirm_payments.php" class="flex items-center active:bg-[#BFF49B] gap-3 text-[#28453E]">
-                      <i data-lucide="credit-card" class="w-5 h-5"></i>
-                      <span>Payments</span>
-                    </a></li>
-                  <hr class="border-gray-300">
-
-                  <li><a href="bid_cancellations.php"
-                      class="flex items-center active:bg-[#BFF49B] gap-3 text-[#28453E]">
-                      <i data-lucide="ban" class="w-5 h-5"></i>
-                      <span>Cancellations</span>
-                    </a></li>
-                  <hr class="border-gray-300">
-
-                  <li><a onclick="logoutModal.showModal()"
-                      class="flex items-center active:bg-[#BFF49B] gap-3 text-[#28453E]">
-                      <i data-lucide="log-out" class="w-5 h-5"></i>
-                      <span>Logout</span>
-                    </a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
         <div
           class="mt-3 lg:mt-0 w-full lg:max-w-md  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
@@ -490,13 +349,3 @@ require_once '../includes/footer.php';
 <script src="./assets/verified_crops.js"></script>
 <?php $conn->close(); ?>
 
-<script>
-  function toggleDropdown(dropdownId, iconId) {
-    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
-
-  }
-  function toggleDropdownSmall(dropdownId, iconId) {
-    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
-
-  }
-</script>

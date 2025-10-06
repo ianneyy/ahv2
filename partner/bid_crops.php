@@ -1014,11 +1014,11 @@ require_once '../includes/header.php';
 <script>
   lucide.createIcons();
   function toggleDropdown(dropdownId, iconId) {
-    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
+    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-90");
 
   }
   function toggleDropdownSmall(dropdownId, iconId) {
-    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-180");
+    const dropdown = document.getElementById(dropdownId); const icon = document.getElementById(iconId); dropdown.classList.toggle("hidden"); icon.classList.toggle("rotate-90");
 
   }
 </script>
