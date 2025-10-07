@@ -369,19 +369,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         © 2025 AniHanda
       </div>
     </aside>
+
+
+
     <!-- Main content -->
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
       <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
-        <div class="flex items-center justify-center">
+        
+      <div class="flex gap-2 mb-4"> <!-- Top 2 Buttons -->
+        <button id="tabYieldBtn" class="px-4 py-2 bg-emerald-600 text-white rounded">📥 Data Input</button>
+        <button id="tabForecastBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">📈 Forecast Results</button>
+      </div>
 
-          <div id="bar" class="flex w-full justify-between items-center  mb-10  rounded-full">
-            <h2 class="text-2xl lg:text-4xl font-semibold text-emerald-800">Welcome,
-              <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
-            </h2>
-
-<!--rawr-->
-
-<div id="tab-yield">
+      <div id="tab-yield">
 
 
 <!-- ====== Part 2: HTML / UI (paste this INSIDE <main> right after the Welcome header) ====== -->
@@ -965,15 +965,56 @@ if (hasErrors) {
 
 <!--rawr-->
 
-</div> <!-- end of tab-yield -->
+      </div> <!-- end of tab-yield -->
+
+      <!--FOR FORECASTING MISMO below-->
+      <div id="tab-forecast" class="hidden"><!--hidden dapat to-->
+        <!-- Forecast results will go here in Step 2 -->
+        <p class="text-gray-500 text-center py-10">No forecast generated yet. Click "Forecast Results" later to view.</p>
+      </div>
 
 
-<!--FOR FORECASTING MISMO-->
+<script>
+  const tabYieldBtn = document.getElementById('tabYieldBtn');
+  const tabForecastBtn = document.getElementById('tabForecastBtn');
+  const tabYield = document.getElementById('tab-yield');
+  const tabForecast = document.getElementById('tab-forecast');
 
-<div id="tab-forecast" class=""><!--hidden dapat to-->
-    <!-- Forecast results will go here in Step 2 -->
-    <p class="text-gray-500 text-center py-10">No forecast generated yet. Click "Forecast Results" later to view.</p>
-</div>
+  tabYieldBtn.addEventListener('click', () => {
+    tabYield.classList.remove('hidden');
+    tabForecast.classList.add('hidden');
+    tabYieldBtn.classList.add('bg-emerald-600','text-white');
+    tabYieldBtn.classList.remove('bg-gray-200','text-gray-800');
+    tabForecastBtn.classList.remove('bg-emerald-600','text-white');
+    tabForecastBtn.classList.add('bg-gray-200','text-gray-800');
+  });
+
+  tabForecastBtn.addEventListener('click', () => {
+    tabForecast.classList.remove('hidden');
+    tabYield.classList.add('hidden');
+    tabForecastBtn.classList.add('bg-emerald-600','text-white');
+    tabForecastBtn.classList.remove('bg-gray-200','text-gray-800');
+    tabYieldBtn.classList.remove('bg-emerald-600','text-white');
+    tabYieldBtn.classList.add('bg-gray-200','text-gray-800');
+  });
+</script>
+
+      
+      <div class="flex items-center justify-center">
+<!--WELCOME [USER] chuchuchu-->
+          <div id="bar" class="flex w-full justify-between items-center  mb-10  rounded-full">
+            <h2 class="text-2xl lg:text-4xl font-semibold text-emerald-800">Welcome,
+              <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
+            </h2>
+
+<!--rawr-->
+
+
+
+
+
+
+
 
 
 
