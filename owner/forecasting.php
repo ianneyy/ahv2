@@ -305,10 +305,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
-    
+<!--WELCOME CHUCHUHCUHCHC-->
+
+
 
 <body class="bg-[#ECF5E9]">
   <div class="flex min-h-screen">
+    
     <!-- Sidebar -->
     <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
       <div class="p-4 text-xl font-bold  text-[#28453E]">
@@ -375,10 +378,113 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <!-- Main content -->
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
       <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+
+            <div class="flex items-center justify-center">
+<!--WELCOME [USER] chuchuchu-->
+          <div id="bar" class="flex w-full justify-between items-center  mb-10  rounded-full">
+            <h2 class="text-2xl lg:text-4xl font-semibold text-emerald-800">Welcome,
+              <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
+            </h2>
+
+<!--rawr-->
+            <div class="flex items-center gap-5">
+
+              <div class="relative">
+                <div
+                  class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
+                  <?php include '../includes/notification_ui.php'; ?>
+                </div>
+              </div>
+
+              <!-- Small screen -->
+              <div class="block lg:hidden">
+                <div class="drawer">
+                  <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+                  <div class="drawer-content">
+                    <!-- Page content here -->
+                    <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
+
+                  </div>
+                  <div class="drawer-side ">
+                    <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+
+
+                    <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
+                      <li>
+                        <div class="p-4 text-xl font-bold  text-[#28453E]">
+                          AniHanda
+                        </div>
+                      </li>
+                      <!-- Sidebar content here -->
+                      <li><a href="dashboard.php" class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
+                          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                          <span>Dashboard</span>
+                        </a></li>
+                      <hr class="border-gray-300">
+
+                      <div>
+                        <button onclick="toggleDropdownSmall('cropsDropdownSmall', 'chevronIconSmall')"
+                          class=" w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]">
+                          <span class="flex items-center gap-3"> <i data-lucide="wheat" class="w-5 h-5"></i>
+                            <span>Crops</span>
+                          </span> <i id="chevronIconSmall" data-lucide="chevron-down"
+                            class="w-5 h-5 transition-transform duration-300"></i>
+                        </button> <!-- Dropdown links -->
+                        <div id="cropsDropdownSmall" class="hidden ml-5  border-l border-gray-300">
+                          <div class="ml-3 mt-2 space-y-2">
+
+                            <a href="verify_crops.php"
+                              class="block px-4 py-2 text-sm rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
+                              <span>Crop Submission</span>
+                            </a>
+                            <a href="verified_crops.php"
+                              class="block px-4 py-2 text-sm  rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
+                              <span>Verified Crops</span>
+                            </a>
+                          </div>
+
+                        </div>
+                      </div>
+
+
+
+                      <hr class="border-gray-300">
+
+                      <li><a href="confirm_payments.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                          <i data-lucide="credit-card" class="w-5 h-5"></i>
+                          <span>Payments</span>
+                        </a></li>
+                      <hr class="border-gray-300">
+
+                      <li><a href="bid_cancellations.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                          <i data-lucide="ban" class="w-5 h-5"></i>
+                          <span>Cancellations</span>
+                        </a></li>
+                      <hr class="border-gray-300">
+
+                      <li><a href="forecasting.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                          <i data-lucide="trending-up-down" class="w-5 h-5"></i>
+                          <span>Forecasting</span>
+                        </a></li>
+                      <hr class="border-gray-300">
+
+                      <li><a onclick="logoutModal.showModal()" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
+                          <i data-lucide="log-out" class="w-5 h-5"></i>
+                          <span>Logout</span>
+                        </a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
         
       <div class="flex gap-2 mb-4"> <!-- Top 2 Buttons -->
         <button id="tabYieldBtn" class="px-4 py-2 bg-emerald-600 text-white rounded">📥 Data Input</button>
         <button id="tabForecastBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">📈 Forecast Results</button>
+        
       </div>
 
       <div id="tab-yield">
@@ -962,16 +1068,27 @@ if (hasErrors) {
 
 </script>
 
+<!--WELCOME CHUCHU-->
+
 
 <!--rawr-->
 
       </div> <!-- end of tab-yield -->
 
-      <!--FOR FORECASTING MISMO below-->
-      <div id="tab-forecast" class="hidden"><!--hidden dapat to-->
-        <!-- Forecast results will go here in Step 2 -->
-        <p class="text-gray-500 text-center py-10">No forecast generated yet. Click "Forecast Results" later to view.</p>
-      </div>
+
+<!-- 📈 FORECAST RESULTS TAB -->
+<div id="tab-forecast" class="hidden">
+  <div class="mb-3 text-center">
+    <button id="runForecastBtn" class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">
+      🔮 Run Forecast
+    </button>
+  </div>
+
+  <div id="forecastResultsContainer" class="p-3 border rounded bg-white shadow-sm">
+    <p class="text-gray-500 text-center py-10">No forecast results yet.</p>
+  </div>
+</div>
+
 
 
 <script>
@@ -998,120 +1115,6 @@ if (hasErrors) {
     tabYieldBtn.classList.add('bg-gray-200','text-gray-800');
   });
 </script>
-
-      
-      <div class="flex items-center justify-center">
-<!--WELCOME [USER] chuchuchu-->
-          <div id="bar" class="flex w-full justify-between items-center  mb-10  rounded-full">
-            <h2 class="text-2xl lg:text-4xl font-semibold text-emerald-800">Welcome,
-              <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
-            </h2>
-
-<!--rawr-->
-
-
-
-
-
-
-
-
-
-
-            <div class="flex items-center gap-5">
-
-              <div class="relative">
-                <div
-                  class="rounded-full p-2 flex items-center justify-center hover:bg-emerald-900 hover:text-white transition duration-300 ease-in-out">
-                  <?php include '../includes/notification_ui.php'; ?>
-                </div>
-              </div>
-
-              <!-- Small screen -->
-              <div class="block lg:hidden">
-                <div class="drawer">
-                  <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-                  <div class="drawer-content">
-                    <!-- Page content here -->
-                    <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
-
-                  </div>
-                  <div class="drawer-side ">
-                    <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-
-
-                    <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
-                      <li>
-                        <div class="p-4 text-xl font-bold  text-[#28453E]">
-                          AniHanda
-                        </div>
-                      </li>
-                      <!-- Sidebar content here -->
-                      <li><a href="dashboard.php" class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
-                          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                          <span>Dashboard</span>
-                        </a></li>
-                      <hr class="border-gray-300">
-
-                      <div>
-                        <button onclick="toggleDropdownSmall('cropsDropdownSmall', 'chevronIconSmall')"
-                          class=" w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]">
-                          <span class="flex items-center gap-3"> <i data-lucide="wheat" class="w-5 h-5"></i>
-                            <span>Crops</span>
-                          </span> <i id="chevronIconSmall" data-lucide="chevron-down"
-                            class="w-5 h-5 transition-transform duration-300"></i>
-                        </button> <!-- Dropdown links -->
-                        <div id="cropsDropdownSmall" class="hidden ml-5  border-l border-gray-300">
-                          <div class="ml-3 mt-2 space-y-2">
-
-                            <a href="verify_crops.php"
-                              class="block px-4 py-2 text-sm rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
-                              <span>Crop Submission</span>
-                            </a>
-                            <a href="verified_crops.php"
-                              class="block px-4 py-2 text-sm  rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2">
-                              <span>Verified Crops</span>
-                            </a>
-                          </div>
-
-                        </div>
-                      </div>
-
-
-
-                      <hr class="border-gray-300">
-
-                      <li><a href="confirm_payments.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                          <i data-lucide="credit-card" class="w-5 h-5"></i>
-                          <span>Payments</span>
-                        </a></li>
-                      <hr class="border-gray-300">
-
-                      <li><a href="bid_cancellations.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                          <i data-lucide="ban" class="w-5 h-5"></i>
-                          <span>Cancellations</span>
-                        </a></li>
-                      <hr class="border-gray-300">
-
-                      <li><a href="forecasting.php" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                          <i data-lucide="trending-up-down" class="w-5 h-5"></i>
-                          <span>Forecasting</span>
-                        </a></li>
-                      <hr class="border-gray-300">
-
-                      <li><a onclick="logoutModal.showModal()" class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                          <i data-lucide="log-out" class="w-5 h-5"></i>
-                          <span>Logout</span>
-                        </a></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
 
 <script src="https://unpkg.com/lucide@latest"></script>
 
