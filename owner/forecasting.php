@@ -484,7 +484,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       <div class="flex gap-2 mb-4"> <!-- Top 2 Buttons -->
         <button id="tabYieldBtn" class="px-4 py-2 bg-emerald-600 text-white rounded">📥 Data Input</button>
         <button id="tabForecastBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">📈 Forecast Results</button>
-        
       </div>
 
       <div id="tab-yield">
@@ -1078,43 +1077,153 @@ if (hasErrors) {
 
 <!-- 📈 FORECAST RESULTS TAB -->
 <div id="tab-forecast" class="hidden">
-  <div class="mb-3 text-center">
-    <button id="runForecastBtn" class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">
-      🔮 Run Forecast
-    </button>
-  </div>
+    <div class="mb-3 flex justify-between items-center">
+        <h2 class="text-xl font-bold">Forecasting</h2>
+        <div class="flex gap-2">
+            <button class="generateForecastBtn px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700" data-crop="buko">
+                📈 Generate Buko Forecast
+            </button>
+            <button class="generateForecastBtn px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700" data-crop="saba">
+                📈 Generate Saba Forecast
+            </button>
+        </div>
+    </div>
 
-  <div id="forecastResultsContainer" class="p-3 border rounded bg-white shadow-sm">
-    <p class="text-gray-500 text-center py-10">No forecast results yet.</p>
-  </div>
+    <!-- Loading indicator -->
+    <div id="forecastLoading" class="hidden text-sm text-gray-600 mb-2">
+        Generating forecast, please wait...
+    </div>
+
+    <!-- Forecast table container -->
+    <div id="forecastTableContainer"></div>
+
+    <!-- Chart container -->
+    <canvas id="forecastChart" class="mt-4 w-full h-64"></canvas>
 </div>
 
-
-
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const tabYieldBtn = document.getElementById('tabYieldBtn');
-  const tabForecastBtn = document.getElementById('tabForecastBtn');
-  const tabYield = document.getElementById('tab-yield');
-  const tabForecast = document.getElementById('tab-forecast');
+let forecastChart; // Global chart instance
 
-  tabYieldBtn.addEventListener('click', () => {
+function renderForecastChart(forecasts) {
+    const ctx = document.getElementById('forecastChart').getContext('2d');
+    const labels = forecasts.map(f => f.date);
+    const values = forecasts.map(f => f.value);
+
+    if (forecastChart) forecastChart.destroy();
+
+    forecastChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Forecast Quantity',
+                data: values,
+                fill: false,
+                borderColor: 'rgba(34,197,94,1)',
+                backgroundColor: 'rgba(34,197,94,0.2)',
+                tension: 0.2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true },
+                x: { ticks: { autoSkip: false } }
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const loading = document.getElementById('forecastLoading');
+
+    // Handle Generate Buko/Saba buttons
+    document.querySelectorAll('.generateForecastBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const crop = this.dataset.crop;
+            loading.classList.remove('hidden');
+
+            // Generate + store forecast
+            fetch(`forecasting/store_forecast.php?crop=${encodeURIComponent(crop)}`)
+                .then(res => res.json())
+                .then(data => {
+                    loading.classList.add('hidden');
+                    if (data.status === 'success') {
+                        alert(`Forecast generated for ${data.crop}, ${data.rows_inserted} rows inserted.`);
+                        fetchForecast(crop); // Immediately display table + chart
+                    } else {
+                        alert('Error generating forecast: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    loading.classList.add('hidden');
+                    alert('AJAX error: ' + err);
+                });
+        });
+    });
+
+    // Fetch and display forecasts
+    function fetchForecast(crop) {
+        fetch(`forecasting/fetch_forecast.php?crop=${encodeURIComponent(crop)}`)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('forecastTableContainer');
+                if (data.status !== 'success' || !data.forecasts.length) {
+                    container.innerHTML = "<p>No forecasts available</p>";
+                    return;
+                }
+
+                // Build table
+                let html = '<table class="table-auto w-full text-sm border-collapse border border-gray-300"><thead><tr><th class="border border-gray-300 px-2 py-1">Date</th><th class="border border-gray-300 px-2 py-1">Forecast</th></tr></thead><tbody>';
+                data.forecasts.forEach(f => {
+                    html += `<tr><td class="border border-gray-300 px-2 py-1">${f.date}</td><td class="border border-gray-300 px-2 py-1">${f.value}</td></tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
+                // Render chart
+                renderForecastChart(data.forecasts);
+            })
+            .catch(err => console.error("Error fetching forecasts:", err));
+    }
+
+    // Auto-load Buko forecast when tab opens by default
+    fetchForecast('buko');
+});
+</script>
+
+<!-- Tab switching logic -->
+<script>
+const tabYieldBtn = document.getElementById('tabYieldBtn');
+const tabForecastBtn = document.getElementById('tabForecastBtn');
+const tabYield = document.getElementById('tab-yield');
+const tabForecast = document.getElementById('tab-forecast');
+
+tabYieldBtn.addEventListener('click', () => {
     tabYield.classList.remove('hidden');
     tabForecast.classList.add('hidden');
     tabYieldBtn.classList.add('bg-emerald-600','text-white');
     tabYieldBtn.classList.remove('bg-gray-200','text-gray-800');
     tabForecastBtn.classList.remove('bg-emerald-600','text-white');
     tabForecastBtn.classList.add('bg-gray-200','text-gray-800');
-  });
+});
 
-  tabForecastBtn.addEventListener('click', () => {
+tabForecastBtn.addEventListener('click', () => {
     tabForecast.classList.remove('hidden');
     tabYield.classList.add('hidden');
     tabForecastBtn.classList.add('bg-emerald-600','text-white');
     tabForecastBtn.classList.remove('bg-gray-200','text-gray-800');
     tabYieldBtn.classList.remove('bg-emerald-600','text-white');
     tabYieldBtn.classList.add('bg-gray-200','text-gray-800');
-  });
+});
 </script>
+
 
 <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -1128,6 +1237,7 @@ if (hasErrors) {
       //   easing: 'easeInExpo'
       // });
     </script>
+
 </body>
 </html>
 
