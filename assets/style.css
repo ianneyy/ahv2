@@ -2,3 +2,6 @@ body {
   font-family: 'Geist Sans', sans-serif;
   background-color: '#FCFBFC';
 }
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}

@@ -66,62 +66,35 @@ foreach ($allData as $row) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<?php
+require_once '../includes/header.php';
+?>
+<div class="flex min-h-screen">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Submissions</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="../assets/style.css">
-  <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
-
-  <style>
-    .gridjs-table,
-    .gridjs-th,
-    .gridjs-td,
-    .gridjs-tr {
-      border: none !important;
-    }
-
-    /* Optional: remove inner borders (grid lines) */
-    .gridjs-tr>.gridjs-td,
-    .gridjs-th {
-      border: none !important;
-    }
-
-    .gridjs-pages {
-      font-size: 12px;
-      /* equivalent to Tailwind text-xs */
-    }
-
-    .gridjs-summary {
-      font-size: 12px;
-    }
-  </style>
-</head>
-
-<body class="p-4 lg:p-10 bg-gray-50 max-w-7xl mx-auto">
-  <div class="">
-    <a href="dashboard.php"
-      class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-900 py-1 justify-center rounded-lg">
-      <i data-lucide="chevron-left" class="w-6 h-6"></i>
-
-      <span class="text-md">Home</span>
-    </a>
-    <!-- Header Section -->
-    <div class="  mt-5 mb-10 flex flex-col lg:flex-row lg:justify-between lg:items-center ">
-
-      <div>
+  <?php include 'includes/sidebar.php'; ?>
+  <main class="flex-1 bg-[#FCFBFC] lg:p-6 rounded-bl-4xl rounded-tl-4xl">
+    <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+      <!-- <div>
         <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold">My Submission</h2>
         <span class="text-md lg:text-lg text-gray-600">View the list of submitted crops and track your verification or
           rejection
           status.</span>
+      </div> -->
+      <div class="flex flex-col lg:flex-row lg:justify-between  lg:ml-4 mt-5">
+        <div class="flex justify-between items-center">
+
+          <div>
+            <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">My Submission</h2>
+            <span class="text-md lg:text-lg text-gray-600 ">View the list of submitted crops and track your verification
+              or
+              rejection
+              status.</span>
+          </div>
+
+          <?php include 'includes/sm-sidebar.php'; ?>
+        </div>
       </div>
-
       <div class="flex justify-end">
-
         <div
           class="max-w-md mt-3 lg:mt-0  bg-white rounded-2xl shadow-sm border border-b-[7px] border-l-[4px] border-emerald-900">
           <form method="GET">
@@ -193,99 +166,101 @@ foreach ($allData as $row) {
           </form>
         </div>
       </div>
-
-    </div>
-  </div>
-
-  <!-- GridJS Table -->
-  <div class="mt-4 flex flex-col">
-    <div class="px-2  overflow-x-auto sm:-mx-6 lg:-mx-8">
-      <div class="inline-block min-w-full py-2 align-middle">
-        <div id="my-grid"></div>
+      <!-- GridJS Table -->
+      <div class="mt-4 w-full">
+        <div class="overflow-x-auto -mx-4 sm:mx-0">
+          <div class="inline-block min-w-full py-2 align-middle px-4 sm:px-0">
+            <div id="my-grid" class="w-full"></div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    lucide.createIcons();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
-  <script>
-    new gridjs.Grid({
-      columns: [{
-        name: 'Crop Type',
-        sort: true
-      },
-      {
-        name: 'Quantity',
-        sort: true
-      },
-      {
-        name: 'Unit',
-        sort: true
-      },
-      {
-        name: 'Image',
-        sort: false,
-        formatter: (_, row) => gridjs.html(row.cells[3].data)
-      },
-      {
-        name: 'Status',
-        sort: true,
-        formatter: (_, row) => gridjs.html(row.cells[4].data)
-      },
-      {
-        name: 'Submitted At',
-        sort: true
-      },
-      {
-        name: 'Verified At',
-        sort: true
-      },
-      {
-        name: 'Rejection Reason',
-        sort: true
-      },
-      {
-        name: 'Actions',
-        sort: false,
-        formatter: (_, row) => gridjs.html(row.cells[8].data)
-      }
-      ],
-      data: <?= json_encode($gridData) ?>,
-      search: {
-        enabled: true,
-        placeholder: 'Search bids...'
-      },
+    </div>
+  </main>
+</div>
+
+
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+<script>
+  new gridjs.Grid({
+    columns: [{
+      name: 'Crop Type',
+      sort: true
+    },
+    {
+      name: 'Quantity',
+      sort: true
+    },
+    {
+      name: 'Unit',
+      sort: true
+    },
+    {
+      name: 'Image',
+      sort: false,
+      formatter: (_, row) => gridjs.html(row.cells[3].data)
+    },
+    {
+      name: 'Status',
       sort: true,
-      pagination: {
-        enabled: true,
-        limit: 5
+      formatter: (_, row) => gridjs.html(row.cells[4].data)
+    },
+    {
+      name: 'Submitted At',
+      sort: true
+    },
+    {
+      name: 'Verified At',
+      sort: true
+    },
+    {
+      name: 'Rejection Reason',
+      sort: true
+    },
+    {
+      name: 'Actions',
+      sort: false,
+      formatter: (_, row) => gridjs.html(row.cells[8].data)
+    }
+    ],
+    data: <?= json_encode($gridData) ?>,
+    search: {
+      enabled: true,
+      placeholder: 'Search bids...'
+    },
+    sort: true,
+    pagination: {
+      enabled: true,
+      limit: 5
+    },
+    className: {
+      row: 'bg-gray-100 hover:bg-gray-200',
+    },
+    style: {
+      table: {
+        'border': '1px solid #e5e7eb',
+        'border-radius': '0.5rem',
+        'font-size': '14px',
       },
-      className: {
-        row: 'bg-gray-100 hover:bg-gray-200',
+      th: {
+        'background-color': 'rgba(16,185,129,0.2)',
+        'color': '#065f46',
+        'font-weight': '600',
+        'font-size': '12px',
       },
-      style: {
-        table: {
-          'border': '1px solid #e5e7eb',
-          'border-radius': '0.5rem',
-          'font-size': '14px',
-        },
-        th: {
-          'background-color': 'rgba(16,185,129,0.2)',
-          'color': '#065f46',
-          'font-weight': '600',
-          'font-size': '12px',
-        },
-        td: {
-          'font-size': '12px',
-        }
-      },
-      resizable: true
-    }).render(document.getElementById("my-grid"));
-  </script>
-  <script src="./assets/my_submission.js"></script>
+      td: {
+        'font-size': '12px',
+      }
+    },
+    resizable: true
+  }).render(document.getElementById("my-grid"));
+</script>
+<script src="./assets/my_submission.js"></script>
 </body>
 
 </html>

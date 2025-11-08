@@ -55,7 +55,7 @@ $result = $stmt->get_result();
 require_once '../includes/header.php';
 ?>
 <div class="flex min-h-screen">
-    <?php include 'includes/sidebar.php'; ?>
+  <?php include 'includes/sidebar.php'; ?>
 
   <!-- <a href="dashboard.php"
   class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-900 px-4 py-1 justify-center rounded-lg">
@@ -72,7 +72,7 @@ require_once '../includes/header.php';
             <span class="text-lg text-gray-600 ">All crops approved and ready for bidding.</span>
           </div>
 
-                          <?php include 'includes/sm-sidebar.php'; ?>
+          <?php include 'includes/sm-sidebar.php'; ?>
 
         </div>
         <div
@@ -348,4 +348,3 @@ require_once '../includes/footer.php';
 ?>
 <script src="./assets/verified_crops.js"></script>
 <?php $conn->close(); ?>
-

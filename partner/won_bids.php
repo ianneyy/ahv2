@@ -108,37 +108,7 @@ function hasNextHighestBidder($conn, $approvedid, $userid)
 require_once '../includes/header.php';
 ?>
 <div class="flex min-h-screen ">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
-      <div class="p-4 text-xl font-bold  text-[#28453E]">
-        AniHanda
-      </div>
-      <nav class="flex-1 p-4 space-y-4">
-        <a href="dashboard.php"
-          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B]  text-[#28453E] flex items-center gap-3"> <i
-            data-lucide="layout-dashboard" class="w-5 h-5"></i>
-          <span>Dashboard</span></a>
-
-        <a href="bid_crops.php"
-          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B]  text-[#28453E] flex items-center gap-3">
-          <i data-lucide="gavel" class="w-5 h-5"></i>
-          <span>Bidding</span></a>
-        <a href="won_bids.php"
-          class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
-          <i data-lucide="sparkles" class="w-5 h-5"></i>
-          <span>Won</span></a>
-        <a onclick="logoutModal.showModal()"
-          class="block px-4 py-2 rounded-lg cursor-pointer hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
-          <i data-lucide="log-out" class="w-5 h-5"></i>
-          <span>Logout</span>
-        </a>
-
-      </nav>
-      <div class="p-4 border-t border-gray-300 text-sm text-gray-400">
-        © 2025 AniHanda
-      </div>
-    </aside>
-
+<?php include 'includes/sidebar.php'; ?>
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
         <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
             <!-- Header Section -->

@@ -10,15 +10,8 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
     exit();
 }
-$currentUserType = $_SESSION['user_type'] ?? '';
-$currentUserId = $_SESSION['user_id'];
-$allowedTypes = [];
-if ($currentUserType === 'businessPartner' || $currentUserType === 'farmer') {
-    $allowedTypes = ['businessOwner'];
-} elseif ($currentUserType === 'businessOwner') {
-    $allowedTypes = ['businessPartner', 'farmer'];
-}
 
+$currentUserId = $_SESSION['user_id'];
 $query = "SELECT u.id, u.name, u.email, u.google_id, u.user_type,
                 (
                     SELECT MAX(created_at)
@@ -34,7 +27,7 @@ $query = "SELECT u.id, u.name, u.email, u.google_id, u.user_type,
             FROM users u
             WHERE
                 u.id != ?
-                AND u.user_type IN ('" . implode("','", $allowedTypes) . "')
+                AND u.user_type IN ('businessOwner')
             ORDER BY (last_time IS NULL), last_time DESC";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("iiii", $currentUserId, $currentUserId, $currentUserId, $currentUserId);
@@ -51,26 +44,7 @@ $initialUnreadCounts = [];
 foreach ($users as $user) {
     $initialUnreadCounts[$user['id']] = (int) $user['unread_count'];
 }
-function formatChatTime($datetime)
-{
-    if (!$datetime)
-        return '';
 
-    $ts = strtotime($datetime);
-    $today = strtotime('today');
-    $yesterday = strtotime('yesterday');
-
-    if ($ts >= $today) {
-        // Today → show only time
-        return date('h:i A', $ts);
-    } elseif ($ts >= $yesterday && $ts < $today) {
-        return 'Yesterday';
-    } elseif ($ts >= strtotime('last Sunday')) { // within this week
-        return date('l', $ts); // day name, e.g., Friday
-    } else {
-        return date('M d', $ts); // older → show month/day
-    }
-}
 
 ?>
 <?php
@@ -79,56 +53,21 @@ require_once '../includes/header.php';
 
 <div class="flex min-h-screen">
 
-    <?php
-    // Dynamically include the correct sidebar
-    $currentUserType = $_SESSION['user_type'] ?? '';
+    <?php include 'includes/sidebar.php'; ?>
 
-    if ($currentUserType === 'businessOwner') {
-        include __DIR__ . '/includes/sidebar.php'; // Owner sidebar
-    } elseif ($currentUserType === 'farmer') {
-        include __DIR__ . '/../farmer/includes/sidebar.php'; // Partner sidebar
-    } elseif ($currentUserType === 'businessPartner') {
-        include __DIR__ . '/../partner/includes/sidebar.php'; // Partner sidebar
-    } else {
-        include __DIR__ . '/includes/sidebar.php'; // fallback
-    }
-    ?>
-
-    <main class="flex-1 bg-[#FCFBFC]  lg:rounded-bl-4xl lg:rounded-tl-4xl h-screen">
+    <main class="flex-1 bg-[#FCFBFC]  rounded-bl-4xl rounded-tl-4xl h-screen">
         <div class="lg:max-w-7xl mx-auto h-full">
 
             <header class="border-b h-16 flex items-center">
-                <div class="flex justify-between items-center w-full  p-6">
-
-                    <div class="flex items-center">
-                        <span class="font-semibold text-lg">Chat</span>
-                    </div>
-                    <div>
-                        <?php
-                        // Dynamically include the correct sidebar
-                        $currentUserType = $_SESSION['user_type'] ?? '';
-
-                        if ($currentUserType === 'businessOwner') {
-                            include __DIR__ . '/includes/sm-sidebar.php'; // Owner sidebar
-                        } elseif ($currentUserType === 'farmer') {
-                            include __DIR__ . '/../farmer/includes/sm-sidebar.php'; // Partner sidebar
-                        } elseif ($currentUserType === 'businessPartner') {
-                            include __DIR__ . '/../partner/includes/sm-sidebar.php'; // Partner sidebar
-                        } else {
-                            include __DIR__ . '/includes/sm-sidebar.php'; // fallback
-                        }
-                        ?>
-
-                    </div>
-
+                <div class="flex items-center p-6">
+                    <span class="font-semibold text-lg">Chat</span>
                 </div>
-
             </header>
 
 
             <div x-data="chatApp()" x-init="init()" class="flex h-[calc(100%-4rem)] overflow-hidden pb-4">
                 <!-- chat sidebar -->
-                <div class="border-r h-full w-full lg:w-auto lg:min-w-sm overflow-y-auto">
+                <div class="border-r h-full min-w-sm  overflow-y-auto">
                     <div class="p-3">
 
                         <label class="input border rounded-lg">
@@ -139,8 +78,7 @@ require_once '../includes/header.php';
                                     <path d="m21 21-4.3-4.3"></path>
                                 </g>
                             </svg>
-                            <input type="search" x-model="searchQuery" placeholder="Search"
-                                class="focus:outline-none focus:ring-0 focus:border-transparent" />
+                            <input type="search" required placeholder="Search" />
                         </label>
                     </div>
                     <div class="px-2">
@@ -161,26 +99,24 @@ require_once '../includes/header.php';
                                     ORDER BY created_at DESC
                                     LIMIT 1
                                 ");
-
                                 $latestStmt->bind_param("iiii", $currentUserId, $row['id'], $row['id'], $currentUserId);
                                 $latestStmt->execute();
                                 $latestRes = $latestStmt->get_result();
                                 $latestRow = $latestRes->fetch_assoc();
                                 $latestMsgText = $latestRow ? htmlspecialchars($latestRow['message']) : 'No messages yet';
                                 $latestMsgDisplay = $latestRow ? (($latestRow['sender_id'] == $currentUserId) ? ('You: ' . $latestMsgText) : $latestMsgText) : 'No messages yet';
-                                $latestMsgTime = $latestRow ? formatChatTime($latestRow['created_at']) : '';
+                                $latestMsgTime = $latestRow ? date('M d, h:i A', strtotime($latestRow['created_at'])) : '';
                                 $unreadCount = (int) ($row['unread_count'] ?? 0);
                                 $userId = (int) $row['id'];
                                 ?>
                                 <div class="mt-2 cursor-pointer hover:bg-gray-100 py-2 px-2 rounded-lg"
                                     :class="{ 'bg-gray-100': selectedUserId === <?= $userId ?> }"
-                                    id="dm-item-<?= $userId ?>" data-user-name="<?= strtolower($name) ?>"
+                                    id="dm-item-<?= $userId ?>"
                                     data-latest-preview="<?= htmlspecialchars($latestMsgDisplay) ?>"
                                     data-latest-time="<?= htmlspecialchars($latestMsgTime) ?>"
-                                    x-show="filterUser('<?= strtolower($name) ?>')"
                                     x-init="
                                             latestPreview[<?= $userId ?>] = <?= json_encode($latestMsgDisplay) ?>; latestTime[<?= $userId ?>] = <?= json_encode($latestMsgTime) ?>;"
-                                    @click="selectUser(<?= $userId ?>, '<?= htmlspecialchars($row['name']) ?>', '<?= htmlspecialchars($row['google_id']) ?>', '<?= htmlspecialchars($row['user_type']) ?>'); window.innerWidth < 1024 && (showMobileChat = true)">
+                                    @click="selectUser(<?= $userId ?>, '<?= htmlspecialchars($row['name']) ?>', '<?= htmlspecialchars($row['google_id']) ?>', '<?= htmlspecialchars($row['user_type']) ?>')">
 
                                     <div class="flex justify-between">
                                         <div class="flex gap-3">
@@ -233,82 +169,9 @@ require_once '../includes/header.php';
                     </div>
 
                 </div>
-
-                <!-- Mobile Chat Modal -->
-                <div x-show="showMobileChat" @click.self="showMobileChat = false"
-                    x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                    class="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden" style="display: none;">
-
-                    <div @click.stop x-transition:enter="transition ease-out duration-300"
-                        x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
-                        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0"
-                        x-transition:leave-end="translate-x-full"
-                        class="absolute right-0 top-0 h-full w-full bg-white flex flex-col">
-
-                        <!-- Mobile Chat Header -->
-                        <div class="p-4 border-b flex items-center gap-4">
-                            <button @click="showMobileChat = false" class="text-gray-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-
-                            <template x-if="selectedUserPic">
-                                <div class="avatar">
-                                    <div class="w-10 rounded-full">
-                                        <img :src="selectedUserPic" alt="" />
-                                    </div>
-                                </div>
-                            </template>
-
-                            <template x-if="!selectedUserPic">
-                                <div class="avatar avatar-placeholder">
-                                    <div
-                                        class="bg-neutral text-neutral-content w-10 rounded-full flex items-center justify-center">
-                                        <span x-text="initials"></span>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <div class="flex-1">
-                                <div class="font-semibold" x-text="selectedUserName"></div>
-                                <div class="text-xs text-gray-400" x-text="selectedUserType"></div>
-                            </div>
-                        </div>
-
-                        <!-- Mobile Chat Content -->
-                        <div class="flex-1 overflow-y-auto p-4 space-y-4" x-ref="mobileMessages">
-                            <template x-for="msg in messages" :key="msg.id">
-                                <div :class="msg.sender === 'me' ? 'chat chat-end' : 'chat chat-start'">
-                                    <div class="chat-bubble" x-text="msg.text"></div>
-                                </div>
-                            </template>
-                        </div>
-
-                        <!-- Mobile Message Input -->
-                        <div class="p-4 border-t">
-                            <div class="join w-full">
-                                <label class="input validator join-item w-full">
-                                    <input type="text" placeholder="Type Message..." x-model="newMessage"
-                                        @keyup.enter="sendMessage"
-                                        class="w-full focus:outline-none focus:ring-0 focus:border-transparent">
-                                    <button @click="sendMessage">
-                                        <i data-lucide="send-horizontal" class="w-5 h-5 text-emerald-600"></i>
-                                    </button>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Conversation Section (Desktop) -->
-                <div class="lg:flex-1 hidden lg:flex flex-col h-full">
+                <div class="flex-1 flex flex-col h-full">
                     <!-- Chat Header -->
-                    <div class="p-3 border-b w-full hidden lg:flex justify-between items-center gap-4"
-                        x-show="selectedUserId">
+                    <div class="p-3 border-b w-full flex justify-between items-center gap-4" x-show="selectedUserId">
                         <div class="flex items-center gap-4">
                             <template x-if="selectedUserPic">
                                 <div class="avatar">
@@ -352,10 +215,9 @@ require_once '../includes/header.php';
                             <div class="join w-full">
                                 <label class="input validator join-item w-full">
                                     <input type="text" placeholder="Type Message..." x-model="newMessage"
-                                        @keyup.enter="sendMessage"
-                                        class="w-full focus:outline-none focus:ring-0 focus:border-transparent">
+                                        @keyup.enter="sendMessage" class="w-full  focus:outline-none focus:ring-0 focus:border-transparent">
                                     <button @click="sendMessage">
-                                        <i data-lucide="send-horizontal" class="w-5 h-5 text-emerald-600"></i>
+                                        <i data-lucide="send-horizontal" class="w-5 h-5"></i>
                                     </button>
                                 </label>
                             </div>
@@ -376,7 +238,6 @@ require_once '../includes/header.php';
             socket: null,
             socketReady: false,
             sendQueue: [],
-            showMobileChat: false,
             // backend-driven unread count; reactive for real-time updates
             unreadCounts: <?= json_encode($initialUnreadCounts) ?>,
             latestPreview: {},
@@ -388,7 +249,6 @@ require_once '../includes/header.php';
             selectedUserPic: '',
             initials: '',
             selectedUserType: '',
-            searchQuery: '',
 
             init() {
                 this.connectSocket();
@@ -403,13 +263,6 @@ require_once '../includes/header.php';
                         this.latestTime[uid] = time;
                     }
                 });
-            },
-
-            filterUser(userName) {
-                if (!this.searchQuery.trim()) {
-                    return true;
-                }
-                return userName.includes(this.searchQuery.toLowerCase());
             },
 
             connectSocket() {
@@ -445,13 +298,8 @@ require_once '../includes/header.php';
                             sender: data.sender_id == userId ? 'me' : 'them'
                         });
                         this.$nextTick(() => {
-                            const desktopContainer = document.querySelector('.space-y-4.overflow-y-auto');
-                            if (desktopContainer) desktopContainer.scrollTop = desktopContainer.scrollHeight;
-
-                            // Scroll mobile chat
-                            if (this.$refs.mobileMessages) {
-                                this.$refs.mobileMessages.scrollTop = this.$refs.mobileMessages.scrollHeight;
-                            }
+                            const container = document.querySelector('.space-y-4.overflow-y-auto');
+                            if (container) container.scrollTop = container.scrollHeight;
                         });
                     }
 
@@ -477,6 +325,7 @@ require_once '../includes/header.php';
                 this.selectedUserId = id;
                 this.selectedUserName = name;
                 this.selectedUserType = userType;
+                 console.log('selectedUser:', id, name, googleId, userType);
                 if (userType) {
                     // Replace camelCase with spaced words and capitalize each
                     const formatted = userType
@@ -511,13 +360,8 @@ require_once '../includes/header.php';
                     .then(data => {
                         this.messages = Array.isArray(data) ? data : [];
                         this.$nextTick(() => {
-                            const desktopContainer = document.querySelector('.space-y-4.overflow-y-auto');
-                            if (desktopContainer) desktopContainer.scrollTop = desktopContainer.scrollHeight;
-
-                            // Scroll mobile chat
-                            if (this.$refs.mobileMessages) {
-                                this.$refs.mobileMessages.scrollTop = this.$refs.mobileMessages.scrollHeight;
-                            }
+                            const container = document.querySelector('.space-y-4.overflow-y-auto');
+                            if (container) container.scrollTop = container.scrollHeight;
                         });
                     })
                     .catch(console.error);
