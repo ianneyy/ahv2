@@ -1075,6 +1075,9 @@ if (hasErrors) {
       </div> <!-- end of tab-yield -->
 
 
+
+
+      
 <!-- 📈 FORECAST RESULTS TAB -->
 <div id="tab-forecast" class="hidden">
     <div class="mb-3 flex justify-between items-center">
@@ -1103,102 +1106,8 @@ if (hasErrors) {
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-let forecastChart; // Global chart instance
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-function renderForecastChart(forecasts) {
-    const ctx = document.getElementById('forecastChart').getContext('2d');
-    const labels = forecasts.map(f => f.date);
-    const values = forecasts.map(f => f.value);
-
-    if (forecastChart) forecastChart.destroy();
-
-    forecastChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Forecast Quantity',
-                data: values,
-                fill: false,
-                borderColor: 'rgba(34,197,94,1)',
-                backgroundColor: 'rgba(34,197,94,0.2)',
-                tension: 0.2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: true, position: 'top' },
-                tooltip: { enabled: true }
-            },
-            scales: {
-                y: { beginAtZero: true },
-                x: { ticks: { autoSkip: false } }
-            }
-        }
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const loading = document.getElementById('forecastLoading');
-
-    // Handle Generate Buko/Saba buttons
-    document.querySelectorAll('.generateForecastBtn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const crop = this.dataset.crop;
-            loading.classList.remove('hidden');
-
-            // Generate + store forecast
-            fetch(`forecasting/store_forecast.php?crop=${encodeURIComponent(crop)}`)
-                .then(res => res.json())
-                .then(data => {
-                    loading.classList.add('hidden');
-                    if (data.status === 'success') {
-                        alert(`Forecast generated for ${data.crop}, ${data.rows_inserted} rows inserted.`);
-                        fetchForecast(crop); // Immediately display table + chart
-                    } else {
-                        alert('Error generating forecast: ' + data.message);
-                    }
-                })
-                .catch(err => {
-                    loading.classList.add('hidden');
-                    alert('AJAX error: ' + err);
-                });
-        });
-    });
-
-    // Fetch and display forecasts
-    function fetchForecast(crop) {
-        fetch(`forecasting/fetch_forecast.php?crop=${encodeURIComponent(crop)}`)
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('forecastTableContainer');
-                if (data.status !== 'success' || !data.forecasts.length) {
-                    container.innerHTML = "<p>No forecasts available</p>";
-                    return;
-                }
-
-                // Build table
-                let html = '<table class="table-auto w-full text-sm border-collapse border border-gray-300"><thead><tr><th class="border border-gray-300 px-2 py-1">Date</th><th class="border border-gray-300 px-2 py-1">Forecast</th></tr></thead><tbody>';
-                data.forecasts.forEach(f => {
-                    html += `<tr><td class="border border-gray-300 px-2 py-1">${f.date}</td><td class="border border-gray-300 px-2 py-1">${f.value}</td></tr>`;
-                });
-                html += '</tbody></table>';
-                container.innerHTML = html;
-
-                // Render chart
-                renderForecastChart(data.forecasts);
-            })
-            .catch(err => console.error("Error fetching forecasts:", err));
-    }
-
-    // Auto-load Buko forecast when tab opens by default
-    fetchForecast('buko');
-});
-</script>
-
-<!-- Tab switching logic -->
 <script>
 const tabYieldBtn = document.getElementById('tabYieldBtn');
 const tabForecastBtn = document.getElementById('tabForecastBtn');
