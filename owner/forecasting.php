@@ -1070,6 +1070,12 @@ if (hasErrors) {
 <!--WELCOME CHUCHU-->
 
 
+<div class="flex gap-2 mb-4">
+  <button id="tabYieldBtn" class="px-4 py-2 bg-emerald-600 text-white rounded">📥 Data Input</button>
+  <button id="tabForecastBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300" 
+          onclick="location.href='forecast_dashboard.php'">📈 Forecast Dashboard</button>
+</div>
+
 <!--rawr-->
 
       </div> <!-- end of tab-yield -->
