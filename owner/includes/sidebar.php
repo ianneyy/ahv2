@@ -20,6 +20,7 @@ if ($currentUserId) {
 }
 $current_page = basename($_SERVER['PHP_SELF']); // e.g., "dashboard.php"
 $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php']);
+$is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_dashboard.php']);
 ?>
 
 <aside class="w-64 bg-[#ECF5E9] text-white hidden lg:flex flex-col sticky top-0 h-screen">
@@ -62,6 +63,27 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
 
             </div>
         </div>
+         <div>
+            <button onclick="toggleDropdown('forecastingDropdown', 'forecastingIcon')"
+                class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]    <?= $is_forecasting_page ? 'bg-[#BFF49B]' : '' ?>">
+                <span class="flex items-center gap-3"> <i data-lucide="trending-up-down" class="w-5 h-5"></i> <span>Forecasting</span>
+                </span> <i id="forecastingIcon" data-lucide="chevron-down" class="w-5 h-5 transition-transform duration-300"></i>
+            </button> <!-- Dropdown links -->
+            <div id="forecastingDropdown" class="hidden ml-5  border-l border-gray-300">
+                <div class="ml-3 mt-2 space-y-2">
+        
+                    <a href="forecast_dashboard.php"
+                        class="block px-4 py-2 text-sm rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2  <?= $current_page === 'forecast_dashboard.php' ? 'bg-[#BFF49B]' : '' ?>">
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="forecasting.php"
+                        class="block px-4 py-2 text-sm  rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2  <?= $current_page === 'forecasting.php' ? 'bg-[#BFF49B]' : '' ?>">
+                        <span>Records</span>
+                    </a>
+                </div>
+        
+            </div>
+        </div>
         <a href="confirm_payments.php"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'confirm_payments.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="credit-card" class="w-5 h-5"></i>
@@ -70,10 +92,7 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_cancellations.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="ban" class="w-5 h-5"></i>
             <span>Cancellations</span></a>
-        <a href="forecasting.php"
-            class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3 <?= $current_page === 'forecasting.php' ? 'bg-[#BFF49B]' : '' ?>">
-            <i data-lucide="trending-up-down" class="w-5 h-5"></i>
-            <span>Forecasting</span></a>
+       
         <a href="chat.php"
             class=" block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'chat.php' ? 'bg-[#BFF49B]' : '' ?>">
 
