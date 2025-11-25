@@ -18,12 +18,14 @@ $stmt = $conn->prepare($latest_actual_query);
 $stmt->bind_param('s', $selected_crop);
 $stmt->execute();
 $latest_actual = $stmt->get_result()->fetch_assoc();
+// $latest_actual_month = $stmt->get_result()->fetch_assoc();
 
 // Get next month forecast (latest version, best model)
-$next_month = date('Y-m', strtotime('+1 month'));
+// $next_month = date('Y-m', strtotime('+2 month'));
+$next_month = '2024-12';
 $forecast_query = "
     SELECT yp.predicted_quantity, yp.confidence_lower, yp.confidence_upper, 
-           yp.method, me.mape
+           yp.method, me.mape, yp.predicted_month
     FROM yield_predictions yp
     LEFT JOIN model_evaluation me ON yp.crop_type = me.crop_type 
         AND yp.model_version = me.model_version 
@@ -33,12 +35,22 @@ $forecast_query = "
     ORDER BY me.mape ASC
     LIMIT 1
 ";
+// $forecast_query = "
+//     SELECT *
+//     FROM yield_predictions
+//     WHERE crop_type = ? 
+//     AND predicted_month = ?
+// ";
 $stmt = $conn->prepare($forecast_query);
 $stmt->bind_param('ss', $selected_crop, $next_month);
 $stmt->execute();
 $next_forecast = $stmt->get_result()->fetch_assoc();
-
-
+// echo "Crop: $selected_crop<br>";
+// echo "Next Month: $next_month<br>";
+// echo "<pre>";
+// var_dump($next_forecast);
+// echo "</pre>";
+// exit;
 // $current_month = date('Y-m');
 
 
@@ -118,7 +130,7 @@ $result = $conn->query("
 ");
 
 while ($row = $result->fetch_assoc()) {
-    $actual_data[$row['month']] = (float)$row['total'];
+    $actual_data[$row['month']] = (float) $row['total'];
 }
 
 $forecast_data = [];
@@ -129,7 +141,7 @@ $result = $conn->query("
 ");
 
 while ($row = $result->fetch_assoc()) {
-    $forecast_data[$row['predicted_month']] = (float)$row['predicted_quantity'];
+    $forecast_data[$row['predicted_month']] = (float) $row['predicted_quantity'];
 }
 
 $actual_chart = [];
@@ -177,8 +189,13 @@ require_once '../includes/header.php';
 
                         <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl ">
                             <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
+                                <div>
 
-                                <span class="text-slate-600 font-semibold">Actual Yield</span>
+                                    <span class="text-slate-600 font-semibold">Actual Yield </span>
+                                    <span class="text-sm text-slate-600">|
+                                        <?= $latest_actual ? date('M Y', strtotime($latest_actual['recorded_at'])) : 'N/A' ?></span>
+                                </div>
+
                                 <div class="p-3">
 
                                     <i data-lucide="tally-5" class="w-6 h-6 text-emerald-700"></i>
@@ -194,8 +211,12 @@ require_once '../includes/header.php';
                         </div>
                         <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
                             <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
+                                <div>
 
-                                <span class="text-slate-600 font-semibold">Forecast Yield</span>
+                                    <span class="text-slate-600 font-semibold">Forecast Yield</span>
+                                    <span class="text-sm text-slate-600"> | <?= $next_forecast ?  date('M Y', strtotime($next_forecast['predicted_month'])) : 'N/A' ?></span>
+                                </div>
+
                                 <div class="p-3">
 
                                     <i data-lucide="chart-column-increasing" class="w-6 h-6 text-emerald-700"></i>
@@ -298,20 +319,20 @@ require_once '../includes/header.php';
         data: {
             labels: <?php echo json_encode($months); ?>,
             datasets: [{
-                    label: 'Actual Yield',
-                    data: <?php echo json_encode($actual_chart); ?>,
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    tension: 0.2
-                },
-                {
-                    label: 'Forecasted Yield',
-                    data: <?php echo json_encode($forecast_chart); ?>,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderDash: [5, 5],
-                    tension: 0.2
-                }
+                label: 'Actual Yield',
+                data: <?php echo json_encode($actual_chart); ?>,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.2
+            },
+            {
+                label: 'Forecasted Yield',
+                data: <?php echo json_encode($forecast_chart); ?>,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderDash: [5, 5],
+                tension: 0.2
+            }
             ]
         },
         options: {
