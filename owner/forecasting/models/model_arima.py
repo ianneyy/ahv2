@@ -1,8 +1,11 @@
 """
-SARIMA Rolling Forecast Model
+SARIMA Dynamic Expanding Window Forecast Model
 
-Generates forecasts with rolling windows AND validates them.
-SARIMA = Seasonal ARIMA, captures yearly patterns in monthly data.
+Automatically generates forecasts using expanding windows:
+- Detects latest available data
+- Uses ALL historical data for training (expanding window)
+- Forecasts next 12 months into the future
+- Evaluates past forecasts when actual data becomes available
 
 Usage:
 python model_arima.py buko
@@ -13,6 +16,7 @@ import numpy as np
 import mysql.connector
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -28,23 +32,16 @@ DB_CONFIG = {
 }
 
 # ============================================
-# ROLLING FORECAST CONFIGURATION
-# ============================================
-ROLLING_WINDOWS = [
-    {'version': 'v1', 'train_end': '2020-12-31', 'forecast_year': 2021},
-    {'version': 'v2', 'train_end': '2021-12-31', 'forecast_year': 2022},
-    {'version': 'v3', 'train_end': '2022-12-31', 'forecast_year': 2023},
-    {'version': 'v4', 'train_end': '2023-12-31', 'forecast_year': 2024},
-]
-
-# ============================================
 # SARIMA CONFIGURATION
 # ============================================
-# Non-seasonal ARIMA(p, d, q)
 ARIMA_ORDER = (1, 1, 1)
-# Seasonal order = (P, D, Q, S)
-# S=12 → monthly data with yearly seasonality
 SEASONAL_ORDER = (1, 1, 1, 12)
+
+# ============================================
+# DYNAMIC WINDOW CONFIGURATION
+# ============================================
+FORECAST_MONTHS = 12  # How many months to forecast ahead
+MIN_TRAINING_POINTS = 12  # Minimum data points needed (2 years)
 
 # ============================================
 # EVALUATION METRICS
@@ -79,19 +76,94 @@ def calculate_mae(actual, predicted):
     return round(mae, 2)
 
 # ============================================
+# DYNAMIC WINDOW GENERATION
+# ============================================
+def generate_expanding_windows(all_data, current_date):
+    """
+    Generate expanding windows dynamically based on available data.
+    
+    Returns list of windows, each containing:
+    - version: identifier (e.g., 'v2021', 'v2022')
+    - train_end: last date to use for training
+    - forecast_start: first month to forecast
+    - forecast_end: last month to forecast
+    """
+    if all_data.empty:
+        return []
+    
+    # Get earliest and latest data points
+    earliest_date = all_data.index.min()
+    latest_date = all_data.index.max()
+    
+    print(f"📅 Data range: {earliest_date.date()} to {latest_date.date()}")
+    print(f"📅 Current date: {current_date.date()}")
+    
+    windows = []
+    
+    # Generate windows: start from earliest year + 2 years of data
+    start_year = earliest_date.year + 1
+    current_year = current_date.year
+    
+    # Create historical windows (for evaluation)
+    for year in range(start_year, current_year + 1):
+        train_end = pd.Timestamp(f"{year-1}-12-31")
+        
+        # Only create window if we have enough training data
+        train_data = all_data[all_data.index <= train_end]
+        if len(train_data) < MIN_TRAINING_POINTS:
+            continue
+        
+        forecast_start = pd.Timestamp(f"{year}-01-01")
+        forecast_end = pd.Timestamp(f"{year}-12-31")
+        
+        windows.append({
+            'version': f'v{year}',
+            'train_end': train_end,
+            'forecast_start': forecast_start,
+            'forecast_end': forecast_end,
+            'forecast_year': year,
+            'is_future': year > latest_date.year
+        })
+    
+    # Add current/future forecast window
+    if latest_date < current_date:
+        # We have recent data, forecast from latest_date + 1 month
+        train_end = latest_date
+        forecast_start = latest_date + relativedelta(months=1)
+        forecast_end = forecast_start + relativedelta(months=FORECAST_MONTHS-1)
+        
+        train_data = all_data[all_data.index <= train_end]
+        if len(train_data) >= MIN_TRAINING_POINTS:
+            windows.append({
+                'version': 'v_current',
+                'train_end': train_end,
+                'forecast_start': forecast_start,
+                'forecast_end': forecast_end,
+                'forecast_year': forecast_start.year,
+                'is_future': True
+            })
+    
+    return windows
+
+# ============================================
 # MAIN FUNCTION
 # ============================================
-def generate_rolling_forecast(crop_type):
+def generate_dynamic_forecast(crop_type):
     """
-    Generate ARIMA forecasts with rolling windows and evaluation.
+    Generate SARIMA forecasts with dynamic expanding windows.
     """
     
     db = mysql.connector.connect(**DB_CONFIG)
     cursor = db.cursor()
     
+    current_date = pd.Timestamp.now()
+    
     print(f"\n{'='*70}")
-    print(f"🌾 SARIMA ROLLING FORECAST WITH EVALUATION FOR: {crop_type.upper()}")
+    print(f"🌾 SARIMA DYNAMIC EXPANDING WINDOW FORECAST: {crop_type.upper()}")
     print(f"{'='*70}\n")
+    print(f"🔧 Mode: EXPANDING WINDOW (uses all historical data)")
+    print(f"📊 SARIMA Order: {ARIMA_ORDER}, Seasonal: {SEASONAL_ORDER}")
+    print(f"📅 Forecast horizon: {FORECAST_MONTHS} months\n")
     
     # --------------------------------------------
     # Fetch ALL historical data
@@ -119,36 +191,49 @@ def generate_rolling_forecast(crop_type):
     all_data.set_index('month_date', inplace=True)
     
     print(f"📊 Total historical records: {len(all_data)}")
-    print(f"📅 Date range: {all_data.index.min().date()} to {all_data.index.max().date()}")
-    print(f"🔧 SARIMA Order: {ARIMA_ORDER}, Seasonal: {SEASONAL_ORDER}\n")
     
     # --------------------------------------------
-    # Process each rolling window
+    # Generate dynamic windows
     # --------------------------------------------
-    for window in ROLLING_WINDOWS:
+    windows = generate_expanding_windows(all_data, current_date)
+    
+    if not windows:
+        print(f"✗ Insufficient data to generate forecasts (need at least {MIN_TRAINING_POINTS} months)")
+        db.close()
+        return
+    
+    print(f"✅ Generated {len(windows)} expanding windows\n")
+    
+    # --------------------------------------------
+    # Process each window
+    # --------------------------------------------
+    for window in windows:
         version = window['version']
         train_end = window['train_end']
-        forecast_year = window['forecast_year']
+        forecast_start = window['forecast_start']
+        forecast_end = window['forecast_end']
+        is_future = window['is_future']
         
         print(f"{'─'*70}")
-        print(f"📈 {version}: Train until {train_end} → Forecast {forecast_year}")
+        print(f"📈 {version}: Train until {train_end.date()} → Forecast {forecast_start.date()} to {forecast_end.date()}")
+        if is_future:
+            print(f"   ⚡ FUTURE FORECAST (no actual data yet)")
         print(f"{'─'*70}")
         
-        # Filter training data
+        # Filter training data (EXPANDING: use ALL data up to train_end)
         train_data = all_data[all_data.index <= train_end].copy()
         
-        if len(train_data) < 12:  # Need at least 12 months for ARIMA
+        if len(train_data) < MIN_TRAINING_POINTS:
             print(f"⚠️  Insufficient training data for {version} (only {len(train_data)} points). Skipping.\n")
             continue
         
-        print(f"   • Training data points: {len(train_data)}")
+        print(f"   • Training data points: {len(train_data)} (EXPANDING)")
         print(f"   • Training period: {train_data.index.min().date()} to {train_data.index.max().date()}")
         
         # --------------------------------------------
-        # Train ARIMA model
+        # Train SARIMA model
         # --------------------------------------------
         try:
-            # Fit SARIMA model
             model = SARIMAX(
                 train_data['total_quantity'],
                 order=ARIMA_ORDER,
@@ -158,16 +243,20 @@ def generate_rolling_forecast(crop_type):
             )
             fitted_model = model.fit(disp=False)
             
-            # Generate 12-month forecast with confidence intervals
-            forecast_result = fitted_model.get_forecast(steps=12)
+            # Calculate number of months to forecast
+            months_ahead = (forecast_end.year - forecast_start.year) * 12 + \
+                          (forecast_end.month - forecast_start.month) + 1
+            
+            # Generate forecast
+            forecast_result = fitted_model.get_forecast(steps=months_ahead)
             forecast_mean = forecast_result.predicted_mean
             conf_int = forecast_result.conf_int()
             
-            # Create forecast dataframe
+            # Create forecast dates
             last_date = train_data.index.max()
             forecast_dates = pd.date_range(
                 start=last_date + pd.DateOffset(months=1),
-                periods=12,
+                periods=months_ahead,
                 freq='MS'
             )
             
@@ -178,15 +267,13 @@ def generate_rolling_forecast(crop_type):
                 'yhat_upper': conf_int.iloc[:, 1].values
             })
             
-            # Filter only forecast year
-            forecast_start = pd.to_datetime(f"{forecast_year}-01-01")
-            forecast_end = pd.to_datetime(f"{forecast_year}-12-31")
+            # Filter to forecast period
             future_forecast = forecast_df[
                 (forecast_df['ds'] >= forecast_start) & 
                 (forecast_df['ds'] <= forecast_end)
             ]
             
-            print(f"   • Generated {len(future_forecast)} monthly predictions for {forecast_year}")
+            print(f"   • Generated {len(future_forecast)} monthly predictions")
             
             # --------------------------------------------
             # Log model version
@@ -224,7 +311,7 @@ def generate_rolling_forecast(crop_type):
             db.commit()
             
             # --------------------------------------------
-            # Save predictions to database
+            # Save predictions
             # --------------------------------------------
             for _, row in future_forecast.iterrows():
                 month_str = row['ds'].strftime('%Y-%m')
@@ -249,82 +336,88 @@ def generate_rolling_forecast(crop_type):
             print(f"   ✓ Saved {len(future_forecast)} predictions to database")
             
             # --------------------------------------------
-            # EVALUATE: Compare predictions with actual data
+            # EVALUATE: Only if actual data exists
             # --------------------------------------------
-            cursor.execute("""
-                SELECT 
-                    DATE_FORMAT(recorded_at, '%Y-%m-01') as month_date,
-                    SUM(quantity) as total_quantity
-                FROM yield_records
-                WHERE crop_type = %s 
-                AND YEAR(recorded_at) = %s
-                AND quantity > 0
-                GROUP BY DATE_FORMAT(recorded_at, '%Y-%m')
-                ORDER BY month_date
-            """, (crop_type, forecast_year))
-            
-            actual_rows = cursor.fetchall()
-            actual_data = pd.DataFrame(actual_rows, columns=['month_date', 'total_quantity'])
-            
-            if actual_data.empty:
-                print(f"   ⚠️  No actual data available for {forecast_year} - cannot evaluate yet")
-                print(f"      (Predictions saved, evaluation pending)\n")
-                continue
-            
-            actual_data['month_date'] = pd.to_datetime(actual_data['month_date'])
-            actual_data['total_quantity'] = actual_data['total_quantity'].astype(float)
-            
-            # Merge predictions with actual data
-            future_forecast['month_date'] = future_forecast['ds']
-            comparison = pd.merge(
-                actual_data[['month_date', 'total_quantity']],
-                future_forecast[['month_date', 'yhat']],
-                on='month_date',
-                how='inner'
-            )
-            
-            if len(comparison) == 0:
-                print(f"   ⚠️  Could not match predictions with actual data for evaluation\n")
-                continue
-            
-            # Calculate metrics
-            actual_values = comparison['total_quantity'].values
-            predicted_values = comparison['yhat'].values
-            
-            mape = calculate_mape(actual_values, predicted_values)
-            rmse = calculate_rmse(actual_values, predicted_values)
-            mae = calculate_mae(actual_values, predicted_values)
-            
-            print(f"\n   📊 EVALUATION RESULTS:")
-            print(f"      • Months compared: {len(comparison)}")
-            print(f"      • MAPE: {mape}%")
-            print(f"      • RMSE: {rmse} pieces")
-            print(f"      • MAE: {mae} pieces")
-            
-            # Show detailed comparison
-            print(f"\n   📋 Month-by-month comparison:")
-            for _, row in comparison.iterrows():
-                month = row['month_date'].strftime('%Y-%m')
-                actual = row['total_quantity']
-                pred = row['yhat']
-                error = abs(actual - pred)
-                error_pct = (error / actual * 100) if actual > 0 else 0
-                print(f"      {month}: Actual={actual:.2f}, Predicted={pred:.2f}, Error={error:.2f} ({error_pct:.1f}%)")
-            
-            # Save evaluation metrics
-            cursor.execute("""
-                DELETE FROM model_evaluation
-                WHERE crop_type = %s AND model_version = %s AND method = 'SARIMA'
-            """, (crop_type, version))
-            
-            cursor.execute("""
-                INSERT INTO model_evaluation
-                (model_version, crop_type, method, forecast_year, mape, rmse, mae, data_points_compared)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (version, crop_type, 'SARIMA', forecast_year, mape, rmse, mae, len(comparison)))
-            
-            db.commit()
-            print(f"   ✓ Evaluation metrics saved to database\n")
+            if not is_future:
+                forecast_year = window['forecast_year']
+                
+                cursor.execute("""
+                    SELECT 
+                        DATE_FORMAT(recorded_at, '%Y-%m-01') as month_date,
+                        SUM(quantity) as total_quantity
+                    FROM yield_records
+                    WHERE crop_type = %s 
+                    AND recorded_at >= %s
+                    AND recorded_at <= %s
+                    AND quantity > 0
+                    GROUP BY DATE_FORMAT(recorded_at, '%Y-%m')
+                    ORDER BY month_date
+                """, (crop_type, forecast_start.strftime('%Y-%m-%d'), 
+                      forecast_end.strftime('%Y-%m-%d')))
+                
+                actual_rows = cursor.fetchall()
+                actual_data = pd.DataFrame(actual_rows, columns=['month_date', 'total_quantity'])
+                
+                if actual_data.empty:
+                    print(f"   ⚠️  No actual data available for evaluation period\n")
+                    continue
+                
+                actual_data['month_date'] = pd.to_datetime(actual_data['month_date'])
+                actual_data['total_quantity'] = actual_data['total_quantity'].astype(float)
+                
+                # Merge predictions with actuals
+                future_forecast['month_date'] = future_forecast['ds']
+                comparison = pd.merge(
+                    actual_data[['month_date', 'total_quantity']],
+                    future_forecast[['month_date', 'yhat']],
+                    on='month_date',
+                    how='inner'
+                )
+                
+                if len(comparison) == 0:
+                    print(f"   ⚠️  Could not match predictions with actual data\n")
+                    continue
+                
+                # Calculate metrics
+                actual_values = comparison['total_quantity'].values
+                predicted_values = comparison['yhat'].values
+                
+                mape = calculate_mape(actual_values, predicted_values)
+                rmse = calculate_rmse(actual_values, predicted_values)
+                mae = calculate_mae(actual_values, predicted_values)
+                
+                print(f"\n   📊 EVALUATION RESULTS:")
+                print(f"      • Months compared: {len(comparison)}")
+                print(f"      • MAPE: {mape}%")
+                print(f"      • RMSE: {rmse} pieces")
+                print(f"      • MAE: {mae} pieces")
+                
+                # Show detailed comparison
+                print(f"\n   📋 Month-by-month comparison:")
+                for _, row in comparison.iterrows():
+                    month = row['month_date'].strftime('%Y-%m')
+                    actual = row['total_quantity']
+                    pred = row['yhat']
+                    error = abs(actual - pred)
+                    error_pct = (error / actual * 100) if actual > 0 else 0
+                    print(f"      {month}: Actual={actual:.2f}, Predicted={pred:.2f}, Error={error:.2f} ({error_pct:.1f}%)")
+                
+                # Save evaluation metrics
+                cursor.execute("""
+                    DELETE FROM model_evaluation
+                    WHERE crop_type = %s AND model_version = %s AND method = 'SARIMA'
+                """, (crop_type, version))
+                
+                cursor.execute("""
+                    INSERT INTO model_evaluation
+                    (model_version, crop_type, method, forecast_year, mape, rmse, mae, data_points_compared)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (version, crop_type, 'SARIMA', forecast_year, mape, rmse, mae, len(comparison)))
+                
+                db.commit()
+                print(f"   ✓ Evaluation metrics saved\n")
+            else:
+                print(f"   ⚡ Future forecast saved - will evaluate when actual data arrives\n")
             
         except Exception as e:
             print(f"   ✗ Error in {version}: {str(e)}\n")
@@ -334,10 +427,9 @@ def generate_rolling_forecast(crop_type):
     # Summary
     # --------------------------------------------
     print(f"{'='*70}")
-    print(f"✅ SARIMA ROLLING FORECAST COMPLETE FOR {crop_type.upper()}")
+    print(f"✅ SARIMA DYNAMIC FORECAST COMPLETE FOR {crop_type.upper()}")
     print(f"{'='*70}\n")
     
-    # Show overall performance summary
     cursor.execute("""
         SELECT model_version, forecast_year, mape, rmse, mae, data_points_compared
         FROM model_evaluation
@@ -349,17 +441,14 @@ def generate_rolling_forecast(crop_type):
     
     if eval_results:
         print("📊 SARIMA PERFORMANCE SUMMARY:")
-        print(f"{'Version':<10} {'Year':<8} {'MAPE':<10} {'RMSE':<12} {'MAE':<12} {'Months'}")
+        print(f"{'Version':<15} {'Year':<8} {'MAPE':<10} {'RMSE':<12} {'MAE':<12} {'Months'}")
         print("─" * 70)
         for row in eval_results:
             mae_str = f"{row[4]}" if row[4] is not None else "N/A"
-            print(f"{row[0]:<10} {row[1]:<8} {row[2]}%{' ':<6} {row[3]:<12} {mae_str:<12} {row[5]}")
+            print(f"{row[0]:<15} {row[1]:<8} {row[2]}%{' ':<6} {row[3]:<12} {mae_str:<12} {row[5]}")
         
-        # Show best performing version
         best = min(eval_results, key=lambda x: x[2] if x[2] is not None else float('inf'))
         print(f"\n🏆 Best performing: {best[0]} (MAPE: {best[2]}%)")
-    else:
-        print("⚠️  No evaluation results available yet (need actual data for forecast years)")
     
     cursor.close()
     db.close()
@@ -375,4 +464,4 @@ if __name__ == "__main__":
         exit()
     
     crop = sys.argv[1]
-    generate_rolling_forecast(crop)
+    generate_dynamic_forecast(crop)

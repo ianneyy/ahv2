@@ -1,13 +1,11 @@
 """
-Prophet Rolling Forecast with Model Evaluation
+Prophet Dynamic Expanding Window Forecast Model
 
-Generates forecasts with rolling windows AND validates them:
-- v1: Train 2016-2020, Forecast 2021, Evaluate vs actual 2021
-- v2: Train 2016-2021, Forecast 2022, Evaluate vs actual 2022
-- v3: Train 2016-2022, Forecast 2023, Evaluate vs actual 2023
-- v4: Train 2016-2023, Forecast 2024, Evaluate vs actual 2024
-
-Calculates MAPE and RMSE for each version.
+Automatically generates forecasts using expanding windows:
+- Detects latest available data
+- Uses ALL historical data for training (expanding window)
+- Forecasts next 12 months into the future
+- Evaluates past forecasts when actual data becomes available
 
 Usage:
 python model_prophet.py buko
@@ -18,6 +16,7 @@ import numpy as np
 import mysql.connector
 from prophet import Prophet
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -33,14 +32,10 @@ DB_CONFIG = {
 }
 
 # ============================================
-# ROLLING FORECAST CONFIGURATION
+# DYNAMIC WINDOW CONFIGURATION
 # ============================================
-ROLLING_WINDOWS = [
-    {'version': 'v1', 'train_end': '2020-12-31', 'forecast_year': 2021},
-    {'version': 'v2', 'train_end': '2021-12-31', 'forecast_year': 2022},
-    {'version': 'v3', 'train_end': '2022-12-31', 'forecast_year': 2023},
-    {'version': 'v4', 'train_end': '2023-12-31', 'forecast_year': 2024},
-]
+FORECAST_MONTHS = 12  # How many months to forecast ahead
+MIN_TRAINING_POINTS = 12  # Minimum data points needed (1 year)
 
 # ============================================
 # EVALUATION METRICS
@@ -50,7 +45,6 @@ def calculate_mape(actual, predicted):
     actual = np.array(actual)
     predicted = np.array(predicted)
     
-    # Avoid division by zero
     mask = actual != 0
     if not mask.any():
         return None
@@ -67,20 +61,94 @@ def calculate_rmse(actual, predicted):
     rmse = np.sqrt(mse)
     return round(rmse, 2)
 
+def calculate_mae(actual, predicted):
+    """Calculate Mean Absolute Error"""
+    actual = np.array(actual)
+    predicted = np.array(predicted)
+    
+    mae = np.mean(np.abs(actual - predicted))
+    return round(mae, 2)
+
+# ============================================
+# DYNAMIC WINDOW GENERATION
+# ============================================
+def generate_expanding_windows(all_data, current_date):
+    """
+    Generate expanding windows dynamically based on available data.
+    """
+    if all_data.empty:
+        return []
+    
+    earliest_date = all_data['month_date'].min()
+    latest_date = all_data['month_date'].max()
+    
+    print(f"📅 Data range: {earliest_date.date()} to {latest_date.date()}")
+    print(f"📅 Current date: {current_date.date()}")
+    
+    windows = []
+    
+    # Generate windows: start from earliest year + 1 year of data
+    start_year = earliest_date.year + 1
+    current_year = current_date.year
+    
+    # Create historical windows (for evaluation)
+    for year in range(start_year, current_year + 1):
+        train_end = pd.Timestamp(f"{year-1}-12-31")
+        
+        # Only create window if we have enough training data
+        train_data = all_data[all_data['month_date'] <= train_end]
+        if len(train_data) < MIN_TRAINING_POINTS:
+            continue
+        
+        forecast_start = pd.Timestamp(f"{year}-01-01")
+        forecast_end = pd.Timestamp(f"{year}-12-31")
+        
+        windows.append({
+            'version': f'v{year}',
+            'train_end': train_end,
+            'forecast_start': forecast_start,
+            'forecast_end': forecast_end,
+            'forecast_year': year,
+            'is_future': year > latest_date.year
+        })
+    
+    # Add current/future forecast window
+    if latest_date < current_date:
+        train_end = latest_date
+        forecast_start = latest_date + relativedelta(months=1)
+        forecast_end = forecast_start + relativedelta(months=FORECAST_MONTHS-1)
+        
+        train_data = all_data[all_data['month_date'] <= train_end]
+        if len(train_data) >= MIN_TRAINING_POINTS:
+            windows.append({
+                'version': 'v_current',
+                'train_end': train_end,
+                'forecast_start': forecast_start,
+                'forecast_end': forecast_end,
+                'forecast_year': forecast_start.year,
+                'is_future': True
+            })
+    
+    return windows
+
 # ============================================
 # MAIN FUNCTION
 # ============================================
-def generate_rolling_forecast(crop_type):
+def generate_dynamic_forecast(crop_type):
     """
-    Generate Prophet forecasts with rolling windows and evaluation.
+    Generate Prophet forecasts with dynamic expanding windows.
     """
     
     db = mysql.connector.connect(**DB_CONFIG)
     cursor = db.cursor()
     
+    current_date = pd.Timestamp.now()
+    
     print(f"\n{'='*70}")
-    print(f"🌾 ROLLING FORECAST WITH EVALUATION FOR: {crop_type.upper()}")
+    print(f"🌾 PROPHET DYNAMIC EXPANDING WINDOW FORECAST: {crop_type.upper()}")
     print(f"{'='*70}\n")
+    print(f"🔧 Mode: EXPANDING WINDOW (uses all historical data)")
+    print(f"📅 Forecast horizon: {FORECAST_MONTHS} months\n")
     
     # --------------------------------------------
     # Create evaluation table if not exists
@@ -94,6 +162,7 @@ def generate_rolling_forecast(crop_type):
             forecast_year INT,
             mape DECIMAL(10,2),
             rmse DECIMAL(10,2),
+            mae DECIMAL(10,2),
             data_points_compared INT,
             evaluated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_model_crop (model_version, crop_type, method)
@@ -124,30 +193,45 @@ def generate_rolling_forecast(crop_type):
     
     all_data['month_date'] = pd.to_datetime(all_data['month_date'])
     print(f"📊 Total historical records: {len(all_data)}")
-    print(f"📅 Date range: {all_data['month_date'].min().date()} to {all_data['month_date'].max().date()}\n")
     
     # --------------------------------------------
-    # Process each rolling window
+    # Generate dynamic windows
     # --------------------------------------------
-    for window in ROLLING_WINDOWS:
+    windows = generate_expanding_windows(all_data, current_date)
+    
+    if not windows:
+        print(f"✗ Insufficient data to generate forecasts (need at least {MIN_TRAINING_POINTS} months)")
+        db.close()
+        return
+    
+    print(f"✅ Generated {len(windows)} expanding windows\n")
+    
+    # --------------------------------------------
+    # Process each window
+    # --------------------------------------------
+    for window in windows:
         version = window['version']
         train_end = window['train_end']
-        forecast_year = window['forecast_year']
+        forecast_start = window['forecast_start']
+        forecast_end = window['forecast_end']
+        is_future = window['is_future']
         
         print(f"{'─'*70}")
-        print(f"📈 {version}: Train until {train_end} → Forecast {forecast_year}")
+        print(f"📈 {version}: Train until {train_end.date()} → Forecast {forecast_start.date()} to {forecast_end.date()}")
+        if is_future:
+            print(f"   ⚡ FUTURE FORECAST (no actual data yet)")
         print(f"{'─'*70}")
         
-        # Filter training data (up to train_end)
+        # Filter training data (EXPANDING: use ALL data up to train_end)
         train_data = all_data[all_data['month_date'] <= train_end].copy()
         
-        if len(train_data) < 3:
+        if len(train_data) < MIN_TRAINING_POINTS:
             print(f"⚠️  Insufficient training data for {version} (only {len(train_data)} points). Skipping.\n")
             continue
         
         train_data.rename(columns={'month_date': 'ds', 'total_quantity': 'y'}, inplace=True)
         
-        print(f"   • Training data points: {len(train_data)}")
+        print(f"   • Training data points: {len(train_data)} (EXPANDING)")
         print(f"   • Training period: {train_data['ds'].min().date()} to {train_data['ds'].max().date()}")
         
         # --------------------------------------------
@@ -162,19 +246,21 @@ def generate_rolling_forecast(crop_type):
             )
             model.fit(train_data)
             
-            # Generate 12-month forecast
-            future = model.make_future_dataframe(periods=12, freq='MS')
+            # Calculate months to forecast
+            months_ahead = (forecast_end.year - forecast_start.year) * 12 + \
+                          (forecast_end.month - forecast_start.month) + 1
+            
+            # Generate forecast
+            future = model.make_future_dataframe(periods=months_ahead, freq='MS')
             forecast = model.predict(future)
             
-            # Get predictions for the forecast year
-            forecast_start = pd.to_datetime(f"{forecast_year}-01-01")
-            forecast_end = pd.to_datetime(f"{forecast_year}-12-31")
+            # Filter to forecast period
             future_forecast = forecast[
                 (forecast['ds'] >= forecast_start) & 
                 (forecast['ds'] <= forecast_end)
             ]
             
-            print(f"   • Generated {len(future_forecast)} monthly predictions for {forecast_year}")
+            print(f"   • Generated {len(future_forecast)} monthly predictions")
             
             # --------------------------------------------
             # Log model version
@@ -212,7 +298,7 @@ def generate_rolling_forecast(crop_type):
             db.commit()
             
             # --------------------------------------------
-            # Save predictions to database
+            # Save predictions
             # --------------------------------------------
             for _, row in future_forecast.iterrows():
                 month_str = row['ds'].strftime('%Y-%m')
@@ -222,95 +308,103 @@ def generate_rolling_forecast(crop_type):
                 
                 cursor.execute("""
                     DELETE FROM yield_predictions
-                    WHERE crop_type = %s AND predicted_month = %s AND model_version = %s
+                    WHERE crop_type = %s AND predicted_month = %s 
+                    AND model_version = %s AND method = 'Prophet'
                 """, (crop_type, month_str, version))
                 
                 cursor.execute("""
                     INSERT INTO yield_predictions
                     (crop_type, predicted_month, predicted_quantity, confidence_lower, 
-                     confidence_upper, model_version)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """, (crop_type, month_str, predicted, lower, upper, version))
+                     confidence_upper, model_version, method)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (crop_type, month_str, predicted, lower, upper, version, 'Prophet'))
             
             db.commit()
             print(f"   ✓ Saved {len(future_forecast)} predictions to database")
             
             # --------------------------------------------
-            # EVALUATE: Compare predictions with actual data
+            # EVALUATE: Only if actual data exists
             # --------------------------------------------
-            # Get actual data for the forecast year from database directly
-            cursor.execute("""
-                SELECT 
-                    DATE_FORMAT(recorded_at, '%Y-%m-01') as month_date,
-                    SUM(quantity) as total_quantity
-                FROM yield_records
-                WHERE crop_type = %s 
-                AND YEAR(recorded_at) = %s
-                AND quantity > 0
-                GROUP BY DATE_FORMAT(recorded_at, '%Y-%m')
-                ORDER BY month_date
-            """, (crop_type, forecast_year))
-            
-            actual_rows = cursor.fetchall()
-            actual_data = pd.DataFrame(actual_rows, columns=['month_date', 'total_quantity'])
-            
-            if actual_data.empty:
-                print(f"   ⚠️  No actual data available for {forecast_year} - cannot evaluate yet")
-                print(f"      (Predictions saved, evaluation pending)\n")
-                continue
-            
-            actual_data['month_date'] = pd.to_datetime(actual_data['month_date'])
-            actual_data['total_quantity'] = actual_data['total_quantity'].astype(float)
-            
-            # Merge predictions with actual data
-            future_forecast['month_date'] = future_forecast['ds']
-            comparison = pd.merge(
-                actual_data[['month_date', 'total_quantity']],
-                future_forecast[['month_date', 'yhat']],
-                on='month_date',
-                how='inner'
-            )
-            
-            if len(comparison) == 0:
-                print(f"   ⚠️  Could not match predictions with actual data for evaluation\n")
-                continue
-            
-            # Calculate metrics
-            actual_values = comparison['total_quantity'].values
-            predicted_values = comparison['yhat'].values
-            
-            mape = calculate_mape(actual_values, predicted_values)
-            rmse = calculate_rmse(actual_values, predicted_values)
-            
-            print(f"\n   📊 EVALUATION RESULTS:")
-            print(f"      • Months compared: {len(comparison)}")
-            print(f"      • MAPE: {mape}%")
-            print(f"      • RMSE: {rmse}")
-            
-            # Show detailed comparison
-            print(f"\n   📋 Month-by-month comparison:")
-            for _, row in comparison.iterrows():
-                month = row['month_date'].strftime('%Y-%m')
-                actual = row['total_quantity']
-                pred = row['yhat']
-                error = abs(actual - pred)
-                error_pct = (error / actual * 100) if actual > 0 else 0
-                print(f"      {month}: Actual={actual:.2f}, Predicted={pred:.2f}, Error={error:.2f} ({error_pct:.1f}%)")
-            
-            # Save evaluation metrics
-            cursor.execute("""
-                DELETE FROM model_evaluation
-                WHERE crop_type = %s AND model_version = %s AND method = 'Prophet'
-            """, (crop_type, version))
-            
-            cursor.execute("""
-                INSERT INTO model_evaluation
-                (model_version, crop_type, method, forecast_year, mape, rmse, data_points_compared)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (version, crop_type, 'Prophet', forecast_year, mape, rmse, len(comparison)))
-            
-            db.commit()
-            print(f"   ✓ Evaluation metrics saved to database\n")
+            if not is_future:
+                cursor.execute("""
+                    SELECT 
+                        DATE_FORMAT(recorded_at, '%Y-%m-01') as month_date,
+                        SUM(quantity) as total_quantity
+                    FROM yield_records
+                    WHERE crop_type = %s 
+                    AND recorded_at >= %s
+                    AND recorded_at <= %s
+                    AND quantity > 0
+                    GROUP BY DATE_FORMAT(recorded_at, '%Y-%m')
+                    ORDER BY month_date
+                """, (crop_type, forecast_start.strftime('%Y-%m-%d'), 
+                      forecast_end.strftime('%Y-%m-%d')))
+                
+                actual_rows = cursor.fetchall()
+                actual_data = pd.DataFrame(actual_rows, columns=['month_date', 'total_quantity'])
+                
+                if actual_data.empty:
+                    print(f"   ⚠️  No actual data available for evaluation period\n")
+                    continue
+                
+                actual_data['month_date'] = pd.to_datetime(actual_data['month_date'])
+                actual_data['total_quantity'] = actual_data['total_quantity'].astype(float)
+                
+                # Merge predictions with actuals
+                future_forecast['month_date'] = future_forecast['ds']
+                comparison = pd.merge(
+                    actual_data[['month_date', 'total_quantity']],
+                    future_forecast[['month_date', 'yhat']],
+                    on='month_date',
+                    how='inner'
+                )
+                
+                if len(comparison) == 0:
+                    print(f"   ⚠️  Could not match predictions with actual data\n")
+                    continue
+                
+                # Calculate metrics
+                actual_values = comparison['total_quantity'].values
+                predicted_values = comparison['yhat'].values
+                
+                mape = calculate_mape(actual_values, predicted_values)
+                rmse = calculate_rmse(actual_values, predicted_values)
+                mae = calculate_mae(actual_values, predicted_values)
+                
+                print(f"\n   📊 EVALUATION RESULTS:")
+                print(f"      • Months compared: {len(comparison)}")
+                print(f"      • MAPE: {mape}%")
+                print(f"      • RMSE: {rmse} pieces")
+                print(f"      • MAE: {mae} pieces")
+                
+                # Show detailed comparison
+                print(f"\n   📋 Month-by-month comparison:")
+                for _, row in comparison.iterrows():
+                    month = row['month_date'].strftime('%Y-%m')
+                    actual = row['total_quantity']
+                    pred = row['yhat']
+                    error = abs(actual - pred)
+                    error_pct = (error / actual * 100) if actual > 0 else 0
+                    print(f"      {month}: Actual={actual:.2f}, Predicted={pred:.2f}, Error={error:.2f} ({error_pct:.1f}%)")
+                
+                # Save evaluation metrics
+                forecast_year = window['forecast_year']
+                
+                cursor.execute("""
+                    DELETE FROM model_evaluation
+                    WHERE crop_type = %s AND model_version = %s AND method = 'Prophet'
+                """, (crop_type, version))
+                
+                cursor.execute("""
+                    INSERT INTO model_evaluation
+                    (model_version, crop_type, method, forecast_year, mape, rmse, mae, data_points_compared)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (version, crop_type, 'Prophet', forecast_year, mape, rmse, mae, len(comparison)))
+                
+                db.commit()
+                print(f"   ✓ Evaluation metrics saved\n")
+            else:
+                print(f"   ⚡ Future forecast saved - will evaluate when actual data arrives\n")
             
         except Exception as e:
             print(f"   ✗ Error in {version}: {str(e)}\n")
@@ -320,12 +414,11 @@ def generate_rolling_forecast(crop_type):
     # Summary
     # --------------------------------------------
     print(f"{'='*70}")
-    print(f"✅ ROLLING FORECAST COMPLETE FOR {crop_type.upper()}")
+    print(f"✅ PROPHET DYNAMIC FORECAST COMPLETE FOR {crop_type.upper()}")
     print(f"{'='*70}\n")
     
-    # Show overall performance summary
     cursor.execute("""
-        SELECT model_version, forecast_year, mape, rmse, data_points_compared
+        SELECT model_version, forecast_year, mape, rmse, mae, data_points_compared
         FROM model_evaluation
         WHERE crop_type = %s AND method = 'Prophet'
         ORDER BY model_version
@@ -334,17 +427,15 @@ def generate_rolling_forecast(crop_type):
     eval_results = cursor.fetchall()
     
     if eval_results:
-        print("📊 PERFORMANCE SUMMARY:")
-        print(f"{'Version':<10} {'Year':<8} {'MAPE':<10} {'RMSE':<12} {'Months'}")
-        print("─" * 60)
+        print("📊 PROPHET PERFORMANCE SUMMARY:")
+        print(f"{'Version':<15} {'Year':<8} {'MAPE':<10} {'RMSE':<12} {'MAE':<12} {'Months'}")
+        print("─" * 70)
         for row in eval_results:
-            print(f"{row[0]:<10} {row[1]:<8} {row[2]}%{' ':<6} {row[3]:<12} {row[4]}")
+            mae_str = f"{row[4]}" if row[4] is not None else "N/A"
+            print(f"{row[0]:<15} {row[1]:<8} {row[2]}%{' ':<6} {row[3]:<12} {mae_str:<12} {row[5]}")
         
-        # Show best performing version
         best = min(eval_results, key=lambda x: x[2] if x[2] is not None else float('inf'))
         print(f"\n🏆 Best performing: {best[0]} (MAPE: {best[2]}%)")
-    else:
-        print("⚠️  No evaluation results available yet (need actual data for forecast years)")
     
     cursor.close()
     db.close()
@@ -360,4 +451,4 @@ if __name__ == "__main__":
         exit()
     
     crop = sys.argv[1]
-    generate_rolling_forecast(crop)
+    generate_dynamic_forecast(crop)
