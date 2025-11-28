@@ -451,7 +451,6 @@ require_once '../includes/header.php';
                     </div>
                 <?php endif; ?>
 
-                <!-- Container for Data Preparation UI -->
                 <section class="bg-white p-6 rounded-lg shadow-sm">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-semibold text-emerald-700">📁 Historical Yield Records</h3>

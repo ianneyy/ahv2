@@ -26,16 +26,10 @@ try {
         $googleId = $userInfo->getId();
         $pictureUrl = $userInfo->getPicture();
 
+        $imageData = base64_encode(file_get_contents($pictureUrl));
+        $_SESSION["user_picture"] = 'data:image/jpeg;base64,' . $imageData;
 
-        // ✅ Save profile image locally
-        $profileDir = '../assets/profile/';
-        if (!is_dir($profileDir)) {
-            mkdir($profileDir, 0755, true);
-        }
-        $profileFileName = $googleId . '.jpg';
-        $profileFilePath = $profileDir . $profileFileName;
-
-        file_put_contents($profileFilePath, file_get_contents($pictureUrl));
+       
 
         // Check if user exists in database
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -56,7 +50,6 @@ try {
             $_SESSION["user_id"] = $user["id"];
             $_SESSION["user_name"] = $user["name"];
             $_SESSION["user_type"] = $user["user_type"];
-            $_SESSION["user_picture"] = $pictureUrl;
 
 
             // Redirect based on user type

@@ -17,7 +17,14 @@
 
   <!-- Grid.js JS -->
 </head>
+<style>
+  @import url('https://fonts.cdnfonts.com/css/satoshi');
 
+                
+body {
+ font-family: 'Satoshi', sans-serif;
+}
+</style>
 <body class="bg-[#ECF5E9]">
   <dialog id="logoutModal" class="modal">
     <div class="modal-box">

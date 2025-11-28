@@ -5,112 +5,22 @@ require_once '../includes/db.php';
 
 // Get selected crop (default to buko)
 $selected_crop = $_GET['crop'] ?? 'buko';
-
-// Get latest actual yield
-$latest_actual_query = "
-    SELECT recorded_at, quantity 
-    FROM yield_records 
-    WHERE crop_type = ? 
-    ORDER BY recorded_at DESC 
-    LIMIT 1
-";
-$stmt = $conn->prepare($latest_actual_query);
-$stmt->bind_param('s', $selected_crop);
-$stmt->execute();
-$latest_actual = $stmt->get_result()->fetch_assoc();
-// $latest_actual_month = $stmt->get_result()->fetch_assoc();
-
-// Get next month forecast (latest version, best model)
-// $next_month = date('Y-m', strtotime('+2 month'));
-$next_month = '2024-12';
-$forecast_query = "
-    SELECT yp.predicted_quantity, yp.confidence_lower, yp.confidence_upper, 
-           yp.method, me.mape, yp.predicted_month
-    FROM yield_predictions yp
-    LEFT JOIN model_evaluation me ON yp.crop_type = me.crop_type 
-        AND yp.model_version = me.model_version 
-        AND yp.method = me.method
-    WHERE yp.crop_type = ? 
-    AND yp.predicted_month = ?
-    ORDER BY me.mape ASC
-    LIMIT 1
-";
-// $forecast_query = "
-//     SELECT *
-//     FROM yield_predictions
-//     WHERE crop_type = ? 
-//     AND predicted_month = ?
-// ";
-$stmt = $conn->prepare($forecast_query);
-$stmt->bind_param('ss', $selected_crop, $next_month);
-$stmt->execute();
-$next_forecast = $stmt->get_result()->fetch_assoc();
-// echo "Crop: $selected_crop<br>";
-// echo "Next Month: $next_month<br>";
-// echo "<pre>";
-// var_dump($next_forecast);
-// echo "</pre>";
-// exit;
-// $current_month = date('Y-m');
+$selected_model = $_GET['model'] ?? 'SARIMA';
+$selected_model_evaluation = $_GET['modeleval'] ?? 'SARIMA';
 
 
-// // Fetch forecast for current month
-// $forecast_query = $conn->query("
-//     SELECT predicted_quantity 
-//     FROM yield_predictions
-//     WHERE crop_type = '$selected_crop' 
-//       AND predicted_month = '$current_month'
-//     LIMIT 1
-// ");
+$selected_year = $_GET['year'] ?? null;
 
-// $next_forecast = $forecast_query->fetch_assoc();
-// Get best model overall
-$best_model_query = "
-    SELECT method, AVG(mape) as avg_mape, AVG(rmse) as avg_rmse, AVG(mae) as avg_mae
-    FROM model_evaluation
-    WHERE crop_type = ?
-    GROUP BY method
-    ORDER BY avg_mape ASC
-    LIMIT 1
-";
-$stmt = $conn->prepare($best_model_query);
-$stmt->bind_param('s', $selected_crop);
-$stmt->execute();
-$best_model = $stmt->get_result()->fetch_assoc();
+$crop_types = ['buko', 'saba'];
+$forecast_data = [];
+$actual_data = [];
 
-// Get all models for comparison
-$comparison_query = "
-    SELECT method, model_version, forecast_year, mape, rmse, mae, data_points_compared
-    FROM model_evaluation
-    WHERE crop_type = ?
-    ORDER BY forecast_year DESC, mape ASC
-";
-$stmt = $conn->prepare($comparison_query);
-$stmt->bind_param('s', $selected_crop);
-$stmt->execute();
-$all_models = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Determine accuracy level
-$accuracy_level = 'Unknown';
-$accuracy_color = 'gray';
-$accuracy_icon = '❓';
-if ($best_model && $best_model['avg_mape']) {
-    $mape = $best_model['avg_mape'];
-    if ($mape < 15) {
-        $accuracy_level = 'High';
-        $accuracy_color = 'green';
-        $accuracy_icon = '✅';
-    } elseif ($mape < 25) {
-        $accuracy_level = 'Medium';
-        $accuracy_color = 'yellow';
-        $accuracy_icon = '⚠️';
-    } else {
-        $accuracy_level = 'Low';
-        $accuracy_color = 'red';
-        $accuracy_icon = '❌';
-    }
+// Initialize arrays
+foreach ($crop_types as $crop) {
+    $actual_data[$crop] = [];
+    $forecast_data[$crop] = [];
 }
-
 
 
 
@@ -120,164 +30,192 @@ for ($i = 11; $i >= 0; $i--) {
 }
 
 
-$crop_type = 'buko';
-$actual_data = [];
+// $crop_type = 'buko';
 $result = $conn->query("
-    SELECT DATE_FORMAT(recorded_at, '%Y-%m') AS month, SUM(quantity) AS total
+    SELECT crop_type, DATE_FORMAT(recorded_at, '%Y-%m') AS month, SUM(quantity) AS total
     FROM yield_records
-    WHERE crop_type = '$crop_type'
-    GROUP BY month
+    WHERE crop_type IN ('buko', 'saba')
+    GROUP BY crop_type, month
 ");
 
 while ($row = $result->fetch_assoc()) {
-    $actual_data[$row['month']] = (float) $row['total'];
+    $actual_data[$row['crop_type']][$row['month']] = (float) $row['total'];
 }
 
-$forecast_data = [];
+// Query Forecast Yield per crop_type
 $result = $conn->query("
-    SELECT predicted_month, predicted_quantity
+    SELECT crop_type, predicted_month, predicted_quantity
     FROM yield_predictions
-    WHERE crop_type = '$crop_type'
+    WHERE method = '$selected_model'
+    AND crop_type IN ('buko', 'saba')
 ");
 
 while ($row = $result->fetch_assoc()) {
-    $forecast_data[$row['predicted_month']] = (float) $row['predicted_quantity'];
+    $forecast_data[$row['crop_type']][$row['predicted_month']] = (float) $row['predicted_quantity'];
 }
 
-$actual_chart = [];
-$forecast_chart = [];
-foreach ($months as $month) {
-    $actual_chart[] = $actual_data[$month] ?? 0;
-    $forecast_chart[] = $forecast_data[$month] ?? 0;
+$chart_actual = [];
+$chart_forecast = [];
+
+foreach ($crop_types as $crop) {
+    foreach ($months as $month) {
+        $chart_actual[$crop][] = $actual_data[$crop][$month] ?? 0;
+        $chart_forecast[$crop][] = $forecast_data[$crop][$month] ?? 0;
+    }
 }
+
+
+
+$evaluation = [];
+
+$years_result = $conn->query("
+    SELECT DISTINCT forecast_year
+    FROM model_evaluation
+    ORDER BY forecast_year ASC
+");
+
+$years = [];
+if ($years_result) {
+    while ($row = $years_result->fetch_assoc()) {
+        $years[] = $row['forecast_year'];
+    }
+}
+
+
+
+
+$result = $conn->query("
+    SELECT forecast_year, mape, rmse, mae
+    FROM model_evaluation
+    WHERE method = '$selected_model_evaluation'
+     " . ($selected_year ? " AND forecast_year = " . (int) $selected_year : "") . "
+    ORDER BY forecast_year ASC
+");
+// var_dump($selected_model_evaluation);
+
+while ($row = $result->fetch_assoc()) {
+    $evaluation['years'][] = (int) $row['forecast_year'];
+    $evaluation['mape'][] = (float) $row['mape'];
+    $evaluation['rmse'][] = (float) $row['rmse'];
+    $evaluation['mae'][] = (float) $row['mae'];
+}
+
+
 ?>
 
 <?php
 require_once '../includes/header.php';
 ?>
+
 <div class="flex min-h-screen">
     <?php include 'includes/sidebar.php'; ?>
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
         <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
             <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Forecast Dashboard</h2>
-                    <span class="text-lg text-gray-600 ">Your overview of upcoming yield predictions.</span>
+                <div class="flex items-center justify-between">
+                    <div>
+
+                        <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Yield Forecast Dashboard</h2>
+                        <span class="text-lg text-gray-600 ">Your overview of upcoming yield predictions.</span>
+                    </div>
+
+
                 </div>
 
                 <?php include 'includes/sm-sidebar.php'; ?>
 
             </div>
             <section>
-                <div class="flex justify-end ">
-
-                    <div class="w-32">
-                        <select class="select select-ghost cursor-pointer text-lg">
-                            <option selected>2024</option>
-                            <option>2023</option>
-                            <option>2022</option>
-                            <option>2021</option>
-                        </select>
-                    </div>
-                </div>
 
             </section>
 
-            <section class="flex flex-col lg:flex-row gap-5 mt-5">
-                <div class="w-full flex flex-col  gap-3 ">
-                    <div class="w-full flex flex-col lg:flex-row gap-5">
 
-                        <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl ">
-                            <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
-                                <div>
+            <form method="GET">
 
-                                    <span class="text-slate-600 font-semibold">Actual Yield </span>
-                                    <span class="text-sm text-slate-600">|
-                                        <?= $latest_actual ? date('M Y', strtotime($latest_actual['recorded_at'])) : 'N/A' ?></span>
-                                </div>
+                <section class="mt-10 ">
+                    <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
+                        <div class="flex justify-between items-center mb-5">
+                            <div>
 
-                                <div class="p-3">
-
-                                    <i data-lucide="tally-5" class="w-6 h-6 text-emerald-700"></i>
-                                </div>
-
+                                <h3 class="text-xl font-semibold text-emerald-900">Yield Forecast Chart</h3>
                             </div>
-                            <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
 
-                                <span class="text-3xl font-semibold text-gray-100">
-                                    <?= $latest_actual ? number_format($latest_actual['quantity']) : 'N/A' ?>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
-                            <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
-                                <div>
+                            <div class="w-32">
+                                <select id="modelSelector" name="model"
+                                    class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900"
+                                    onchange="this.form.submit()">
 
-                                    <span class="text-slate-600 font-semibold">Forecast Yield</span>
-                                    <span class="text-sm text-slate-600"> | <?= $next_forecast ?  date('M Y', strtotime($next_forecast['predicted_month'])) : 'N/A' ?></span>
-                                </div>
+                                    <option value="SARIMA" <?= ($_GET['model'] ?? '') === 'SARIMA' ? 'selected' : '' ?>>
+                                        SARIMA
+                                    </option>
+                                    <option value="baseline" <?= ($_GET['model'] ?? '') === 'baseline' ? 'selected' : '' ?>>Baseline</option>
+                                    <option value="prophet" <?= ($_GET['model'] ?? '') === 'prophet' ? 'selected' : '' ?>>
+                                        Prophet</option>
 
-                                <div class="p-3">
-
-                                    <i data-lucide="chart-column-increasing" class="w-6 h-6 text-emerald-700"></i>
-
-                                </div>
-                            </div>
-                            <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
-
-                                <span class="text-3xl font-semibold text-gray-100">
-                                    <?= $next_forecast ? number_format($next_forecast['predicted_quantity']) : 'N/A' ?>
-                                </span>
+                                </select>
                             </div>
                         </div>
+                        <canvas id="forecastChart" height="100"></canvas>
                     </div>
-                    <div class="flex gap-5 flex-col lg:flex-row">
-                        <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
-                            <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
+                </section>
 
-                                <span class="text-slate-600 font-semibold">Model Accuracy</span>
-                                <div class="p-3">
+                <section class="mt-10 ">
+                    <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
+                        <div class="flex justify-between items-center mb-5">
+                            <div>
 
-                                    <i data-lucide="chart-column-increasing" class="w-6 h-6 text-emerald-700"></i>
-
-                                </div>
+                                <h3 class="text-xl font-semibold text-emerald-900">Model Performance Comparison</h3>
                             </div>
-                            <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
+                            <div class="flex items-center gap-10">
 
-                                <span class="text-3xl font-semibold text-gray-100">
-                                    <?= $best_model ? number_format($best_model['avg_mape'], 1) . '%' : 'N/A' ?>
-                                </span>
+                                <div class="w-48">
+
+                                    <select id="modelEvaluateSelector" name="modeleval"
+                                        class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900"
+                                        onchange="this.form.submit()">
+
+                                        <option value="SARIMA" <?= ($_GET['modeleval'] ?? '') === 'SARIMA' ? 'selected' : '' ?>>
+                                            SARIMA
+                                        </option>
+                                        <option value="baseline" <?= ($_GET['modeleval'] ?? '') === 'baseline' ? 'selected' : '' ?>>
+                                            Baseline</option>
+                                        <option value="prophet" <?= ($_GET['modeleval'] ?? '') === 'prophet' ? 'selected' : '' ?>>
+                                            Prophet</option>
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+
+
+
+
+
+                        </div>
+                        <div class="w-full mb-10">
+                            <input type="range" min="<?= $years[0] ?>"   max="<?= end($years) ?>"    value="<?= $selected_year ?>"
+                                class="range range-sm w-full" step="1" id="yearRange"
+                                oninput="updateYearLabel(this.value)" />
+                            <div class="flex justify-between px-2.5 mt-2 text-xs">
+                                <?php foreach ($years as $y): ?>
+                                    <span>|</span>
+                                <?php endforeach; ?>
+                            </div>
+                            <!-- Tick marks -->
+                            <div class="flex justify-between mt-2 text-xs">
+                                <?php foreach ($years as $y): ?>
+                                    <span><?= $y ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                            <div class="mt-1 text-sm text-gray-600 font-semibold mt-3">
+                                Selected year: <span id="selectedYear"><?= $selected_year ?></span>
                             </div>
                         </div>
-                        <div class="bg-gray-100 w-full border border-slate-300  flex flex-col rounded-xl">
-                            <div class="flex item-center justify-between px-5 lg:px-10 pt-6">
-
-                                <span class="text-slate-600 font-semibold ">Best Model</span>
-                                <div class="p-3">
-
-                                    <i data-lucide="bot" class="w-6 h-6 text-emerald-700"></i>
-
-                                </div>
-                            </div>
-                            <div class="bg-emerald-900 w-2/8 text-center py-2 rounded-tr-xl rounded-bl-xl">
-
-                                <span class="text-3xl font-semibold text-gray-100">
-                                    <?= $best_model ? $best_model['method'] : 'N/A' ?>
-                                </span>
-                            </div>
-                        </div>
+                        <canvas id="evalChart" height="100"></canvas>
                     </div>
-                </div>
-            </section>
-            <section class="">
-                <div class="mt-10 bg-gray-100 p-5 rounded-xl border border-slate-300">
-                    <div class="flex justify-between items-center mb-5">
-                        <h3 class="text-xl font-semibold text-emerald-900">Yield Forecast Chart</h3>
-
-                    </div>
-                    <canvas id="forecastChart" height="100"></canvas>
-                </div>
-            </section>
+                </section>
+            </form>
 
         </div>
     </main>
@@ -286,7 +224,15 @@ require_once '../includes/header.php';
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     lucide.createIcons();
-
+    function updateYearLabel(val) {
+        document.getElementById('selectedYear').innerText = val;
+    }
+    document.getElementById('yearRange').addEventListener('change', function () {
+        const year = this.value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('year', year);
+        window.location.href = url.toString();
+    });
     const selectedCrop = '<?= $selected_crop ?>';
     let currentChart = null;
     let currentModel = 'best';
@@ -318,21 +264,37 @@ require_once '../includes/header.php';
         type: 'line',
         data: {
             labels: <?php echo json_encode($months); ?>,
-            datasets: [{
-                label: 'Actual Yield',
-                data: <?php echo json_encode($actual_chart); ?>,
-                borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                tension: 0.2
-            },
-            {
-                label: 'Forecasted Yield',
-                data: <?php echo json_encode($forecast_chart); ?>,
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderDash: [5, 5],
-                tension: 0.2
-            }
+            datasets: [
+                {
+                    label: 'Buko - Actual',
+                    data: <?= json_encode($chart_actual['buko']); ?>,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.2
+                },
+                {
+                    label: 'Buko - Forecast',
+                    data: <?= json_encode($chart_forecast['buko']); ?>,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0)',
+                    borderDash: [5, 5],
+                    tension: 0.2
+                },
+                {
+                    label: 'Saba - Actual',
+                    data: <?= json_encode($chart_actual['saba']); ?>,
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                    tension: 0.2
+                },
+                {
+                    label: 'Saba - Forecast',
+                    data: <?= json_encode($chart_forecast['saba']); ?>,
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    backgroundColor: 'rgba(255, 159, 64, 0)',
+                    borderDash: [5, 5],
+                    tension: 0.2
+                }
             ]
         },
         options: {
@@ -358,6 +320,51 @@ require_once '../includes/header.php';
         }
     });
 
+
+    const evalYears = <?= json_encode($evaluation['years']) ?>;
+    const evalMAPE = <?= json_encode($evaluation['mape']) ?>;
+    const evalRMSE = <?= json_encode($evaluation['rmse']) ?>;
+    const evalMAE = <?= json_encode($evaluation['mae']) ?>;
+
+    const evalCtx = document.getElementById('evalChart').getContext('2d');
+    new Chart(evalCtx, {
+        type: 'bar',
+        data: {
+            labels: evalYears,
+            datasets: [
+                {
+                    label: 'MAPE',
+                    data: evalMAPE,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                },
+                {
+                    label: 'RMSE',
+                    data: evalRMSE,
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                },
+                {
+                    label: 'MAE',
+                    data: evalMAE,
+                    backgroundColor: 'rgba(255, 206, 86, 0.6)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: {
+                    display: true,
+                    text: 'Model Evaluation Metrics Per Year'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                }
+            }
+        }
+    });
     // Load chart on page load
     loadChartData();
 </script>

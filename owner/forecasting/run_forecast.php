@@ -6,14 +6,14 @@ require_once '../../includes/db.php';
 // ================================
 $models = [
     // Prophet models
-    ['script' => 'models/model_prophet.py', 'crop' => 'buko', 'method' => 'Prophet'],
-    ['script' => 'models/model_prophet.py', 'crop' => 'saba', 'method' => 'Prophet'],
+    ['script' => './models/model_prophet.py', 'crop' => 'buko', 'method' => 'Prophet'],
+    ['script' => './models/model_prophet.py', 'crop' => 'saba', 'method' => 'Prophet'],
     // ARIMA models
-    ['script' => 'models/model_arima.py', 'crop' => 'buko', 'method' => 'SARIMA'],
-    ['script' => 'models/model_arima.py', 'crop' => 'saba', 'method' => 'SARIMA'],
+    ['script' => './models/model_arima.py', 'crop' => 'buko', 'method' => 'SARIMA'],
+    ['script' => './models/model_arima.py', 'crop' => 'saba', 'method' => 'SARIMA'],
     // Baseline models
-    ['script' => 'models/model_baseline.py', 'crop' => 'buko', 'method' => 'Baseline'],
-    ['script' => 'models/model_baseline.py', 'crop' => 'saba', 'method' => 'Baseline'],
+    ['script' => './models/model_baseline.py', 'crop' => 'buko', 'method' => 'Baseline'],
+    ['script' => './models/model_baseline.py', 'crop' => 'saba', 'method' => 'Baseline'],
 ];
 
 echo "<h2>🔄 Running Forecasts with Evaluation (Prophet & ARIMA)...</h2>";
