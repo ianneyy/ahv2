@@ -199,7 +199,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete_manual_record' && isse
  * This result set will be consumed in Part 2 (HTML table)
  */
 
-// Pagination logic
+// // Pagination logic
 $limit = 15;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($page - 1) * $limit;
@@ -207,8 +207,7 @@ $offset = ($page - 1) * $limit;
 // Fetch records
 $records_sql = "
     SELECT * FROM yield_records 
-    ORDER BY recorded_at DESC, created_at DESC 
-    LIMIT $limit OFFSET $offset";
+    ORDER BY recorded_at DESC, created_at DESC ";
 $records_result = $conn->query($records_sql);
 
 // Get total count for page numbers
@@ -491,16 +490,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 <!-- ====== Part 2: HTML / UI (paste this INSIDE <main> right after the Welcome header) ====== -->
 
+<!-- Replace the existing Flash messages section and onwards with this responsive version -->
+
 <!-- Flash messages -->
 <?php if (!empty($flash['success']) || !empty($flash['error'])): ?>
   <div class="mb-4">
     <?php if (!empty($flash['success'])): ?>
-      <div class="p-3 mb-2 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+      <div class="p-3 mb-2 rounded bg-emerald-100 text-emerald-800 border border-emerald-200 text-sm">
         <?= htmlspecialchars($flash['success']) ?>
       </div>
     <?php endif; ?>
     <?php if (!empty($flash['error'])): ?>
-      <div class="p-3 rounded bg-red-100 text-red-800 border border-red-200">
+      <div class="p-3 rounded bg-red-100 text-red-800 border border-red-200 text-sm">
         <?= htmlspecialchars($flash['error']) ?>
       </div>
     <?php endif; ?>
@@ -508,41 +509,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 <?php endif; ?>
 
 <!-- Container for Data Preparation UI -->
-<section class="bg-white p-6 rounded-lg shadow-sm">
-  <div class="flex items-center justify-between mb-6">
-    <h3 class="text-xl font-semibold text-emerald-700">📁 Historical Yield Records</h3>
+<section class="bg-white p-4 lg:p-6 rounded-lg shadow-sm">
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
+    <h3 class="text-lg lg:text-xl font-semibold text-emerald-700">📁 Historical Yield Records</h3>
 
-    <div class="flex items-center gap-3">
-  <!-- Sync button -->
-  <a href="forecasting.php?action=sync"
-     class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">
-    🔄 Sync from AHV2
-  </a>
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:gap-3">
+      <!-- Sync button -->
+      <a href="forecasting.php?action=sync"
+         class="inline-flex items-center justify-center gap-2 px-3 lg:px-4 py-2 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 whitespace-nowrap">
+        🔄 <span class="hidden sm:inline">Sync from AHV2</span><span class="sm:hidden">Sync</span>
+      </a>
 
-  <!-- Add Manual toggle -->
-  <button id="showAddFormBtn"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200">
-    ➕ Add Manual Record
-  </button>
+      <!-- Add Manual toggle -->
+      <button id="showAddFormBtn"
+              class="inline-flex items-center justify-center gap-2 px-3 lg:px-4 py-2 bg-emerald-100 text-emerald-800 text-sm rounded hover:bg-emerald-200 whitespace-nowrap">
+        ➕ <span class="hidden sm:inline">Add Manual Record</span><span class="sm:hidden">Add Manual</span>
+      </button>
 
-  <!-- Bulk Upload button (new) -->
-  <button id="bulkUploadBtn"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200">
-    📥 Bulk Upload
-  </button>
-</div>
-
+      <!-- Bulk Upload button -->
+      <button id="bulkUploadBtn"
+              class="inline-flex items-center justify-center gap-2 px-3 lg:px-4 py-2 bg-emerald-100 text-emerald-800 text-sm rounded hover:bg-emerald-200 whitespace-nowrap">
+        📥 <span class="hidden sm:inline">Bulk Upload</span><span class="sm:hidden">Bulk</span>
+      </button>
+    </div>
   </div>
 
   <!-- Manual Add Form (hidden by default) -->
   <div id="manualFormContainer" class="mb-6 p-4 border rounded bg-emerald-50 hidden">
-    <form method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+    <form method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
       <input type="hidden" name="action" value="add_manual_record">
 
       <div>
-        <label class="block text-sm font-medium text-gray-700">Crop Type</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
         <select id="add_crop_type" name="crop_type" required
-                class="mt-1 block w-full border rounded px-3 py-2">
+                class="w-full border rounded px-3 py-2 text-sm">
           <option value="buko">Buko</option>
           <option value="saba">Saba</option>
           <option value="rambutan">Rambutan</option>
@@ -551,107 +551,184 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700">Quantity</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
         <input name="quantity" type="number" step="0.01" min="0" required
-               class="mt-1 block w-full border rounded px-3 py-2" />
+               class="w-full border rounded px-3 py-2 text-sm" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700">Unit</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
         <input id="add_unit" name="unit" type="text" readonly
-         class="mt-1 block w-full border rounded px-3 py-2 bg-gray-100" />
+         class="w-full border rounded px-3 py-2 bg-gray-100 text-sm" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700">Date Recorded</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date Recorded</label>
         <input 
           name="recorded_at" 
           type="date" 
           required 
-          class="mt-1 block w-full border rounded px-3 py-2"
+          class="w-full border rounded px-3 py-2 text-sm"
           min="2016-01-01"
           max="<?= date('Y-m-d') ?>"
           />
       </div>
 
-      <div class="md:col-span-4 flex gap-2 mt-2">
+      <div class="sm:col-span-2 lg:col-span-4 flex flex-col sm:flex-row gap-2 mt-2">
         <button type="submit"
-                class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">✅ Save</button>
+                class="px-4 py-2 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700">✅ Save</button>
         <button type="button" id="cancelAddForm"
-                class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Cancel</button>
+                class="px-4 py-2 bg-gray-100 text-sm rounded hover:bg-gray-200">Cancel</button>
       </div>
 
     </form>
   </div>
 
   <!-- Records table -->
-  <div class="overflow-x-auto">
-    <table class="w-full table-auto border-collapse">
-      <thead class="bg-emerald-100 text-emerald-800">
-        <tr>
-          <th class="px-4 py-2 text-left">Crop</th>
-          <th class="px-4 py-2 text-right">Quantity</th>
-          <th class="px-4 py-2 text-left">Unit</th>
-          <th class="px-4 py-2 text-left">Source</th>
-          <th class="px-4 py-2 text-left">Date</th>
-          <th class="px-4 py-2 text-left">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if ($records_result && $records_result->num_rows > 0): ?>
-          <?php while ($r = $records_result->fetch_assoc()): ?>
-            <tr class="border-b">
-              <td class="px-4 py-2"><?= htmlspecialchars(ucfirst($r['crop_type'])) ?></td>
-              <td class="px-4 py-2 text-right"><?= htmlspecialchars((string)$r['quantity']) ?></td>
-              <td class="px-4 py-2"><?= htmlspecialchars($r['unit']) ?></td>
-              <td class="px-4 py-2"><?= htmlspecialchars($r['source']) ?></td>
-              <td class="px-4 py-2"><?= htmlspecialchars($r['recorded_at']) ?></td>
-              <td class="px-4 py-2">
-                <?php if ($r['source'] === 'manual'): ?>
-                  <!-- Edit button triggers modal with data attributes -->
-                  <button class="openEditModal inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded"
-                          data-yield_id="<?= (int)$r['yield_id'] ?>"
-                          data-crop_type="<?= htmlspecialchars($r['crop_type']) ?>"
-                          data-quantity="<?= htmlspecialchars((string)$r['quantity']) ?>"
-                          data-unit="<?= htmlspecialchars($r['unit']) ?>"
-                          data-recorded_at="<?= htmlspecialchars($r['recorded_at']) ?>">
-                    ✏️ Edit
-                  </button>
-
-                  <!-- Delete -->
-                  <a href="forecasting.php?action=delete_manual_record&id=<?= (int)$r['yield_id'] ?>"
-                     onclick="return confirm('Are you sure you want to delete this manual record?');"
-                     class="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded ml-2">
-                    🗑️ Delete
-                  </a>
-                <?php else: ?>
-                  <span class="text-sm text-gray-500 italic">— system</span>
-                <?php endif; ?>
-              </td>
-            </tr>
-          <?php endwhile; ?>
-        <?php else: ?>
-          <tr>
-            <td colspan="6" class="px-4 py-6 text-center text-gray-500">No yield records found.</td>
-          </tr>
-        <?php endif; ?>
-      </tbody>
-    </table>
-
-    <?php if ($total_pages > 1): ?>
-      <div class="mt-4 flex justify-center gap-2">
-        <?php if ($page > 1): ?>
-          <a href="forecasting.php?page=<?= $page - 1 ?>" class="px-3 py-1 bg-gray-100 rounded">⬅ Prev</a>
-          <?php endif; ?>
-          <span class="px-3 py-1 bg-emerald-100 rounded"><?= $page ?> / <?= $total_pages ?></span>
-          <?php if ($page < $total_pages): ?>
-           <a href="forecasting.php?page=<?= $page + 1 ?>" class="px-3 py-1 bg-gray-100 rounded">Next ➡</a>
-          <?php endif; ?>
-      </div>
-    <?php endif; ?>
+  <div class="overflow-x-auto -mx-4 lg:mx-0">
+    <div id="yield-table"></div>
   </div>
 
 </section>
+
+<!-- ===== Edit Modal (overlay) ===== -->
+<div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4">
+  <div class="bg-white rounded-lg w-full max-w-2xl p-4 lg:p-6 shadow-lg max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="text-base lg:text-lg font-semibold text-emerald-700">Edit Manual Record</h4>
+      <button id="closeEditModal" class="text-gray-500 hover:text-gray-800 text-xl">✖</button>
+    </div>
+
+    <form method="POST" id="editForm">
+      <input type="hidden" name="action" value="edit_manual_record">
+      <input type="hidden" name="yield_id" id="edit_yield_id" value="">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+          <select id="edit_crop_type" name="crop_type" required
+                  class="w-full border rounded px-3 py-2 text-sm">
+            <option value="buko">Buko</option>
+            <option value="saba">Saba</option>
+            <option value="rambutan">Rambutan</option>
+            <option value="lanzones">Lanzones</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+          <input id="edit_quantity" name="quantity" type="number" step="0.01" min="0" required
+                 class="w-full border rounded px-3 py-2 text-sm" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+          <input id="edit_unit" name="unit" type="text" readonly
+                 class="w-full border rounded px-3 py-2 bg-gray-100 text-sm" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Date Recorded</label>
+          <input 
+            id="edit_recorded_at" 
+            name="recorded_at" 
+            type="date" 
+            required 
+            class="w-full border rounded px-3 py-2 text-sm"
+            min="2016-01-01"
+            max="<?= date('Y-m-d') ?>"
+          />
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-col sm:flex-row justify-end gap-2">
+        <button type="button" id="cancelEditBtn" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 text-sm">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Bulk Upload Modal ===== -->
+<div id="bulkModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4">
+  <div class="bg-white rounded-lg w-full max-w-5xl p-4 lg:p-6 shadow-lg max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="text-base lg:text-lg font-semibold text-emerald-700">Bulk Upload — Add Multiple Manual Records</h4>
+      <button id="closeBulkModal" class="text-gray-500 hover:text-gray-800 text-xl">✖</button>
+    </div>
+
+    <p class="text-xs lg:text-sm text-gray-600 mb-4">Add multiple rows below. Units auto-fill and are read-only. Dates allowed: 2016 to today. Click <strong>Preview</strong> to validate before import.</p>
+
+    <!-- Dynamic rows table (Scrollable rows only) -->
+    <div class="overflow-x-auto mb-4 -mx-4 lg:mx-0">
+      <div class="inline-block min-w-full align-middle px-4 lg:px-0">
+        <table id="bulkTableModal" class="min-w-full table-auto border-collapse">
+          <thead class="bg-emerald-100 text-emerald-800">
+            <tr>
+              <th class="px-2 lg:px-3 py-2 text-left text-xs lg:text-sm">#</th>
+              <th class="px-2 lg:px-3 py-2 text-left text-xs lg:text-sm">Crop</th>
+              <th class="px-2 lg:px-3 py-2 text-right text-xs lg:text-sm">Quantity</th>
+              <th class="px-2 lg:px-3 py-2 text-left text-xs lg:text-sm">Unit</th>
+              <th class="px-2 lg:px-3 py-2 text-left text-xs lg:text-sm">Date</th>
+              <th class="px-2 lg:px-3 py-2 text-left text-xs lg:text-sm">Remove</th>
+            </tr>
+          </thead>
+        </table>
+
+        <!-- Scrollable row container -->
+        <div class="max-h-[250px] overflow-y-auto">
+          <table class="min-w-full table-auto border-collapse">
+            <tbody id="bulkTbodyModal"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+      <button id="addRowModalBtn" class="px-3 lg:px-4 py-2 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700">+ Add Row</button>
+      <button id="previewModalBtn" class="px-3 lg:px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">Preview</button>
+      <button id="clearAllModalBtn" class="px-3 lg:px-4 py-2 bg-gray-100 text-sm rounded hover:bg-gray-200">Clear All</button>
+    </div>
+
+    <!-- Preview area (hidden initially) -->
+    <div id="bulkPreviewSection" class="hidden">
+      <h5 class="font-medium text-gray-700 mb-2 text-sm lg:text-base">Preview</h5>
+      <div id="bulkPreviewErrors" class="mb-3"></div>
+      <div class="overflow-x-auto max-h-64 mb-4 -mx-4 lg:mx-0">
+        <div class="inline-block min-w-full align-middle px-4 lg:px-0">
+          <table id="bulkPreviewTable" class="min-w-full table-auto text-xs lg:text-sm">
+            <thead class="bg-emerald-100">
+              <tr>
+                <th class="px-2 py-1">#</th>
+                <th class="px-2 py-1">Crop</th>
+                <th class="px-2 py-1 text-right">Qty</th>
+                <th class="px-2 py-1">Unit</th>
+                <th class="px-2 py-1">Date</th>
+                <th class="px-2 py-1">Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 flex flex-col sm:flex-row justify-end gap-2">
+      <button id="cancelBulkBtn" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 text-sm">Cancel</button>
+
+      <!-- Confirm form posts to this same page -->
+      <form method="POST" id="bulkConfirmForm" class="inline w-full sm:w-auto">
+        <input type="hidden" name="action" value="confirm_bulk">
+        <input type="hidden" name="bulk_data" id="bulk_data_input" value="">
+        <button id="confirmBulkImportBtn" type="submit" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm">Confirm & Import</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
 
 <!-- ===== Edit Modal (overlay) ===== -->
 <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
@@ -778,8 +855,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
   </div>
 </div>
 
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+
+<script>
+  const yieldData = [
+    <?php if ($records_result && $records_result->num_rows > 0): ?>
+      <?php while ($r = $records_result->fetch_assoc()): ?>
+        [
+          "<?= htmlspecialchars(ucfirst($r['crop_type'])) ?>",
+          "<?= htmlspecialchars((string)$r['quantity']) ?>",
+          "<?= htmlspecialchars($r['unit']) ?>",
+          "<?= htmlspecialchars($r['source']) ?>",
+          "<?= htmlspecialchars($r['recorded_at']) ?>",
+          gridjs.html(`<?php if ($r['source'] === 'manual'): ?>
+              <button class='openEditModal bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs'
+                  data-yield_id="<?= (int)$r['yield_id'] ?>"
+                  data-crop_type="<?= htmlspecialchars($r['crop_type']) ?>"
+                  data-quantity="<?= htmlspecialchars((string)$r['quantity']) ?>"
+                  data-unit="<?= htmlspecialchars($r['unit']) ?>"
+                  data-recorded_at="<?= htmlspecialchars($r['recorded_at']) ?>">
+                ✏️ Edit
+              </button>
+              <a href="forecasting.php?action=delete_manual_record&id=<?= (int)$r['yield_id'] ?>"
+                onclick="return confirm('Delete this record?');"
+                class='bg-red-100 text-red-700 px-2 py-1 rounded text-xs'>
+                🗑 Delete
+              </a>
+            <?php else: ?>
+                <span class='text-gray-500 italic text-xs'>— system</span>
+            <?php endif; ?>`)
+        ],
+      <?php endwhile; ?>
+    <?php endif; ?>
+  ];
+</script>
+
+
 <!-- ====== JavaScript: toggles, modal, populate edit data, auto-set unit ====== -->
 <script>
+  console.log("yieldData →", yieldData);
+  new gridjs.Grid({
+    columns: ["Crop", "Quantity", "Unit", "Source", "Date", "Actions"],
+    data: yieldData,
+    search: true,
+    pagination: {
+      enabled: true,
+      limit: 10
+    },
+    sort: true,
+    className: {
+      table: "w-full text-sm"
+    }
+  }).render(document.getElementById("yield-table"));
   // Toggle Add Form
   const showAddBtn = document.getElementById('showAddFormBtn');
   const manualFormContainer = document.getElementById('manualFormContainer');
@@ -814,25 +942,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
   const closeEditModalBtn = document.getElementById('closeEditModal');
   const cancelEditBtn = document.getElementById('cancelEditBtn');
 
-  openEditButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.yield_id;
-      const crop = btn.dataset.crop_type;
-      const qty = btn.dataset.quantity;
-      const unit = btn.dataset.unit;
-      const date = btn.dataset.recorded_at;
+ document.addEventListener("click", function(e){
+    if(e.target.closest(".openEditModal")){
+        const btn = e.target.closest(".openEditModal");
 
-      document.getElementById('edit_yield_id').value = id;
-      document.getElementById('edit_crop_type').value = crop;
-      document.getElementById('edit_quantity').value = qty;
-      document.getElementById('edit_unit').value = unit;
-      document.getElementById('edit_recorded_at').value = date;
+        document.getElementById("edit_yield_id").value = btn.dataset.id;
+        document.getElementById("edit_crop_type").value = btn.dataset.crop;
+        document.getElementById("edit_quantity").value = btn.dataset.qty;
+        document.getElementById("edit_unit").value = btn.dataset.unit;
+        document.getElementById("edit_recorded_at").value = btn.dataset.date;
 
-      editModal.classList.remove('hidden');
-      editModal.classList.add('flex');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  });
+        editModal.classList.remove("hidden");
+        editModal.classList.add("flex");
+    }
+});
+
+document.getElementById("cancelEditBtn").onclick =
+document.getElementById("closeEditModal").onclick = () => {
+    editModal.classList.add("hidden");
+    editModal.classList.remove("flex");
+};
 
   function closeEdit() {
     editModal.classList.add('hidden');
@@ -1070,11 +1199,6 @@ if (hasErrors) {
 <!--WELCOME CHUCHU-->
 
 
-<div class="flex gap-2 mb-4">
-  <button id="tabYieldBtn" class="px-4 py-2 bg-emerald-600 text-white rounded">📥 Data Input</button>
-  <button id="tabForecastBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300" 
-          onclick="location.href='forecast_dashboard.php'">📈 Forecast Dashboard</button>
-</div>
 
 <!--rawr-->
 
