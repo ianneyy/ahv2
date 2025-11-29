@@ -196,29 +196,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete_manual_record' && isse
 
 /*
  * 5) Load yield_records for display
- * This result set will be consumed in Part 2 (HTML table)
+ * This result set will be consumed in Part 2 (Grid.js table)
  */
 
-// Pagination logic
-$limit = 15;
-$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$offset = ($page - 1) * $limit;
-
-// Fetch records
+// Fetch all records (Grid.js will handle pagination + search client-side)
 $records_sql = "
     SELECT * FROM yield_records 
-    ORDER BY recorded_at DESC, created_at DESC 
-    LIMIT $limit OFFSET $offset";
+    ORDER BY recorded_at DESC, created_at DESC";
 $records_result = $conn->query($records_sql);
 
-// Get total count for page numbers
-$total_sql = "SELECT COUNT(*) as total FROM yield_records";
-$total_rows = $conn->query($total_sql)->fetch_assoc()['total'];
-$total_pages = ceil($total_rows / $limit);
+// Collect rows into a plain array for JSON encoding
+$records = [];
+if ($records_result && $records_result->num_rows > 0) {
+    while ($row = $records_result->fetch_assoc()) {
+        $records[] = $row;
+    }
+}
 
-
-// Expose $flash and $records_result to the HTML below
-// (Part 2 will read $flash and loop through $records_result)
+// Expose $flash and $records array to the HTML below
 
 ///
 
@@ -293,20 +288,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit();
 }
 
+// Restore bulk import flash (if any) into main $flash for this request
+if (isset($_SESSION['bulk_flash']) && is_array($_SESSION['bulk_flash'])) {
+    // Merge but let any existing non-null $flash values take precedence
+    foreach ($_SESSION['bulk_flash'] as $k => $v) {
+        if (!empty($v) && empty($flash[$k])) {
+            $flash[$k] = $v;
+        }
+    }
+    unset($_SESSION['bulk_flash']);
+}
+
 ?>
 
 <?php
 require_once '../includes/header.php';
 ?>
-
-
-
-
-
 <div class="flex min-h-screen">
-
     <?php include 'includes/sidebar.php'; ?>
-
 
     <!-- Main content -->
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
@@ -433,27 +432,26 @@ require_once '../includes/header.php';
             <div id="tab-yield">
 
 
-                <!-- ====== Part 2: HTML / UI (paste this INSIDE <main> right after the Welcome header) ====== -->
 
-                <!-- Flash messages -->
+
+                <!-- DaisyUI toast notifications for success / error -->
                 <?php if (!empty($flash['success']) || !empty($flash['error'])): ?>
-                    <div class="mb-4">
+                    <div class="toast toast-end z-50">
                         <?php if (!empty($flash['success'])): ?>
-                            <div class="p-3 mb-2 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                <?= htmlspecialchars($flash['success']) ?>
+                            <div class="alert alert-success shadow-lg">
+                                <span><?= htmlspecialchars($flash['success']) ?></span>
                             </div>
                         <?php endif; ?>
                         <?php if (!empty($flash['error'])): ?>
-                            <div class="p-3 rounded bg-red-100 text-red-800 border border-red-200">
-                                <?= htmlspecialchars($flash['error']) ?>
+                            <div class="alert alert-error shadow-lg">
+                                <span><?= htmlspecialchars($flash['error']) ?></span>
                             </div>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
-
-                <section class="bg-white p-6 rounded-lg shadow-sm">
+                <section class="bg-white p-6 rounded-2xl shadow-sm border-2 border-gray-200">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-emerald-700">📁 Historical Yield Records</h3>
+                        <h3 class="text-xl font-semibold text-emerald-700">Historical Yield Records</h3>
 
                         <div class="flex items-center gap-3">
                             <!-- Sync button -->
@@ -523,138 +521,17 @@ require_once '../includes/header.php';
                         </form>
                     </div>
 
-                    <!-- Records table -->
+                    <!-- Records table (Grid.js will render here) -->
+                    <!-- Grid.js CSS & JS -->
+                    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
                     <div class="overflow-x-auto">
-                        <table class="w-full table-auto border-collapse">
-                            <thead class="bg-emerald-100 text-emerald-800">
-                                <tr>
-                                    <th class="px-4 py-2 text-left">Crop</th>
-                                    <th class="px-4 py-2 text-right">Quantity</th>
-                                    <th class="px-4 py-2 text-left">Unit</th>
-                                    <th class="px-4 py-2 text-left">Source</th>
-                                    <th class="px-4 py-2 text-left">Date</th>
-                                    <th class="px-4 py-2 text-left">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if ($records_result && $records_result->num_rows > 0): ?>
-                                    <?php while ($r = $records_result->fetch_assoc()): ?>
-                                        <tr class="border-b">
-                                            <td class="px-4 py-2"><?= htmlspecialchars(ucfirst($r['crop_type'])) ?></td>
-                                            <td class="px-4 py-2 text-right">
-                                                <?= htmlspecialchars((string) $r['quantity']) ?>
-                                            </td>
-                                            <td class="px-4 py-2"><?= htmlspecialchars($r['unit']) ?></td>
-                                            <td class="px-4 py-2"><?= htmlspecialchars($r['source']) ?></td>
-                                            <td class="px-4 py-2"><?= htmlspecialchars($r['recorded_at']) ?></td>
-                                            <td class="px-4 py-2">
-                                                <?php if ($r['source'] === 'manual'): ?>
-                                                    <!-- Edit button triggers modal with data attributes -->
-                                                    <button
-                                                        class="openEditModal inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded"
-                                                        data-yield_id="<?= (int) $r['yield_id'] ?>"
-                                                        data-crop_type="<?= htmlspecialchars($r['crop_type']) ?>"
-                                                        data-quantity="<?= htmlspecialchars((string) $r['quantity']) ?>"
-                                                        data-unit="<?= htmlspecialchars($r['unit']) ?>"
-                                                        data-recorded_at="<?= htmlspecialchars($r['recorded_at']) ?>">
-                                                        ✏️ Edit
-                                                    </button>
-
-                                                    <!-- Delete -->
-                                                    <a href="forecasting.php?action=delete_manual_record&id=<?= (int) $r['yield_id'] ?>"
-                                                        onclick="return confirm('Are you sure you want to delete this manual record?');"
-                                                        class="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded ml-2">
-                                                        🗑️ Delete
-                                                    </a>
-                                                <?php else: ?>
-                                                    <span class="text-sm text-gray-500 italic">— system</span>
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="6" class="px-4 py-6 text-center text-gray-500">No yield records
-                                            found.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-
-                        <?php if ($total_pages > 1): ?>
-                            <div class="mt-4 flex justify-center gap-2">
-                                <?php if ($page > 1): ?>
-                                    <a href="forecasting.php?page=<?= $page - 1 ?>" class="px-3 py-1 bg-gray-100 rounded">⬅
-                                        Prev</a>
-                                <?php endif; ?>
-                                <span class="px-3 py-1 bg-emerald-100 rounded"><?= $page ?> /
-                                    <?= $total_pages ?></span>
-                                <?php if ($page < $total_pages): ?>
-                                    <a href="forecasting.php?page=<?= $page + 1 ?>" class="px-3 py-1 bg-gray-100 rounded">Next
-                                        ➡</a>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
+                        <div id="yieldGrid" class="border-none"></div>
                     </div>
 
                 </section>
 
-                <!-- ===== Edit Modal (overlay) ===== -->
-                <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
-                    <div class="bg-white rounded-lg w-full max-w-2xl p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 class="text-lg font-semibold text-emerald-700">Edit Manual Record</h4>
-                            <button id="closeEditModal" class="text-gray-500 hover:text-gray-800">✖</button>
-                        </div>
+           
 
-                        <form method="POST" id="editForm">
-                            <input type="hidden" name="action" value="edit_manual_record">
-                            <input type="hidden" name="yield_id" id="edit_yield_id" value="">
-
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Crop Type</label>
-                                    <select id="edit_crop_type" name="crop_type" required
-                                        class="mt-1 block w-full border rounded px-3 py-2">
-                                        <option value="buko">Buko</option>
-                                        <option value="saba">Saba</option>
-                                        <option value="rambutan">Rambutan</option>
-                                        <option value="lanzones">Lanzones</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Quantity</label>
-                                    <input id="edit_quantity" name="quantity" type="number" step="0.01" min="0" required
-                                        class="mt-1 block w-full border rounded px-3 py-2" />
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Unit</label>
-                                    <input id="edit_unit" name="unit" type="text" readonly
-                                        class="mt-1 block w-full border rounded px-3 py-2 bg-gray-100" />
-                                </div>
-
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Date Recorded</label>
-                                    <input id="edit_recorded_at" name="recorded_at" type="date" required
-                                        class="mt-1 block w-full border rounded px-3 py-2" min="2016-01-01"
-                                        max="<?= date('Y-m-d') ?>" />
-
-                                </div>
-                            </div>
-
-                            <div class="mt-4 flex justify-end gap-2">
-                                <button type="button" id="cancelEditBtn"
-                                    class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Cancel</button>
-                                <button type="submit"
-                                    class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Save
-                                    changes</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
 
                 <!-- ===== Bulk Upload Modal (full-screen overlay, max-w-5xl) ===== -->
                 <div id="bulkModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
@@ -740,8 +617,181 @@ require_once '../includes/header.php';
                     </div>
                 </div>
 
-                <!-- ====== JavaScript: toggles, modal, populate edit data, auto-set unit ====== -->
+                <!-- Grid.js JS (after DOM elements so it can render into #yieldGrid) -->
+                <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+
+                <!-- ====== JavaScript: toggles, modal, populate edit data, auto-set unit, Grid.js table ====== -->
                 <script>
+                    // Grid.js data + table
+                    (function() {
+                        const yieldGridEl = document.getElementById('yieldGrid');
+                        if (!yieldGridEl || typeof gridjs === 'undefined') return;
+
+                        const rawData = <?php
+                                        echo json_encode(
+                                            $records,
+                                            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+                                        );
+                                        ?> || [];
+
+                        const data = rawData.map(r => ({
+                            crop: r.crop_type,
+                            quantity: parseFloat(r.quantity),
+                            unit: r.unit,
+                            source: r.source,
+                            date: r.recorded_at,
+                            meta: r
+                        }));
+
+                        new gridjs.Grid({
+                            columns: [{
+                                    id: 'crop',
+                                    name: 'Crop',
+                                    formatter: cell => {
+                                        if (!cell) return '';
+                                        return cell.charAt(0).toUpperCase() + cell.slice(1);
+                                    }
+                                },
+                                {
+                                    id: 'quantity',
+                                    name: 'Quantity',
+                                    sort: true,
+                                    formatter: cell => {
+                                        if (cell === null || cell === undefined || isNaN(cell)) return '';
+                                        return Number(cell).toLocaleString();
+                                    }
+                                },
+                                {
+                                    id: 'unit',
+                                    name: 'Unit'
+                                },
+                                {
+                                    id: 'source',
+                                    name: 'Source'
+                                },
+                                {
+                                    id: 'date',
+                                    name: 'Date'
+                                },
+                                {
+                                    id: 'meta',
+                                    name: 'Actions',
+                                    width: '180px',
+                                    sort: false,
+                                    formatter: meta => {
+                                        if (!meta || meta.source !== 'manual') {
+                                            return gridjs.html('<span class="text-sm text-gray-500 italic">— system</span>');
+                                        }
+
+                                        const id = parseInt(meta.yield_id, 10);
+                                        const crop = meta.crop_type || '';
+                                        const qty = meta.quantity || 0;
+                                        const unit = meta.unit || '';
+                                        const date = meta.recorded_at || '';
+
+                                        const deleteHref = `forecasting.php?action=delete_manual_record&id=${id}`;
+                                        const confirmText = "return confirm('Are you sure you want to delete this manual record?');";
+
+                                        return gridjs.html(
+                                            `
+                                            <div class="flex items-center">
+                                            <button class="openEditModal inline-flex items-center gap-2 px-3 py-1 rounded mr-2 text-gray-500" onclick="document.getElementById('editModal-${id}').showModal()">Edit</button>
+                                             <a href="${deleteHref}" onclick="${confirmText}" class="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded">Delete</a>
+                                             </div>
+
+                                            <dialog id="editModal-${id}" class="modal modal-bottom sm:modal-middle">
+                                                <div class="modal-box w-11/12 max-w-3xl">
+                                                    <h3 class="text-lg font-bold">Edit Record</h3>
+                                                    
+
+                                                    <form method="POST" id="editForm" class="space-y-4 mt-5">
+                                                     <input type="hidden" name="action" value="edit_manual_record">
+                                                     <input type="hidden" name="yield_id" value="${id}">
+                                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">Crop Type</label>
+                                                            <select  name="crop_type" required
+                                                                class="mt-1 block w-full border rounded px-3 py-2" >
+                                                                  <option value="buko" ${crop === 'buko' ? 'selected' : ''}>Buko</option>
+                                                                    <option value="saba" ${crop === 'saba' ? 'selected' : ''}>Saba</option>
+                                                                    <option value="rambutan" ${crop === 'rambutan' ? 'selected' : ''}>Rambutan</option>
+                                                                    <option value="lanzones" ${crop === 'lanzones' ? 'selected' : ''}>Lanzones</option>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                        <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                                                            <input name="quantity" type="number" step="0.01" min="0" required
+                                                                class="mt-1 block w-full border rounded px-3 py-2" value="${qty}" />
+                                                        </div>
+                                                        <div>
+                                                        <label class="block text-sm font-medium text-gray-700">Unit</label>
+                                                            <input name="unit" type="text" readonly
+                                                                class="mt-1 block w-full border rounded px-3 py-2 bg-gray-100" value="${unit}"/>
+                                                        </div>
+
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">Date Recorded</label>
+                                                            <input  name="recorded_at" type="date" required
+                                                                class="mt-1 block w-full border rounded px-3 py-2" min="2016-01-01"
+                                                                max="<?= date('Y-m-d') ?>" value="${date}"/>
+                                                        </div>
+                                                    </div>
+
+                                                        <div class="mt-6 flex justify-end gap-3">
+                                                            <button  onclick="document.getElementById('editModal-${id}').close()" type="button"
+                                                                class="px-5 py-2.5 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-full transition-colors">
+                                                                Cancel
+                                                            </button>
+                                                            <button 
+                                                                type="submit"
+                                                                class="px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white font-medium rounded-full shadow-sm transition-colors">
+                                                                Save Changes
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </dialog>
+                                             
+                                             `
+                                        );
+                                    }
+                                }
+                            ],
+                            data,
+                            search: {
+                                enabled: true,
+                                placeholder: 'Search records...'
+                            },
+                            pagination: {
+                                enabled: true,
+                                limit: 10,
+                                summary: true
+                            },
+                            sort: true,
+                            className: {
+
+                                row: 'bg-gray-100 hover:bg-gray-200',
+                            },
+                            style: {
+                                table: {
+                                    'border': 'none',
+                                    'border-radius': '0.5rem',
+                                    'font-size': '14px',
+                                },
+                                th: {
+                                    'background-color': 'rgba(16,185,129,0.2)',
+                                    'color': '#065f46',
+                                    'font-weight': '600',
+                                    'font-size': '12px',
+                                },
+                                td: {
+                                    'font-size': '12px',
+                                }
+                            },
+                        }).render(yieldGridEl);
+                    })();
+
+                    // Toggle Add Form
                     // Toggle Add Form
                     const showAddBtn = document.getElementById('showAddFormBtn');
                     const manualFormContainer = document.getElementById('manualFormContainer');
@@ -749,7 +799,10 @@ require_once '../includes/header.php';
 
                     showAddBtn.addEventListener('click', () => {
                         manualFormContainer.classList.toggle('hidden');
-                        window.scrollTo({ top: manualFormContainer.offsetTop - 80, behavior: 'smooth' });
+                        window.scrollTo({
+                            top: manualFormContainer.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
                     });
                     cancelAddBtn.addEventListener('click', () => {
                         manualFormContainer.classList.add('hidden');
@@ -770,50 +823,12 @@ require_once '../includes/header.php';
                         addCrop.dispatchEvent(ev);
                     }
 
-                    // Edit modal logic
-                    const editModal = document.getElementById('editModal');
-                    const openEditButtons = document.querySelectorAll('.openEditModal');
-                    const closeEditModalBtn = document.getElementById('closeEditModal');
-                    const cancelEditBtn = document.getElementById('cancelEditBtn');
 
-                    openEditButtons.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const id = btn.dataset.yield_id;
-                            const crop = btn.dataset.crop_type;
-                            const qty = btn.dataset.quantity;
-                            const unit = btn.dataset.unit;
-                            const date = btn.dataset.recorded_at;
 
-                            document.getElementById('edit_yield_id').value = id;
-                            document.getElementById('edit_crop_type').value = crop;
-                            document.getElementById('edit_quantity').value = qty;
-                            document.getElementById('edit_unit').value = unit;
-                            document.getElementById('edit_recorded_at').value = date;
 
-                            editModal.classList.remove('hidden');
-                            editModal.classList.add('flex');
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        });
-                    });
-
-                    function closeEdit() {
-                        editModal.classList.add('hidden');
-                        editModal.classList.remove('flex');
-                    }
-                    closeEditModalBtn.addEventListener('click', closeEdit);
-                    cancelEditBtn.addEventListener('click', closeEdit);
-
-                    // Auto-set unit in edit modal when crop changes
-                    const editCrop = document.getElementById('edit_crop_type');
-                    const editUnit = document.getElementById('edit_unit');
-                    editCrop.addEventListener('change', () => {
-                        const c = editCrop.value;
-                        if (c === 'buko' || c === 'saba') editUnit.value = 'pcs';
-                        else editUnit.value = 'kg';
-                    });
 
                     /* ===== Bulk Upload modal JS ===== */
-                    (function () {
+                    (function() {
                         const bulkBtn = document.getElementById('bulkUploadBtn');
                         const bulkModal = document.getElementById('bulkModal');
                         const closeBulk = document.getElementById('closeBulkModal');
@@ -838,8 +853,12 @@ require_once '../includes/header.php';
                             bulkModal.classList.add('flex');
                             // ensure one row exists
                             if (tbody.children.length === 0) createRow();
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            window.scrollTo({
+                                top: 0,
+                                behavior: 'smooth'
+                            });
                         }
+
                         function closeModal() {
                             bulkModal.classList.add('hidden');
                             bulkModal.classList.remove('flex');
@@ -855,6 +874,7 @@ require_once '../includes/header.php';
 
                         // create dynamic row
                         let counter = 0;
+
                         function createRow(data = {}) {
                             counter++;
                             const tr = document.createElement('tr');
@@ -921,9 +941,16 @@ require_once '../includes/header.php';
                             counter = rows.length;
                         }
 
-                        addRowBtn.addEventListener('click', (e) => { e.preventDefault(); createRow(); });
+                        addRowBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            createRow();
+                        });
 
-                        clearBtn.addEventListener('click', (e) => { e.preventDefault(); tbody.innerHTML = ''; counter = 0; });
+                        clearBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            tbody.innerHTML = '';
+                            counter = 0;
+                        });
 
                         // Preview: validate client-side and show results in preview table
                         // Preview: validate client-side and group errors
@@ -956,7 +983,12 @@ require_once '../includes/header.php';
                                     if (year < 2016 || year > curYear) addError(`Date must be between 2016 and ${curYear}`);
                                 }
 
-                                rows.push({ crop, quantity: parseFloat(qty || 0), unit, recorded_at: date });
+                                rows.push({
+                                    crop,
+                                    quantity: parseFloat(qty || 0),
+                                    unit,
+                                    recorded_at: date
+                                });
                             });
 
                             previewTableBody.innerHTML = '';
@@ -1013,7 +1045,10 @@ require_once '../includes/header.php';
                                 }
                             }
 
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            window.scrollTo({
+                                top: 0,
+                                behavior: 'smooth'
+                            });
                         });
 
                         // ensure the confirm form will have data
@@ -1026,7 +1061,6 @@ require_once '../includes/header.php';
                         });
 
                     })(); // IIFE end
-
                 </script>
 
                 <!--WELCOME CHUCHU-->
@@ -1066,11 +1100,10 @@ require_once '../includes/header.php';
                 <!-- Chart container -->
                 <canvas id="forecastChart" class="mt-4 w-full h-64"></canvas>
             </div>
-
-            <!-- Chart.js -->
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="https://unpkg.com/lucide@latest"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
             <script>
-                let forecastChart; // Global chart instance
+                lucide.createIcons();
 
                 function renderForecastChart(forecasts) {
                     const ctx = document.getElementById('forecastChart').getContext('2d');
@@ -1095,12 +1128,23 @@ require_once '../includes/header.php';
                         options: {
                             responsive: true,
                             plugins: {
-                                legend: { display: true, position: 'top' },
-                                tooltip: { enabled: true }
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                },
+                                tooltip: {
+                                    enabled: true
+                                }
                             },
                             scales: {
-                                y: { beginAtZero: true },
-                                x: { ticks: { autoSkip: false } }
+                                y: {
+                                    beginAtZero: true
+                                },
+                                x: {
+                                    ticks: {
+                                        autoSkip: false
+                                    }
+                                }
                             }
                         }
                     });
@@ -1111,7 +1155,7 @@ require_once '../includes/header.php';
 
                     // Handle Generate Buko/Saba buttons
                     document.querySelectorAll('.generateForecastBtn').forEach(btn => {
-                        btn.addEventListener('click', function () {
+                        btn.addEventListener('click', function() {
                             const crop = this.dataset.crop;
                             loading.classList.remove('hidden');
 
