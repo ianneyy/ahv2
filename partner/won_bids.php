@@ -110,7 +110,7 @@ require_once '../includes/header.php';
 <div class="flex min-h-screen ">
 <?php include 'includes/sidebar.php'; ?>
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
-        <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+        <div class="lg:max-w-7xl" style=" margin: auto; padding: 20px;">
             <!-- Header Section -->
             <div class="max-w-7xl mx-auto">
                 <div class="flex  gap-4 flex-col">

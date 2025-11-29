@@ -309,13 +309,12 @@ require_once '../includes/header.php';
 
     <!-- Main content -->
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
-        <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+        <div class="lg:max-w-7xl" style=" margin: auto; padding: 20px;">
 
             <div class="flex items-center justify-center">
                 <!--WELCOME [USER] chuchuchu-->
                 <div id="bar" class="flex w-full justify-between items-center  mb-10  rounded-full">
-                    <h2 class="text-2xl lg:text-4xl font-semibold text-emerald-800">Welcome,
-                        <?= ucfirst(htmlspecialchars($_SESSION["user_name"])) ?>!
+                    <h2 class="text-2xl lg:text-4xl font-semibold text-emerald-800">Records
                     </h2>
 
                     <!--rawr-->
@@ -421,13 +420,7 @@ require_once '../includes/header.php';
                 </div>
             </div>
 
-            <div class="flex gap-2 mb-4"> <!-- Top 2 Buttons -->
-                <button id="tabYieldBtn" class="px-4 py-2 bg-emerald-600 text-white rounded">📥 Data
-                    Input</button>
-                <button id="tabForecastBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">📈
-                    Forecast
-                    Results</button>
-            </div>
+
 
             <div id="tab-yield">
 
@@ -454,34 +447,42 @@ require_once '../includes/header.php';
                         <h3 class="text-xl font-semibold text-emerald-700">Historical Yield Records</h3>
 
                         <div class="flex items-center gap-3">
+
                             <!-- Sync button -->
                             <a href="forecasting.php?action=sync"
-                                class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">
-                                🔄 Sync from AHV2
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-950 rounded ">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                <span>Sync</span>
+
                             </a>
 
                             <!-- Add Manual toggle -->
+
                             <button id="showAddFormBtn"
-                                class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200">
-                                ➕ Add Manual Record
+                                class="inline-flex items-center text-sm gap-2 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                <span>Add Manual Record</span>
+
                             </button>
 
                             <!-- Bulk Upload button (new) -->
                             <button id="bulkUploadBtn"
-                                class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200">
-                                📥 Bulk Upload
+                                class="inline-flex items-center text-sm gap-2 px-4 py-2  text-gray-800 rounded hover:border-gray-800 hover:bg-gray-100 border-2 border-dashed border-gray-400">
+                                <i data-lucide="package" class="w-4 h-4"></i>
+                                <span>Bulk Upload</span>
+
                             </button>
                         </div>
 
                     </div>
 
                     <!-- Manual Add Form (hidden by default) -->
-                    <div id="manualFormContainer" class="mb-6 p-4 border rounded bg-emerald-50 hidden">
+                    <div id="manualFormContainer" class="mb-6 p-4 border rounded-2xl  hidden shadow-md">
                         <form method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                             <input type="hidden" name="action" value="add_manual_record">
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Crop Type</label>
+                                <label class="block text-xs font-medium text-gray-600 ">Crop Type</label>
                                 <select id="add_crop_type" name="crop_type" required
                                     class="mt-1 block w-full border rounded px-3 py-2">
                                     <option value="buko">Buko</option>
@@ -492,30 +493,31 @@ require_once '../includes/header.php';
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                                <label class="block text-sm font-medium text-gray-600 text-xs">Quantity</label>
                                 <input name="quantity" type="number" step="0.01" min="0" required
                                     class="mt-1 block w-full border rounded px-3 py-2" />
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Unit</label>
+                                <label class="block text-sm font-medium text-gray-600 text-xs ">Unit</label>
                                 <input id="add_unit" name="unit" type="text" readonly
-                                    class="mt-1 block w-full border rounded px-3 py-2 bg-gray-100" />
+                                    class="mt-1 block w-full border rounded px-3 py-2 bg-gray-100 w-24" />
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Date Recorded</label>
+                                <label class="block text-sm font-medium text-gray-600 text-xs">Date Recorded</label>
                                 <input name="recorded_at" type="date" required
                                     class="mt-1 block w-full border rounded px-3 py-2" min="2016-01-01"
                                     max="<?= date('Y-m-d') ?>" />
                             </div>
 
-                            <div class="md:col-span-4 flex gap-2 mt-2">
-                                <button type="submit"
-                                    class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">✅
-                                    Save</button>
+                            <div class="md:col-span-4 flex gap-2 mt-2 justify-end">
+
                                 <button type="button" id="cancelAddForm"
-                                    class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Cancel</button>
+                                   class="px-5 py-2.5 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-full transition-colors text-sm">Cancel</button>
+                                <button type="submit"
+                                     class="px-5 py-2.5 bg-green-500 hover:bg-green-600 text-sm text-white font-medium rounded-full shadow-sm transition-colors">
+                                    Save</button>
                             </div>
 
                         </form>
@@ -530,12 +532,12 @@ require_once '../includes/header.php';
 
                 </section>
 
-           
+
 
 
                 <!-- ===== Bulk Upload Modal (full-screen overlay, max-w-5xl) ===== -->
                 <div id="bulkModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
-                    <div class="bg-white rounded-lg w-full max-w-5xl p-6 shadow-lg">
+                    <div class="bg-white rounded-2xl w-full max-w-5xl p-6 shadow-lg">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="text-lg font-semibold text-emerald-700">Bulk Upload — Add Multiple Manual
                                 Records</h4>
@@ -549,35 +551,40 @@ require_once '../includes/header.php';
                         <!-- Dynamic rows table (Scrollable rows only) -->
                         <div class="overflow-x-auto mb-4">
                             <table id="bulkTableModal" class="w-full table-auto border-collapse">
-                                <thead class="bg-emerald-100 text-emerald-800">
+                                <thead class="bg-gray-200 text-gray-500">
                                     <tr>
-                                        <th class="px-3 py-2 text-left">#</th>
-                                        <th class="px-3 py-2 text-left">Crop</th>
-                                        <th class="px-3 py-2 text-right">Quantity</th>
-                                        <th class="px-3 py-2 text-left">Unit</th>
-                                        <th class="px-3 py-2 text-left">Date Recorded</th>
-                                        <th class="px-3 py-2 text-left">Remove</th>
+                                        <th class="px-3 py-2 text-center rounded-l-lg">#</th>
+                                        <th class="px-3 py-2 text-center">Crop</th>
+                                        <th class="px-3 py-2 text-center">Quantity</th>
+                                        <th class="px-3 py-2 text-center">Unit</th>
+                                        <th class="px-3 py-2 text-center">Date Recorded</th>
+                                        <th class="px-3 py-2 text-center rounded-r-lg">Remove</th>
                                     </tr>
                                 </thead>
+                                <tbody id="bulkTbodyModal"></tbody>
                             </table>
 
-                            <!-- Scrollable row container -->
-                            <div class="max-h-[250px] overflow-y-auto">
-                                <table class="w-full table-auto border-collapse">
-                                    <tbody id="bulkTbodyModal"></tbody>
-                                </table>
-                            </div>
+
                         </div>
 
+                            <hr>
+                        <div class="flex justify-between mb-5 mt-5">
+                            <div class="flex gap-2">
 
-                        <div class="flex gap-2 mb-4">
-                            <button id="addRowModalBtn"
-                                class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">+ Add
-                                Row</button>
-                            <button id="previewModalBtn"
-                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Preview</button>
-                            <button id="clearAllModalBtn" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Clear
-                                All</button>
+                                <button id="addRowModalBtn"
+                                    class="px-4 py-2  flex items-center gap-2 text-emerald-600 text-sm rounded hover:bg-gray-100">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                    <span>Row</span>
+                                </button>
+                                <button id="previewModalBtn"
+                                    class="px-4 py-2 text-gray-600 text-sm  rounded hover:bg-gray-100 flex items-center gap-2">
+                                    <i data-lucide="eye" class="w-5 h-5"></i>
+                                    <span>Preview</span>
+                                </button>
+                            </div>
+
+                            <button id="clearAllModalBtn" class="px-4 text-sm py-2 bg-gray-100 rounded hover:bg-gray-200">Clear
+                                </button>
                         </div>
 
                         <!-- Preview area (hidden initially) -->
@@ -603,14 +610,14 @@ require_once '../includes/header.php';
 
                         <div class="mt-4 flex justify-end gap-2">
                             <button id="cancelBulkBtn"
-                                class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Cancel</button>
+                                class="px-5 py-2.5 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-full transition-colors text-sm">Cancel</button>
 
                             <!-- Confirm form posts to this same page -->
                             <form method="POST" id="bulkConfirmForm" class="inline">
                                 <input type="hidden" name="action" value="confirm_bulk">
                                 <input type="hidden" name="bulk_data" id="bulk_data_input" value="">
                                 <button id="confirmBulkImportBtn" type="submit"
-                                    class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Confirm
+                                    class="px-5 py-2.5 bg-green-500 hover:bg-green-600 text-sm text-white font-medium rounded-full shadow-sm transition-colors">Confirm
                                     & Import</button>
                             </form>
                         </div>
@@ -623,16 +630,16 @@ require_once '../includes/header.php';
                 <!-- ====== JavaScript: toggles, modal, populate edit data, auto-set unit, Grid.js table ====== -->
                 <script>
                     // Grid.js data + table
-                    (function() {
+                    (function () {
                         const yieldGridEl = document.getElementById('yieldGrid');
                         if (!yieldGridEl || typeof gridjs === 'undefined') return;
 
                         const rawData = <?php
-                                        echo json_encode(
-                                            $records,
-                                            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
-                                        );
-                                        ?> || [];
+                        echo json_encode(
+                            $records,
+                            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+                        );
+                        ?> || [];
 
                         const data = rawData.map(r => ({
                             crop: r.crop_type,
@@ -645,55 +652,55 @@ require_once '../includes/header.php';
 
                         new gridjs.Grid({
                             columns: [{
-                                    id: 'crop',
-                                    name: 'Crop',
-                                    formatter: cell => {
-                                        if (!cell) return '';
-                                        return cell.charAt(0).toUpperCase() + cell.slice(1);
+                                id: 'crop',
+                                name: 'Crop',
+                                formatter: cell => {
+                                    if (!cell) return '';
+                                    return cell.charAt(0).toUpperCase() + cell.slice(1);
+                                }
+                            },
+                            {
+                                id: 'quantity',
+                                name: 'Quantity',
+                                sort: true,
+                                formatter: cell => {
+                                    if (cell === null || cell === undefined || isNaN(cell)) return '';
+                                    return Number(cell).toLocaleString();
+                                }
+                            },
+                            {
+                                id: 'unit',
+                                name: 'Unit'
+                            },
+                            {
+                                id: 'source',
+                                name: 'Source'
+                            },
+                            {
+                                id: 'date',
+                                name: 'Date'
+                            },
+                            {
+                                id: 'meta',
+                                name: 'Actions',
+                                width: '180px',
+                                sort: false,
+                                formatter: meta => {
+                                    if (!meta || meta.source !== 'manual') {
+                                        return gridjs.html('<span class="text-sm text-gray-500 italic">— system</span>');
                                     }
-                                },
-                                {
-                                    id: 'quantity',
-                                    name: 'Quantity',
-                                    sort: true,
-                                    formatter: cell => {
-                                        if (cell === null || cell === undefined || isNaN(cell)) return '';
-                                        return Number(cell).toLocaleString();
-                                    }
-                                },
-                                {
-                                    id: 'unit',
-                                    name: 'Unit'
-                                },
-                                {
-                                    id: 'source',
-                                    name: 'Source'
-                                },
-                                {
-                                    id: 'date',
-                                    name: 'Date'
-                                },
-                                {
-                                    id: 'meta',
-                                    name: 'Actions',
-                                    width: '180px',
-                                    sort: false,
-                                    formatter: meta => {
-                                        if (!meta || meta.source !== 'manual') {
-                                            return gridjs.html('<span class="text-sm text-gray-500 italic">— system</span>');
-                                        }
 
-                                        const id = parseInt(meta.yield_id, 10);
-                                        const crop = meta.crop_type || '';
-                                        const qty = meta.quantity || 0;
-                                        const unit = meta.unit || '';
-                                        const date = meta.recorded_at || '';
+                                    const id = parseInt(meta.yield_id, 10);
+                                    const crop = meta.crop_type || '';
+                                    const qty = meta.quantity || 0;
+                                    const unit = meta.unit || '';
+                                    const date = meta.recorded_at || '';
 
-                                        const deleteHref = `forecasting.php?action=delete_manual_record&id=${id}`;
-                                        const confirmText = "return confirm('Are you sure you want to delete this manual record?');";
+                                    const deleteHref = `forecasting.php?action=delete_manual_record&id=${id}`;
+                                    const confirmText = "return confirm('Are you sure you want to delete this manual record?');";
 
-                                        return gridjs.html(
-                                            `
+                                    return gridjs.html(
+                                        `
                                             <div class="flex items-center">
                                             <button class="openEditModal inline-flex items-center gap-2 px-3 py-1 rounded mr-2 text-gray-500" onclick="document.getElementById('editModal-${id}').showModal()">Edit</button>
                                              <a href="${deleteHref}" onclick="${confirmText}" class="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded">Delete</a>
@@ -753,9 +760,9 @@ require_once '../includes/header.php';
                                             </dialog>
                                              
                                              `
-                                        );
-                                    }
+                                    );
                                 }
+                            }
                             ],
                             data,
                             search: {
@@ -828,7 +835,7 @@ require_once '../includes/header.php';
 
 
                     /* ===== Bulk Upload modal JS ===== */
-                    (function() {
+                    (function () {
                         const bulkBtn = document.getElementById('bulkUploadBtn');
                         const bulkModal = document.getElementById('bulkModal');
                         const closeBulk = document.getElementById('closeBulkModal');
@@ -885,27 +892,28 @@ require_once '../includes/header.php';
                             const dateVal = data.recorded_at || '';
 
                             tr.innerHTML = `
-      <td class="px-2 py-2 text-sm">${counter}</td>
-      <td class="px-2 py-2">
-        <select class="crop_sel border rounded px-2 py-1 text-sm" required>
-          <option value="buko">Buko</option>
-          <option value="saba">Saba</option>
-          <option value="rambutan">Rambutan</option>
-          <option value="lanzones">Lanzones</option>
-        </select>
-      </td>
-      <td class="px-2 py-2 text-right">
-        <input type="number" step="0.01" min="0" class="qty_input border rounded px-2 py-1 text-sm w-28" value="${qtyVal}" />
-      </td>
-      <td class="px-2 py-2">
-        <input type="text" class="unit_input border rounded px-2 py-1 text-sm bg-gray-100" readonly />
-      </td>
-      <td class="px-2 py-2">
-        <input type="date" class="date_input border rounded px-2 py-1 text-sm" min="${minDate}" max="${maxDate}" value="${dateVal}" />
-      </td>
-      <td class="px-2 py-2">
-        <button class="remove_row_btn px-2 py-1 bg-red-100 text-red-700 rounded text-sm">Remove</button>
-      </td>
+    <td class="text-sm text-center align-middle">${counter}</td>
+<td class="px-3 py-2 text-center align-middle">
+  <select class="crop_sel border rounded px-3 py-2 text-sm" required>
+    <option value="buko">Buko</option>
+    <option value="saba">Saba</option>
+    <option value="rambutan">Rambutan</option>
+    <option value="lanzones">Lanzones</option>
+  </select>
+</td>
+<td class=" text-center align-middle">
+  <input type="number" step="0.01" min="0" class="qty_input border rounded py-2 px-3 text-sm" value="${qtyVal}" />
+</td>
+<td class="  text-center align-middle">
+  <input type="text" class="unit_input border rounded px-3 py-2 text-sm bg-gray-100" readonly />
+</td>
+<td class="  text-center align-middle">
+  <input type="date" class="date_input border rounded px-3 py-2 px-2 text-sm" min="${minDate}" max="${maxDate}" value="${dateVal}" />
+</td>
+<td class="  text-center align-middle">
+  <button class="remove_row_btn bg-red-100 text-red-700 px-3 py-2 px-2 rounded text-sm">Remove</button>
+</td>
+
     `;
 
                             const cropSel = tr.querySelector('.crop_sel');
@@ -1071,35 +1079,7 @@ require_once '../includes/header.php';
             </div> <!-- end of tab-yield -->
 
 
-            <!-- 📈 FORECAST RESULTS TAB -->
-            <div id="tab-forecast" class="hidden">
-                <div class="mb-3 flex justify-between items-center">
-                    <h2 class="text-xl font-bold">Forecasting</h2>
-                    <div class="flex gap-2">
-                        <button
-                            class="generateForecastBtn px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
-                            data-crop="buko">
-                            📈 Generate Buko Forecast
-                        </button>
-                        <button
-                            class="generateForecastBtn px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
-                            data-crop="saba">
-                            📈 Generate Saba Forecast
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Loading indicator -->
-                <div id="forecastLoading" class="hidden text-sm text-gray-600 mb-2">
-                    Generating forecast, please wait...
-                </div>
-
-                <!-- Forecast table container -->
-                <div id="forecastTableContainer"></div>
-
-                <!-- Chart container -->
-                <canvas id="forecastChart" class="mt-4 w-full h-64"></canvas>
-            </div>
             <script src="https://unpkg.com/lucide@latest"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
             <script>
@@ -1155,7 +1135,7 @@ require_once '../includes/header.php';
 
                     // Handle Generate Buko/Saba buttons
                     document.querySelectorAll('.generateForecastBtn').forEach(btn => {
-                        btn.addEventListener('click', function() {
+                        btn.addEventListener('click', function () {
                             const crop = this.dataset.crop;
                             loading.classList.remove('hidden');
 

@@ -7,7 +7,7 @@ require_once '../includes/db.php';
 $selected_crop = $_GET['crop'] ?? 'buko';
 $selected_model = $_GET['model'] ?? 'SARIMA';
 $selected_model_evaluation = $_GET['modeleval'] ?? 'SARIMA';
-
+$version = $_GET['version'] ?? null;
 
 $selected_year = $_GET['year'] ?? null;
 
@@ -25,7 +25,7 @@ foreach ($crop_types as $crop) {
 
 
 $months = [];
-for ($i = 11; $i >= 0; $i--) {
+for ($i = 78; $i >= 0; $i--) {
     $months[] = date("Y-m", strtotime("-$i month"));
 }
 
@@ -47,6 +47,7 @@ $result = $conn->query("
     SELECT crop_type, predicted_month, predicted_quantity
     FROM yield_predictions
     WHERE method = '$selected_model'
+    AND model_version = '$version'
     AND crop_type IN ('buko', 'saba')
 ");
 
@@ -139,10 +140,11 @@ require_once '../includes/header.php';
 
                                 <h3 class="text-xl font-semibold text-emerald-900">Yield Forecast Chart</h3>
                             </div>
+                            <div class="flex gap-3">
 
                             <div class="w-32">
                                 <select id="modelSelector" name="model"
-                                    class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900"
+                                    class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900 text-sm"
                                     onchange="this.form.submit()">
 
                                     <option value="SARIMA" <?= ($_GET['model'] ?? '') === 'SARIMA' ? 'selected' : '' ?>>
@@ -151,9 +153,42 @@ require_once '../includes/header.php';
                                     <option value="baseline" <?= ($_GET['model'] ?? '') === 'baseline' ? 'selected' : '' ?>>Baseline</option>
                                     <option value="prophet" <?= ($_GET['model'] ?? '') === 'prophet' ? 'selected' : '' ?>>
                                         Prophet</option>
-
+                            
                                 </select>
                             </div>
+                            <?php
+                            // Only show version select if the selected model has versions
+                            $versions = [];
+                            if ($selected_model) {
+                                $stmt = $conn->prepare("
+                                    SELECT DISTINCT model_version 
+                                    FROM yield_predictions 
+                                    WHERE method = ?
+                                    ORDER BY model_version DESC
+                                ");
+                                $stmt->bind_param('s', $selected_model);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                while ($row = $result->fetch_assoc()) {
+                                    $versions[] = $row['model_version'];
+                                }
+                            }
+                            ?>
+
+                            <?php if (!empty($versions)): ?>
+                                <div class="w-32">
+                                    <select id="modelVersion" name="version"
+                                        class="select px-2 bg-gray-50 border border-gray-200 text-sm rounded-lg text-emerald-900" onchange="this.form.submit()">
+                                        <?php foreach ($versions as $version): ?>
+                                            <option value="<?= $version ?>" <?= ($_GET['version'] ?? '') === $version ? 'selected' : '' ?>>
+                                                <?= $version ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
+                            </div>
+
                         </div>
                         <canvas id="forecastChart" height="100"></canvas>
                     </div>
@@ -171,7 +206,7 @@ require_once '../includes/header.php';
                                 <div class="w-48">
 
                                     <select id="modelEvaluateSelector" name="modeleval"
-                                        class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900"
+                                        class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900 text-sm"
                                         onchange="this.form.submit()">
 
                                         <option value="SARIMA" <?= ($_GET['modeleval'] ?? '') === 'SARIMA' ? 'selected' : '' ?>>

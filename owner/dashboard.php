@@ -131,7 +131,7 @@ require_once '../includes/header.php';
   <?php include 'includes/sidebar.php'; ?>
     <!-- Main content -->
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
-      <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+      <div class="lg:max-w-7xl" style=" margin: auto; padding: 20px;">
         <div class="flex items-center justify-center">
 
           <div id="bar" class="flex w-full justify-between items-center  mb-10  rounded-full">

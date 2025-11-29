@@ -29,7 +29,7 @@ require_once '../includes/header.php';
     
     <!-- Main content -->
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
-      <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+      <div class="lg:max-w-7xl" style=" margin: auto; padding: 20px;">
         <div id="bar" class=" max-w-7xl mx-auto flex justify-between items-center mb-10    rounded-full">
           <h2 class="text-2xl lg:text-4xl font-semibold text-emerald-800  ">Welcome,
             <?php echo ucfirst(htmlspecialchars($userName)); ?>!

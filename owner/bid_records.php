@@ -62,7 +62,7 @@ require_once '../includes/header.php';
   <?php include 'includes/sidebar.php'; ?>
 
   <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
-    <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+    <div class="lg:max-w-7xl" style=" margin: auto;  padding: 20px;">
       <div class="flex flex-col lg:flex-row lg:justify-between  lg:ml-4 mt-5 mb-5">
         <div class="flex justify-between items-center">
           <div>

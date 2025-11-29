@@ -174,7 +174,7 @@ require_once '../includes/header.php';
   
 
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
-        <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+        <div class="lg:max-w-7xl" style=" margin: auto;  padding: 20px;">
             <div class="flex flex-col  lg:ml-4 mt-5 mb-5">
                 <div class="flex justify-between items-center">
                     <div>
@@ -533,6 +533,8 @@ require_once '../includes/header.php';
                         <p class="text-gray-500 text-sm">Payment verification requests will appear here</p>
                     </div>
                 </div>
+            
+            
             <?php endif; ?>
 
 

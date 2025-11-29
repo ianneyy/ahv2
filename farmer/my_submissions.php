@@ -73,7 +73,7 @@ require_once '../includes/header.php';
 
   <?php include 'includes/sidebar.php'; ?>
   <main class="flex-1 bg-[#FCFBFC] lg:p-6 rounded-bl-4xl rounded-tl-4xl">
-    <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+    <div class="lg:max-w-7xl" style=" margin: auto;  padding: 20px;">
       <!-- <div>
         <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold">My Submission</h2>
         <span class="text-md lg:text-lg text-gray-600">View the list of submitted crops and track your verification or

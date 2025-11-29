@@ -108,7 +108,7 @@ require_once '../includes/header.php';
    
  background-image: radial-gradient(circle at top, rgba(188, 244, 158, 0.6) 0%, rgba(188, 244, 158, 0.3) 20%, transparent 30%);">
     <div class="background"></div>
-    <div class="lg:max-w-7xl" style=" margin: auto; font-family: Arial; padding: 20px;">
+    <div class="lg:max-w-7xl" style=" margin: auto; padding: 20px;">
       <div class="flex items-center justify-center">
 
         <div id="bar" class="flex w-full justify-between items-center  mb-10  rounded-full">
