@@ -116,6 +116,10 @@ $is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_das
 
 
         </a>
+        <a href="users.php"
+            class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'users.php' ? 'bg-[#BFF49B]' : '' ?>">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            <span>Users</span></a>
 
 
 
@@ -151,9 +155,9 @@ $is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_das
             </div>
 
             <div class="flex flex-col text-sm">
-                
+
                 <span class="text-emerald-900 font-semibold">
-                    
+
                     <?= isset($_SESSION['user_name']) ? ucfirst($_SESSION['user_name']) : 'Guest' ?>
                 </span>
                 <span class="text-gray-400">

@@ -98,13 +98,11 @@ require_once 'includes/header.php';
     }
     .hero-spotlight {
     background:
-        radial-gradient(
-            circle at 70% 20%,
-            rgba(16, 185, 129, 0.22) 0%,
-            rgba(16, 185, 129, 0.12) 20%,
-            rgba(16, 185, 129, 0.05) 40%,
-            transparent 70%
-        );
+         radial-gradient(circle at 100% 0%,
+                rgba(191, 244, 155, 0.8) 0%,
+                rgba(191, 244, 155, 0.5) 20%,
+                rgba(191, 244, 155, 0.2) 40%,
+                transparent 70%);
 }
 </style>
 <div class="min-h-screen hero-spotlight">
