@@ -8,6 +8,7 @@ $selected_crop = $_GET['crop'] ?? 'buko';
 $selected_model = $_GET['model'] ?? 'SARIMA';
 $selected_model_evaluation = $_GET['modeleval'] ?? 'SARIMA';
 $version = $_GET['version'] ?? '';
+$tableCrop = $_GET['tableCrop'] ?? 'buko';
 
 $selected_year = $_GET['year'] ?? null;
 
@@ -176,8 +177,51 @@ while ($row = $result->fetch_assoc()) {
     $best_models[] = $row;
 }
 
-?>
+$sql = "
+SELECT 
+    a.crop_type,
+    a.month,
+    a.total AS actual_quantity,
+    p.predicted_quantity,
+    p.model_version,
+    p.method,
+    CASE 
+        WHEN a.total > 0 AND p.predicted_quantity IS NOT NULL 
+        THEN ROUND(((p.predicted_quantity - a.total) / a.total) * 100, 2)
+        ELSE NULL
+    END AS percent_error
+FROM (
+    SELECT 
+        crop_type,
+        DATE_FORMAT(recorded_at, '%Y-%m') AS month,
+        SUM(quantity) AS total
+    FROM yield_records
+    WHERE crop_type = '$tableCrop'
+    GROUP BY crop_type, month
+) AS a
+LEFT JOIN yield_predictions p
+    ON p.crop_type = a.crop_type 
+    AND p.predicted_month = a.month
 
+ORDER BY a.month DESC
+
+
+";
+
+$result = $conn->query($sql);
+
+$rows = [];
+while ($row = $result->fetch_assoc()) {
+    $rows[] = $row;
+}
+
+// echo "<pre>";
+// print_r($rows);
+// echo "</pre>";
+// exit;
+
+
+?>
 <?php
 require_once '../includes/header.php';
 ?>
@@ -189,24 +233,15 @@ require_once '../includes/header.php';
             <div class="flex justify-between items-center">
                 <div class="flex items-center justify-between">
                     <div>
-
                         <h2 class="text-2xl lg:text-4xl text-emerald-900 font-semibold ">Yield Forecast Dashboard</h2>
                         <span class="text-lg text-gray-600 ">Your overview of upcoming yield predictions.</span>
                     </div>
-
-
                 </div>
-
                 <?php include 'includes/sm-sidebar.php'; ?>
-
             </div>
             <section>
-
             </section>
-
-
             <form method="GET">
-
                 <section class="mt-10 ">
                     <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
                         <div class="flex justify-between items-center mb-5">
@@ -215,21 +250,15 @@ require_once '../includes/header.php';
                                 <h3 class="text-xl font-semibold text-emerald-900">Yield Forecast Chart</h3>
                             </div>
                             <div class="flex gap-3">
-<div class="w-32">
-                                <select id="cropSelector" name="crop"
-                                    class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900 text-sm"
-                                    onchange="this.form.submit()">
-<option value="all" <?= ($_GET['crop'] ?? '') === 'all' ? 'selected' : '' ?>>
-    All
-</option>
-                                    <option value="buko" <?= ($_GET['crop'] ?? '') === 'buko' ? 'selected' : '' ?>>
-            Buko
-        </option>
-        <option value="saba" <?= ($_GET['crop'] ?? '') === 'saba' ? 'selected' : '' ?>>Saba</option>
-       
-
-    </select>
-</div>
+                                <div class="w-32">
+                                    <select id="cropSelector" name="crop"
+                                        class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900 text-sm"
+                                        onchange="this.form.submit()">
+                                        <option value="all" <?= ($_GET['crop'] ?? '') === 'all' ? 'selected' : '' ?>>All</option>
+                                        <option value="buko" <?= ($_GET['crop'] ?? '') === 'buko' ? 'selected' : '' ?>>Buko</option>
+                                        <option value="saba" <?= ($_GET['crop'] ?? '') === 'saba' ? 'selected' : '' ?>>Saba</option>
+                                    </select>
+                                </div>
                             <div class="w-32">
                                 <select id="modelSelector" name="model"
                                     class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900 text-sm"
@@ -239,8 +268,7 @@ require_once '../includes/header.php';
                                         SARIMA
                                     </option>
                                     <option value="baseline" <?= ($_GET['model'] ?? '') === 'baseline' ? 'selected' : '' ?>>Baseline</option>
-                                    <option value="prophet" <?= ($_GET['model'] ?? '') === 'prophet' ? 'selected' : '' ?>>
-                                        Prophet</option>
+                                    <option value="prophet" <?= ($_GET['model'] ?? '') === 'prophet' ? 'selected' : '' ?>>Prophet</option>
                             
                                 </select>
                             </div>
@@ -282,18 +310,30 @@ require_once '../includes/header.php';
                     </div>
                 </section>
                 <section class="mt-10">
-    <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
-        <h3 class="text-xl font-semibold text-emerald-900 mb-5">Forecast vs Actual Table</h3>
+                    <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
+                        <div class="flex items-center justify-between">
 
-        <div id="grid-buko" class="mb-10"></div>
-        <div id="grid-saba" class="mb-10"></div>
-    </div>
-</section>
+                            <h3 class="text-xl font-semibold text-emerald-900 mb-5">Forecast vs Actual Table</h3>
+
+                            <div class="w-32">
+                                <select id="tableCropSelector" name="tableCrop"
+                                        class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900 text-sm"
+                                        onchange="this.form.submit()">
+                                        
+                                        <option value="buko" <?= ($_GET['tableCrop'] ?? '') === 'buko' ? 'selected' : '' ?>>Buko</option>
+                                        <option value="saba" <?= ($_GET['tableCrop'] ?? '') === 'saba' ? 'selected' : '' ?>>Saba</option>
+                                </select>
+                             </div>
+                        </div>
+
+                        <div id="grid-buko" class="mb-10"></div>
+                    </div>
+                </section>
                 <section class="mt-10">
-    <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
-        <h3 class="text-xl font-semibold text-emerald-900 mb-5">Best Model</h3>
+                    <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
+                        <h3 class="text-xl font-semibold text-emerald-900 mb-5">Best Model</h3>
 
-        <div class="space-y-4">
+                        <div class="space-y-4">
             <?php foreach ($best_models as $m): ?>
                                 <div class="p-4 rounded-xl border bg-white shadow-sm">
                                     <div class="flex justify-between items-center">
@@ -322,8 +362,6 @@ require_once '../includes/header.php';
                 
                     </div>
                 </section>
-
-
                 <section class="mt-10 ">
                     <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
                         <div class="flex justify-between items-center mb-5">
@@ -346,17 +384,9 @@ require_once '../includes/header.php';
                                             Baseline</option>
                                         <option value="prophet" <?= ($_GET['modeleval'] ?? '') === 'prophet' ? 'selected' : '' ?>>
                                             Prophet</option>
-
                                     </select>
                                 </div>
-
                             </div>
-
-
-
-
-
-
                         </div>
                         <div class="w-full mb-10">
                             <input type="range" min="<?= $years[0] ?>"   max="<?= end($years) ?>"    value="<?= $selected_year ?>"
@@ -381,7 +411,6 @@ require_once '../includes/header.php';
                     </div>
                 </section>
             </form>
-
         </div>
     </main>
 </div>
@@ -390,12 +419,23 @@ require_once '../includes/header.php';
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const bukoData = <?= json_encode($grid_data['buko']); ?>;
-        const sabaData = <?= json_encode($grid_data['saba']); ?>;
+        const tableData = <?= json_encode($rows); ?>;
 
         new gridjs.Grid({
-            columns: ['Crop Type','Month','Model', 'Version', 'Forecast', 'Actual', 'Percentage Error (%)'],
-            data: bukoData.map(d => [d.crop_type, d.month, d.model, d.version, d.forecast, d.actual, d.perc_error]),
+            columns: [
+        { name: "Crop Type", id: "crop_type" },
+        { name: "Month", id: "month" },
+        { name: "Actual", id: "actual_quantity" },
+        { name: "Predicted", id: "predicted_quantity" },
+        { name: "Model Version", id: "model_version" },
+        { name: "Method", id: "method" },
+        { 
+            name: "Percent Error (%)",
+            id: "percent_error",
+            formatter: (cell) => cell !== null ? cell + "%" : "-"
+        }
+    ],
+            data: tableData,
             search: true,
             pagination: { limit: 10 },
             sort: true,
@@ -431,6 +471,11 @@ document.addEventListener("DOMContentLoaded", function() {
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    document.addEventListener("click", function(e) {
+    if (e.target.closest(".gridjs-pages button")) {
+        e.preventDefault();
+    }
+});
     lucide.createIcons();
     function updateYearLabel(val) {
         document.getElementById('selectedYear').innerText = val;
@@ -473,6 +518,7 @@ document.addEventListener("DOMContentLoaded", function() {
         data: {
             labels: <?php echo json_encode($months); ?>,
             datasets: [
+            <?php if($selected_crop === 'buko'): ?>
                 {
                     label: 'Buko - Actual',
                     data: <?= json_encode($chart_actual['buko']); ?>,
@@ -487,7 +533,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     backgroundColor: 'rgba(54, 162, 235, 0)',
                     borderDash: [5, 5],
                     tension: 0.2
-                },
+                }
+            <?php elseif ($selected_crop === 'saba'): ?>
                 {
                     label: 'Saba - Actual',
                     data: <?= json_encode($chart_actual['saba']); ?>,
@@ -503,6 +550,38 @@ document.addEventListener("DOMContentLoaded", function() {
                     borderDash: [5, 5],
                     tension: 0.2
                 }
+            <?php else: ?>
+                 {
+                    label: 'Buko - Actual',
+                    data: <?= json_encode($chart_actual['buko']); ?>,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.2
+                },
+                {
+                    label: 'Buko - Forecast',
+                    data: <?= json_encode($chart_forecast['buko']); ?>,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0)',
+                    borderDash: [5, 5],
+                    tension: 0.2
+                },
+                  {
+                    label: 'Saba - Actual',
+                    data: <?= json_encode($chart_actual['saba']); ?>,
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                    tension: 0.2
+                },
+                {
+                    label: 'Saba - Forecast',
+                    data: <?= json_encode($chart_forecast['saba']); ?>,
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    backgroundColor: 'rgba(255, 159, 64, 0)',
+                    borderDash: [5, 5],
+                    tension: 0.2
+                }
+            <?php endif; ?>
             ]
         },
         options: {
