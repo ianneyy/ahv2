@@ -103,11 +103,7 @@ require_once '../includes/header.php';
 <div class="flex min-h-screen">
   <?php include 'includes/sidebar.php'; ?>
   <!-- Main content -->
-  <main class="flex-1 bg-[#FCFBFC] lg:p-6 rounded-bl-4xl rounded-tl-4xl " 
-   style="background-color: #FCFBFC;
-   
- background-image: radial-gradient(circle at top, rgba(188, 244, 158, 0.6) 0%, rgba(188, 244, 158, 0.3) 20%, transparent 30%);">
-    <div class="background"></div>
+  <main class="flex-1 bg-[#FCFBFC] lg:p-6 rounded-bl-4xl rounded-tl-4xl ">
     <div class="lg:max-w-7xl" style=" margin: auto; padding: 20px;">
       <div class="flex items-center justify-center">
 
