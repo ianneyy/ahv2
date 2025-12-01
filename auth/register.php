@@ -101,14 +101,14 @@ require_once '../includes/header.php';
 </style>
 <div class="min-h-screen hero-spotlight">
     <div class="flex gap-5">
-        <section class="flex justify-center items-center w-1/2">
+        <section class="flex min-h-screen justify-center items-center w-full lg:w-1/2">
             <div class="w-full">
-                <div class="px-12">
+                <div class="px-4 lg:px-12">
                     <div class="text-center">
-                        <h1 class="text-5xl font-semibold">Register</h1>
-                        <p class="text-lg">Create your first account.</p>
+                        <h1 class="text-3xl lg:text-5xl font-semibold">Register</h1>
+                        <p class="text-md lg:text-lg">Create your first account.</p>
                     </div>
-                    <div class="w-2/3 mx-auto">
+                    <div class="w-full lg:w-2/3 mx-auto">
                         <form method="POST" class="mt-8 space-y-6">
                             <div class="rounded-md  flex flex-col gap-3">
                                 <div class="mb-2">
@@ -186,15 +186,15 @@ require_once '../includes/header.php';
                                             experience.
                                         </p>
 
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                        <div class="grid grid-cols-2 gap-4 mt-3">
 
                                             <!-- Farmer Option -->
                                             <input type="radio" name="user_type" id="farmer" value="farmer"
                                                 class="hidden peer/farmer">
                                             <label for="farmer"
-                                                class="cursor-pointer border border-gray-300 rounded-xl p-4 block peer-checked/farmer:border-green-500 peer-checked/farmer:bg-[#BFF49B]">
-                                                <h3 class="text-lg font-semibold text-emerald-700">Farmer</h3>
-                                                <p class="text-sm text-gray-600">Submit your harvested crops to be listed
+                                                class="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl p-4 block peer-checked/farmer:border-green-500 peer-checked/farmer:bg-[#BFF49B]">
+                                                <h3 class="text-md lg:text-lg font-semibold text-emerald-700">Farmer</h3>
+                                                <p class="text-xs lg:text-sm text-gray-600">Submit your harvested crops to be listed
                                                     for bidding by business partners.
                                                 </p>
                                             </label>
@@ -203,9 +203,9 @@ require_once '../includes/header.php';
                                             <input type="radio" name="user_type" id="businessPartner"
                                                 value="businessPartner" class="hidden peer/business">
                                             <label for="businessPartner"
-                                                class="cursor-pointer border border-gray-300 rounded-xl p-4 block peer-checked/business:border-green-500 peer-checked/business:bg-[#BFF49B]">
-                                                <h3 class="text-lg font-semibold text-emerald-700">Business Partner</h3>
-                                                <p class="text-sm text-gray-600">Place bids on crops submitted by farmers to
+                                                class="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl p-4 block peer-checked/business:border-green-500 peer-checked/business:bg-[#BFF49B]">
+                                                <h3 class="text-md lg:text-lg font-semibold text-emerald-700">Business Partner</h3>
+                                                <p class="text-xs lg:text-sm text-gray-600">Place bids on crops submitted by farmers to
                                                     purchase them.</p>
                                             </label>
 
@@ -235,7 +235,7 @@ require_once '../includes/header.php';
             </div>
 
         </section>
-        <section class="flex justify-center items-center w-1/2 min-h-screen ">
+        <section class="hidden lg:flex justify-center items-center w-1/2 min-h-screen ">
             <div class="relative bg-[#BFF49B] rounded-3xl w-[90%] min-h-[90vh] bg-cover bg-center"
                 style="background-image: url('../assets/img/farm.svg');">
 

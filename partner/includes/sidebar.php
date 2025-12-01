@@ -65,16 +65,60 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
 
         </a>
 
-        <a onclick="logoutModal.showModal()"
-            class="block px-4 py-2 rounded-lg cursor-pointer hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3">
-            <i data-lucide="log-out" class="w-5 h-5"></i>
-            <span>Logout</span>
-        </a>
+       
 
     </nav>
-    <div class="p-4 border-t border-gray-300 text-sm text-gray-400">
-        © 2025 AniHanda
+   <div class="p-4 flex flex-col gap-4">
+
+        <div class="flex items-center gap-2 px-4">
+            <div class="avatar avatar-placeholder">
+             <?php if (isset($_SESSION['user_picture']) && !empty($_SESSION['user_picture'])): ?>
+                <!-- Google profile picture -->
+                <img src="<?= $_SESSION['user_picture'] ?>" alt="Profile" class="w-8 h-8 rounded-full">
+            <?php elseif (isset($_SESSION['user_name']) && !empty($_SESSION['user_name'])): ?>
+                <!-- First letters of name -->
+                <div class="bg-neutral text-neutral-content w-8 h-8 rounded-full flex items-center justify-center">
+                    <?php
+                    $name = $_SESSION['user_name'];
+                    $initials = '';
+                    $words = explode(' ', $name);
+                    foreach ($words as $w) {
+                        $initials .= strtoupper($w[0]);
+                    }
+                    echo substr($initials, 0, 2); // show first 2 letters
+                    ?>
+                </div>
+            <?php else: ?>
+                <!-- Default placeholder -->
+                <div class="bg-neutral text-neutral-content w-8 h-8 rounded-full flex items-center justify-center">
+                    <span class="text-xs">??</span>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="flex flex-col text-sm">
+
+            <span class="text-emerald-900 font-semibold">
+
+                <?= isset($_SESSION['user_name']) ? ucfirst($_SESSION['user_name']) : 'Guest' ?>
+            </span>
+            <span class="text-gray-400">
+                <?php
+                if (isset($_SESSION['user_type'])) {
+                    // Insert space before each uppercase letter (except the first)
+                    echo preg_replace('/(?<!^)([A-Z])/', ' $1', ucfirst($_SESSION['user_type']));
+                }
+                ?>
+            </span>
+        </div>
     </div>
+
+    <a onclick="logoutModal.showModal()"
+        class="block px-4 py-2 rounded-lg cursor-pointer hover:text-red-500 text-[#28453E] flex items-center gap-3">
+        <i data-lucide="log-out" class="w-5 h-5"></i>
+        <span>Logout</span>
+    </a>
+</div>
 </aside>
 
 

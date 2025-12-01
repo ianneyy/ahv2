@@ -121,52 +121,7 @@ require_once '../includes/header.php';
                             <span class="text-md lg:text-lg text-gray-600 ">View and manage won bids</span>
                         </div>
                          <!-- Small screen -->
-                <div class="block lg:hidden">
-                  <div class="drawer">
-                    <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-                    <div class="drawer-content">
-                      <!-- Page content here -->
-                      <label for="my-drawer" class=" drawer-button"><i data-lucide="menu" class="w-5 h-5"></i></label>
-
-                    </div>
-                    <div class="drawer-side ">
-                      <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-
-
-                      <ul class="menu  bg-[#ECF5E9] text-base-content min-h-full w-80 p-4 gap-3">
-                        <li>
-                          <div class="p-4 text-xl font-bold  text-[#28453E]">
-                            AniHanda
-                          </div>
-                        </li>
-                        <!-- Sidebar content here -->
-                        <li><a href="dashboard.php" class="flex items-center gap-3 active:bg-[#BFF49B]  text-[#28453E]">
-                            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                            <span>Dashboard</span>
-                          </a></li>
-                        <hr class="border-gray-300">
-
-                        <li><a href="bid_crops.php" class="flex active:bg-[#BFF49B]  items-center gap-3 text-[#28453E]">
-                            <i data-lucide="gavel" class="w-5 h-5"></i>
-                            <span>Bidding</span>
-                          </a></li>
-                        <hr class="border-gray-300">
-
-                        <li><a href="won_bids.php" class="flex active:bg-[#BFF49B] bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                            <i data-lucide="sparkles" class="w-5 h-5"></i>
-                            <span>Won</span>
-                          </a></li>
-                        <hr class="border-gray-300">
-
-                        <li><a onclick="logoutModal.showModal()"
-                            class="flex active:bg-[#BFF49B] items-center gap-3 text-[#28453E]">
-                            <i data-lucide="log-out" class="w-5 h-5"></i>
-                            <span>Logout</span>
-                          </a></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+                <?php include 'includes/sm-sidebar.php'; ?>
             </div>
                         <div class="mt-3 lg:mt-0 flex justify-end">
 
@@ -266,6 +221,10 @@ require_once '../includes/header.php';
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">Empty</h3>
 
                         </div>
+                    </div>
+                    <?php else: ?>
+                    <div class="rounded-lg bg-blue-50 p-4 text-sm text-blue-600">
+                        No won bids. Place bid to win crops.
                     </div>
                 <?php endif; ?>
 

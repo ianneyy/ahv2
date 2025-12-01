@@ -71,15 +71,15 @@ require_once '../includes/header.php';
 <div class="min-h-screen hero-spotlight">
     <div class="flex gap-5">
 
-        <section class="flex justify-center items-center w-1/2">
+        <section class="flex min-h-screen justify-center items-center w-full lg:w-1/2">
             <div class="w-full">
-                <div class="px-12">
+                <div class="px-4 lg:px-12">
 
                     <div class="text-center">
-                        <h1 class="text-5xl font-semibold">Welcome!</h1>
-                        <p class="text-lg">Please login your account.</p>
+                        <h1 class="text-3xl lg:text-5xl font-semibold">Welcome!</h1>
+                        <p class="text-md lg:text-lg">Please login your account.</p>
                     </div>
-                    <div class="w-2/3 mx-auto">
+                    <div class="lg:w-2/3 mx-auto">
                         <form method="POST" class="mt-8 space-y-6">
                             <div class="rounded-md -space-y-px">
                                 <div class="mb-4">
@@ -173,7 +173,7 @@ require_once '../includes/header.php';
 
 
         </section>
-        <section class="flex justify-center items-center w-1/2 min-h-screen ">
+        <section class="hidden lg:flex justify-center items-center w-1/2 min-h-screen ">
             <div class="relative bg-[#BFF49B] rounded-3xl w-[90%] min-h-[90vh] bg-cover bg-center"
                 style="background-image: url('../assets/img/farm.svg');">
 
