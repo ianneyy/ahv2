@@ -22,8 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
         $toast_message = "Failed to delete user.";
         $toast_type = 'error';
     }
-    header("Location: users.php");
-    exit;
+    
 }
 if (isset($_POST['send_invite'])) {
     $email = $conn->real_escape_string($_POST['invite_email']);
@@ -44,8 +43,7 @@ if (isset($_POST['send_invite'])) {
     if ($check && $check->num_rows > 0) {
         $toast_message = "User with email $email has already been invited.";
         $toast_type = 'error';
-        header("Location: user_management.php");
-        exit;
+       
     } else {
 
         // Generate a unique token
@@ -95,9 +93,9 @@ if (isset($_POST['send_invite'])) {
             $toast_message = "Failed to store invitation.";
             $toast_type = 'error';
         }
-        header("Location: users.php");
-        exit;
+
     }
+ 
 
 }
 
@@ -281,7 +279,7 @@ require_once '../includes/header.php';
                 }
             }
         ],
-        data: usersData.map(user => [user.id,user.name, user.email, user.user_type]),
+        data: usersData.map(user => [user.id, user.name, user.email, user.user_type]),
         search: true,
         pagination: {
             enabled: true,

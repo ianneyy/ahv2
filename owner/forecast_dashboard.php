@@ -7,7 +7,7 @@ require_once '../includes/db.php';
 $selected_crop = $_GET['crop'] ?? 'buko';
 $selected_model = $_GET['model'] ?? 'SARIMA';
 $selected_model_evaluation = $_GET['modeleval'] ?? 'SARIMA';
-$version = $_GET['version'] ?? null;
+$version = $_GET['version'] ?? '';
 
 $selected_year = $_GET['year'] ?? null;
 
@@ -24,17 +24,23 @@ foreach ($crop_types as $crop) {
 
 
 
-$months = [];
-for ($i = 78; $i >= 0; $i--) {
-    $months[] = date("Y-m", strtotime("-$i month"));
+// $months = [];
+// for ($i = 78; $i >= 0; $i--) {
+//     $months[] = date("Y-m", strtotime("-$i month"));
+// }
+
+$crop_condition = '';
+// Build crop condition
+if ($selected_crop === 'all') {
+    $crop_condition = "crop_type IN ('buko', 'saba')";
+} else {
+    $crop_condition = "crop_type = '" . $conn->real_escape_string($selected_crop) . "'";
 }
-
-
 // $crop_type = 'buko';
 $result = $conn->query("
     SELECT crop_type, DATE_FORMAT(recorded_at, '%Y-%m') AS month, SUM(quantity) AS total
     FROM yield_records
-    WHERE crop_type IN ('buko', 'saba')
+    WHERE $crop_condition
     GROUP BY crop_type, month
 ");
 
@@ -43,18 +49,46 @@ while ($row = $result->fetch_assoc()) {
 }
 
 // Query Forecast Yield per crop_type
-$result = $conn->query("
+$sql = ("
     SELECT crop_type, predicted_month, predicted_quantity
     FROM yield_predictions
-    WHERE method = '$selected_model'
-    AND model_version = '$version'
+    WHERE $crop_condition
     AND crop_type IN ('buko', 'saba')
 ");
 
+if (!empty($version)) {
+    $sql .= " AND model_version = '$version'";
+}
+
+// RUN QUERY
+$result = $conn->query($sql);
 while ($row = $result->fetch_assoc()) {
     $forecast_data[$row['crop_type']][$row['predicted_month']] = (float) $row['predicted_quantity'];
 }
 
+// Only keep months that have data if version is selected
+$months = [];
+if (!empty($version)) {
+    // Collect all unique months from the fetched data
+    foreach ($forecast_data as $crop => $data) {
+        foreach ($data as $month => $value) {
+            if (!in_array($month, $months)) {
+                $months[] = $month;
+            }
+        }
+    }
+    sort($months); // optional: sort months ascending
+} else {
+    // Default 79 months if no version selected
+    for ($i = 78; $i >= 0; $i--) {
+        $months[] = date("Y-m", strtotime("-$i month"));
+    }
+}
+
+// echo "<pre>";
+// print_r($forecast_data);
+// echo "</pre>";
+// exit;
 $chart_actual = [];
 $chart_forecast = [];
 
@@ -62,6 +96,27 @@ foreach ($crop_types as $crop) {
     foreach ($months as $month) {
         $chart_actual[$crop][] = $actual_data[$crop][$month] ?? 0;
         $chart_forecast[$crop][] = $forecast_data[$crop][$month] ?? 0;
+    }
+}
+
+
+$grid_data = [];
+
+foreach ($crop_types as $crop) {
+    foreach ($months as $month) {
+        $actual = $actual_data[$crop][$month] ?? 0;
+        $forecast = $forecast_data[$crop][$month] ?? 0;
+        $perc_error = $actual != 0 ? round(abs($forecast - $actual) / $actual * 100, 2) : 0;
+
+        $grid_data[$crop][] = [
+            'crop_type' => $selected_crop,
+            'month' => $month,
+            'model' => $selected_model,
+            'version' => $version,
+            'forecast' => $forecast,
+            'actual' => $actual,
+            'perc_error' => $perc_error
+        ];
     }
 }
 
@@ -101,6 +156,25 @@ while ($row = $result->fetch_assoc()) {
     $evaluation['mae'][] = (float) $row['mae'];
 }
 
+$sql = "
+    SELECT *
+    FROM (
+        SELECT me.*,
+               ROW_NUMBER() OVER (PARTITION BY crop_type ORDER BY mape ASC, evaluated_at DESC) AS rn
+        FROM model_evaluation me
+    ) AS ranked
+    WHERE rn = 1;
+";
+
+
+
+$result = $conn->query($sql);
+
+$best_models = [];
+
+while ($row = $result->fetch_assoc()) {
+    $best_models[] = $row;
+}
 
 ?>
 
@@ -141,7 +215,21 @@ require_once '../includes/header.php';
                                 <h3 class="text-xl font-semibold text-emerald-900">Yield Forecast Chart</h3>
                             </div>
                             <div class="flex gap-3">
+<div class="w-32">
+                                <select id="cropSelector" name="crop"
+                                    class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900 text-sm"
+                                    onchange="this.form.submit()">
+<option value="all" <?= ($_GET['crop'] ?? '') === 'all' ? 'selected' : '' ?>>
+    All
+</option>
+                                    <option value="buko" <?= ($_GET['crop'] ?? '') === 'buko' ? 'selected' : '' ?>>
+            Buko
+        </option>
+        <option value="saba" <?= ($_GET['crop'] ?? '') === 'saba' ? 'selected' : '' ?>>Saba</option>
+       
 
+    </select>
+</div>
                             <div class="w-32">
                                 <select id="modelSelector" name="model"
                                     class="select px-2 bg-gray-50 border border-gray-200 rounded-lg text-emerald-900 text-sm"
@@ -193,6 +281,48 @@ require_once '../includes/header.php';
                         <canvas id="forecastChart" height="100"></canvas>
                     </div>
                 </section>
+                <section class="mt-10">
+    <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
+        <h3 class="text-xl font-semibold text-emerald-900 mb-5">Forecast vs Actual Table</h3>
+
+        <div id="grid-buko" class="mb-10"></div>
+        <div id="grid-saba" class="mb-10"></div>
+    </div>
+</section>
+                <section class="mt-10">
+    <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
+        <h3 class="text-xl font-semibold text-emerald-900 mb-5">Best Model</h3>
+
+        <div class="space-y-4">
+            <?php foreach ($best_models as $m): ?>
+                                <div class="p-4 rounded-xl border bg-white shadow-sm">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <p class="text-lg font-semibold text-emerald-800">
+                                                <?= ucfirst($m['crop_type']) ?>
+                                            </p>
+                                            <p class="text-sm text-gray-600">
+                                                Version:
+                                                <span class="font-medium"><?= $m['model_version'] ?></span>
+                                            </p>
+                                        </div>
+                
+                                        <div class="text-right">
+                                            <p class="text-md font-semibold text-gray-800">
+                                                <?= $m['method'] ?>
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                Best MAPE: <?= $m['mape'] ?>%
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                
+                    </div>
+                </section>
+
 
                 <section class="mt-10 ">
                     <div class="bg-gray-50 p-5 rounded-3xl border-2 border-gray-200">
@@ -255,6 +385,49 @@ require_once '../includes/header.php';
         </div>
     </main>
 </div>
+<link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const bukoData = <?= json_encode($grid_data['buko']); ?>;
+        const sabaData = <?= json_encode($grid_data['saba']); ?>;
+
+        new gridjs.Grid({
+            columns: ['Crop Type','Month','Model', 'Version', 'Forecast', 'Actual', 'Percentage Error (%)'],
+            data: bukoData.map(d => [d.crop_type, d.month, d.model, d.version, d.forecast, d.actual, d.perc_error]),
+            search: true,
+            pagination: { limit: 10 },
+            sort: true,
+            style: {
+                table: { 'width': '100%' },
+            },
+            className: {
+
+            row: 'bg-gray-100 hover:bg-gray-200',
+        },
+        style: {
+            table: {
+                'border': 'none',
+                'border-radius': '0.5rem',
+                'font-size': '14px',
+            },
+            th: {
+                'background-color': 'rgba(16,185,129,0.2)',
+                'color': '#065f46',
+                'font-weight': '600',
+                'font-size': '12px',
+            },
+            td: {
+                'font-size': '12px',
+            }
+        },
+        }).render(document.getElementById("grid-buko"));
+
+        
+    });
+</script>
+
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
