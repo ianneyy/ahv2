@@ -1,25 +1,32 @@
 <?php
-require_once '../includes/session.php';
-require_once '../includes/db.php';
+
 
 $currentUserId = $_SESSION['user_id'] ?? null;
 $unreadTotal = 0;
 
-if ($currentUserId) {
-    $stmt = $conn->prepare("
+if ($currentUserId && isset($conn)) {
+    $unreadStmt = $conn->prepare("
         SELECT COUNT(*) AS unread_total 
         FROM messages 
         WHERE receiver_id = ? 
           AND message_read = 0
     ");
-    $stmt->bind_param("i", $currentUserId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $unreadTotal = (int) ($row['unread_total'] ?? 0);
+    if ($unreadStmt) {
+        $unreadStmt->bind_param("i", $currentUserId);
+        if ($unreadStmt->execute()) {
+            $unreadResult = $unreadStmt->get_result();
+            if ($unreadResult) {
+                $unreadRow = $unreadResult->fetch_assoc();
+                $unreadTotal = (int) ($unreadRow['unread_total'] ?? 0);
+            }
+        }
+        $unreadStmt->close();
+    }
 }
 $current_page = basename($_SERVER['PHP_SELF']); // e.g., "dashboard.php"
 $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php']);
+$is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_dashboard.php']);
+
 ?>
 <!-- Small screen -->
 <div class="block lg:hidden">
@@ -78,6 +85,29 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
                             <a href="verified_crops.php"
                                 class="block px-4 py-2 text-sm  rounded-lg active:bg-[#BFF49B]  text-[#28453E]  flex items-center gap-2 <?= $current_page === 'verified_crops.php' ? 'bg-[#BFF49B]' : '' ?>">
                                 <span>Verified Crops</span>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+                <div>
+                    <button onclick="toggleDropdownSmall('forecastingDropdownSmall', 'forecastingIconSmall')"
+                        class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E]    <?= $is_forecasting_page ? 'bg-[#BFF49B]' : '' ?>">
+                        <span class="flex items-center gap-3"> <i data-lucide="trending-up-down" class="w-5 h-5"></i>
+                            <span>Forecasting</span>
+                        </span> <i id="forecastingIconSmall" data-lucide="chevron-down"
+                            class="w-5 h-5 transition-transform duration-300"></i>
+                    </button> <!-- Dropdown links -->
+                    <div id="forecastingDropdownSmall" class="hidden ml-5  border-l border-gray-300">
+                        <div class="ml-3 mt-2 space-y-2">
+
+                            <a href="forecast_dashboard.php"
+                                class="block px-4 py-2 text-sm rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2  <?= $current_page === 'forecast_dashboard.php' ? 'bg-[#BFF49B]' : '' ?>">
+                                <span>Dashboard</span>
+                            </a>
+                            <a href="forecasting.php"
+                                class="block px-4 py-2 text-sm  rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2  <?= $current_page === 'forecasting.php' ? 'bg-[#BFF49B]' : '' ?>">
+                                <span>Records</span>
                             </a>
                         </div>
 
@@ -181,3 +211,14 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
         </div>
     </div>
 </div>
+
+<script>
+    function toggleDropdownSmall(dropdownId, iconId) {
+        const dropdown = document.getElementById(dropdownId);
+        const icon = document.getElementById(iconId);
+        if (dropdown && icon) {
+            dropdown.classList.toggle("hidden");
+            icon.classList.toggle("rotate-90");
+        }
+    }
+</script>

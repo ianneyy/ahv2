@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Redirect /owner/bid_crops → partner/bid_crops.php
+RewriteRule ^owner/bid_crops$ partner/bid_crops.php [L]
+
+# Map owner, partner, farmer chat URLs to the single file owner/chat.php
+RewriteRule ^(owner|partner|farmer)/chat/?$ owner/chat.php [L]
+
+# General clean URLs for other pages
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)$ $1.php [L]

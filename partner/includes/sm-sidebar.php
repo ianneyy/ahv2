@@ -1,22 +1,25 @@
 <?php
-require_once '../includes/session.php';
-require_once '../includes/db.php';
-
 $currentUserId = $_SESSION['user_id'] ?? null;
 $unreadTotal = 0;
 
-if ($currentUserId) {
-    $stmt = $conn->prepare("
+if ($currentUserId && isset($conn)) {
+    $unreadStmt = $conn->prepare("
         SELECT COUNT(*) AS unread_total 
         FROM messages 
         WHERE receiver_id = ? 
           AND message_read = 0
     ");
-    $stmt->bind_param("i", $currentUserId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $unreadTotal = (int) ($row['unread_total'] ?? 0);
+    if ($unreadStmt) {
+        $unreadStmt->bind_param("i", $currentUserId);
+        if ($unreadStmt->execute()) {
+            $unreadResult = $unreadStmt->get_result();
+            if ($unreadResult) {
+                $unreadRow = $unreadResult->fetch_assoc();
+                $unreadTotal = (int) ($unreadRow['unread_total'] ?? 0);
+            }
+        }
+        $unreadStmt->close();
+    }
 }
 $current_page = basename($_SERVER['PHP_SELF']); // e.g., "dashboard.php"
 $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php']);

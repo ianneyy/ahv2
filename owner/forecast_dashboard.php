@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 'font-size': '14px',
             },
             th: {
-                'background-color': 'rgba(16,185,129,0.2)',
+                'background-color': '#ECF5E9',
                 'color': '#065f46',
                 'font-weight': '600',
                 'font-size': '12px',

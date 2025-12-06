@@ -1,10 +1,26 @@
+<?php
+// Get the current PHP file name without extension
+$page = basename($_SERVER['PHP_SELF'], ".php");
+
+$pageTitles = [
+  'dashboard' => 'Dashboard',
+  'bid_crops' => 'Bidding',
+  'won_bids' => 'Won',
+  'verify_crops' => 'Crop Submission',
+  'forecast_dashboard' => 'Forecast Dashboard',
+  'forecasting' => 'Forecasting Records',
+  // add more pages here as needed
+];
+// Convert to readable format (optional)
+$pageTitle = $pageTitles[$page] ?? ucwords(str_replace("_", " ", $page));
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>AniHanda | <?= $pageTitle ?></title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>

@@ -1,22 +1,26 @@
 <?php
-require_once '../includes/session.php';
-require_once '../includes/db.php';
-
 $currentUserId = $_SESSION['user_id'] ?? null;
 $unreadTotal = 0;
 
-if ($currentUserId) {
-    $stmt = $conn->prepare("
+
+if ($currentUserId && isset($conn)) {
+    $unreadStmt = $conn->prepare("
         SELECT COUNT(*) AS unread_total 
         FROM messages 
         WHERE receiver_id = ? 
           AND message_read = 0
     ");
-    $stmt->bind_param("i", $currentUserId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $unreadTotal = (int) ($row['unread_total'] ?? 0);
+    if ($unreadStmt) {
+        $unreadStmt->bind_param("i", $currentUserId);
+        if ($unreadStmt->execute()) {
+            $unreadResult = $unreadStmt->get_result();
+            if ($unreadResult) {
+                $unreadRow = $unreadResult->fetch_assoc();
+                $unreadTotal = (int) ($unreadRow['unread_total'] ?? 0);
+            }
+        }
+        $unreadStmt->close();
+    }
 }
 $current_page = basename($_SERVER['PHP_SELF']); // e.g., "dashboard.php"
 $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php']);
@@ -27,12 +31,12 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
         AniHanda
     </div>
     <nav class="flex-1 p-4 space-y-4">
-        <a href="../farmer/dashboard.php"
+        <a href="../farmer/dashboard"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B]  text-[#28453E] flex items-center gap-3  <?= $current_page === 'dashboard.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
             <span>Dashboard</span></a>
 
-        <a href="../farmer/submit_crop.php"
+        <a href="../farmer/submit_crop"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'submit_crop.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="plus" class="w-5 h-5"></i>
             <span>New Crop</span></a>
@@ -43,7 +47,7 @@ $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php
 
 
 
-        <a href="../owner/chat.php"
+        <a href="../farmer/chat"
             class=" block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'chat.php' ? 'bg-[#BFF49B]' : '' ?>">
 
             <div class="indicator">

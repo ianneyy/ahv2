@@ -222,10 +222,7 @@ require_once '../includes/header.php';
 
                         </div>
                     </div>
-                    <?php else: ?>
-                    <div class="rounded-lg bg-blue-50 p-4 text-sm text-blue-600">
-                        No won bids. Place bid to win crops.
-                    </div>
+                  
                 <?php endif; ?>
 
                 <!-- Bids Grid -->

@@ -158,10 +158,12 @@ if (!empty($statusFilter)) {
     $result = $stmt->get_result();
 } else {
     $baseQuery .= "ORDER BY ct.createdat DESC";
-    $result = mysqli_query($conn, $baseQuery);
+    $stmt = $conn->prepare($baseQuery);
+    $stmt->execute();
+    $result = $stmt->get_result();
 }
 
-
+// var_dump($result->num_rows);
 ?>
 
 <?php
@@ -171,7 +173,7 @@ require_once '../includes/header.php';
     <?php include 'includes/sidebar.php'; ?>
 
 
-  
+
 
     <main class="flex-1 bg-[#FCFBFC] p-6 rounded-bl-4xl rounded-tl-4xl">
         <div class="lg:max-w-7xl" style=" margin: auto;  padding: 20px;">
@@ -184,7 +186,7 @@ require_once '../includes/header.php';
                             requests</span>
 
                     </div>
-                                    <?php include 'includes/sm-sidebar.php'; ?>
+                    <?php include 'includes/sm-sidebar.php'; ?>
 
                 </div>
                 <div class="flex justify-end items-end w-full ">
@@ -266,6 +268,7 @@ require_once '../includes/header.php';
                 </div>
 
             </div>
+
 
 
 
@@ -533,8 +536,8 @@ require_once '../includes/header.php';
                         <p class="text-gray-500 text-sm">Payment verification requests will appear here</p>
                     </div>
                 </div>
-            
-            
+
+
             <?php endif; ?>
 
 

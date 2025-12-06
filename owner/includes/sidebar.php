@@ -1,24 +1,31 @@
 <?php
-require_once '../includes/session.php';
-require_once '../includes/db.php';
+
 
 $currentUserId = $_SESSION['user_id'] ?? null;
+$userRole = $_SESSION['user_type'] ?? 'guest';
 $unreadTotal = 0;
-
-if ($currentUserId) {
-    $stmt = $conn->prepare("
+$baseUrl = ($userRole === 'businessOwner') ? '/owner' : '/partner';
+if ($currentUserId && isset($conn)) {
+    $unreadStmt = $conn->prepare("
         SELECT COUNT(*) AS unread_total 
         FROM messages 
         WHERE receiver_id = ? 
           AND message_read = 0
     ");
-    $stmt->bind_param("i", $currentUserId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $unreadTotal = (int) ($row['unread_total'] ?? 0);
+    if ($unreadStmt) {
+        $unreadStmt->bind_param("i", $currentUserId);
+        if ($unreadStmt->execute()) {
+            $unreadResult = $unreadStmt->get_result();
+            if ($unreadResult) {
+                $unreadRow = $unreadResult->fetch_assoc();
+                $unreadTotal = (int) ($unreadRow['unread_total'] ?? 0);
+            }
+        }
+        $unreadStmt->close();
+    }
 }
-$current_page = basename($_SERVER['PHP_SELF']); // e.g., "dashboard.php"
+$current_page = basename($_SERVER['SCRIPT_NAME']);
+
 $is_crop_page = in_array($current_page, ['verify_crops.php', 'verified_crops.php']);
 $is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_dashboard.php']);
 ?>
@@ -28,16 +35,16 @@ $is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_das
         AniHanda
     </div>
     <nav class="flex-1 p-4 space-y-4">
-        <a href="../owner/dashboard.php"
+        <a href="../owner/dashboard"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B]  text-[#28453E] flex items-center gap-3  <?= $current_page === 'dashboard.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
             <span>Dashboard</span></a>
 
-        <a href="../partner/bid_crops.php"
+       <a href="..<?= $baseUrl ?>/bid_crops"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_crops.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="gavel" class="w-5 h-5"></i>
             <span>Bidding</span></a>
-        <a href="../owner/bid_records.php"
+        <a href="../owner/bid_records"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_records.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="notepad-text" class="w-5 h-5"></i>
             <span>Bid Records</span></a>
@@ -51,11 +58,11 @@ $is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_das
             <div id="cropsDropdown" class="hidden ml-5  border-l border-gray-300">
                 <div class="ml-3 mt-2 space-y-2">
 
-                    <a href="verify_crops.php"
+                    <a href="../owner/verify_crops"
                         class="block px-4 py-2 text-sm rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2  <?= $current_page === 'verify_crops.php' ? 'bg-[#BFF49B]' : '' ?>">
                         <span>Crop Submission</span>
                     </a>
-                    <a href="verified_crops.php"
+                    <a href="../owner/verified_crops"
                         class="block px-4 py-2 text-sm  rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2  <?= $current_page === 'verified_crops.php' ? 'bg-[#BFF49B]' : '' ?>">
                         <span>Verified Crops</span>
                     </a>
@@ -74,7 +81,7 @@ $is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_das
             <div id="forecastingDropdown" class="hidden ml-5  border-l border-gray-300">
                 <div class="ml-3 mt-2 space-y-2">
 
-                    <a href="forecast_dashboard.php"
+                    <a href="forecast_dashboard"
                         class="block px-4 py-2 text-sm rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-2  <?= $current_page === 'forecast_dashboard.php' ? 'bg-[#BFF49B]' : '' ?>">
                         <span>Dashboard</span>
                     </a>
@@ -86,16 +93,16 @@ $is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_das
 
             </div>
         </div>
-        <a href="confirm_payments.php"
+        <a href="confirm_payments"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'confirm_payments.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="credit-card" class="w-5 h-5"></i>
             <span>Payments</span></a>
-        <a href="bid_cancellations.php"
+        <a href="bid_cancellations"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'bid_cancellations.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="ban" class="w-5 h-5"></i>
             <span>Cancellations</span></a>
 
-        <a href="chat.php"
+        <a href="chat"
             class=" block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'chat.php' ? 'bg-[#BFF49B]' : '' ?>">
 
             <div class="indicator">
@@ -116,7 +123,7 @@ $is_forecasting_page = in_array($current_page, ['forecasting.php', 'forecast_das
 
 
         </a>
-        <a href="users.php"
+        <a href="users"
             class="block px-4 py-2 rounded-lg hover:bg-[#BFF49B] text-[#28453E] flex items-center gap-3  <?= $current_page === 'users.php' ? 'bg-[#BFF49B]' : '' ?>">
             <i data-lucide="users" class="w-5 h-5"></i>
             <span>Users</span></a>

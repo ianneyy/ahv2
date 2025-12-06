@@ -2,6 +2,8 @@
 require_once '../includes/session.php';
 require_once '../includes/db.php';
 require_once '../includes/notify.php';
+
+
 $toast_message = $_SESSION['toast_message'] ?? null;
 unset($_SESSION['toast_message']);
 
@@ -210,9 +212,7 @@ require_once '../includes/header.php';
               <!-- More Options Button -->
               <a href="verify_crops.php"
                 class="ml-auto text-gray-400 hover:text-gray-600 p-2 hover:bg-[#ECF5E9] rounded-lg px-4">
-                <!-- <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-      </svg> -->
+               
                 <span>Default</span>
               </a>
             </div>
@@ -250,12 +250,7 @@ require_once '../includes/header.php';
                   <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
                   Rambutan
                 </div>
-                <!-- <div class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-        Quantity: High to Low
-      </div>
-       <div class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-         Quantity: Low to High
-      </div> -->
+             
               </div>
             </div>
             <!-- Dropdown Menu -->
@@ -291,12 +286,7 @@ require_once '../includes/header.php';
                   <div class="w-2 h-2 bg-green-400 rounded-full mr-3 hidden"></div>
                   Descending
                 </div>
-                <!-- <div class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-        Quantity: High to Low
-      </div>
-       <div class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-         Quantity: Low to High
-      </div> -->
+         
               </div>
             </div>
           </form>
@@ -528,79 +518,7 @@ require_once '../includes/header.php';
             </div>
           </div>
         </div>
-
-        <!-- Alternative: Minimal Version -->
-
-        <!-- <div class="flex flex-col items-center justify-center py-20 px-4 min-h-[300px]">
-    <div class="bg-gray-50 rounded-2xl p-6 mb-6">
-        <i data-lucide="check-circle-2" class="h-12 w-12 text-gray-300"></i>
-    </div>
-    
-    <div class="text-center space-y-2">
-        <h3 class="text-lg font-medium text-gray-800">All caught up!</h3>
-        <p class="text-gray-500 text-sm">No pending submissions to verify.</p>
-    </div>
-</div> -->
-
-
-        <!-- Alternative: With Stats -->
-        <!--   
-<div class="flex flex-col items-center justify-center py-16 px-4 min-h-[400px]">
-    <div class="relative mb-8">
-        <div class="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full transform scale-110 animate-pulse"></div>
-        <div class="relative bg-gradient-to-br from-green-100 to-emerald-100 rounded-full p-8">
-            <div class="relative">
-                <i data-lucide="clipboard-check" class="h-16 w-16 text-green-500"></i>
-                <div class="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
-                    <i data-lucide="check" class="h-3 w-3 text-white"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="text-center space-y-4 max-w-sm">
-        <h3 class="text-xl font-semibold text-gray-800">Great work!</h3>
-        <p class="text-gray-500">
-            You've reviewed all submissions. Check back later for new ones.
-        </p>
-        
-        <?php if (isset($stats)): ?>
-        <div class="bg-gray-50 rounded-lg p-4 mt-6">
-            <div class="flex items-center justify-center space-x-6 text-sm">
-                <div class="text-center">
-                    <div class="font-semibold text-gray-800"><?= $stats['this_week'] ?? '0' ?></div>
-                    <div class="text-gray-500">This week</div>
-                </div>
-                <div class="w-px h-8 bg-gray-300"></div>
-                <div class="text-center">
-                    <div class="font-semibold text-gray-800"><?= $stats['total'] ?? '0' ?></div>
-                    <div class="text-gray-500">Total</div>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
-</div> -->
-
-
-        <!-- Add these CSS animations if not already included -->
-        <style>
-          @keyframes float {
-
-            0%,
-            100% {
-              transform: translateY(0px);
-            }
-
-            50% {
-              transform: translateY(-10px);
-            }
-          }
-
-          .animate-float {
-            animation: float 3s ease-in-out infinite;
-          }
-        </style>
+       
       <?php endif; ?>
     </div>
   </main>
@@ -636,7 +554,3 @@ require_once '../includes/footer.php';
 <script src="./assets/script.js"></script>
 
 <?php $conn->close(); ?>
-
-</body>
-
-</html>

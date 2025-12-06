@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $_SESSION['toast_message'] = "Your crop has been resubmitted successfully!";
 
-            header("Location: http://localhost/AHV2/farmer/dashboard.php");
+            header("Location: https://anihanda.com/farmer/submit_crop.php");
             exit();
         } else {
             echo "❌ Failed to update crop submission.";
@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $message = "📢 A new crop submission has been made by $userName";
             sendNotificationToUserType($conn, 'businessOwner', $message);
             $_SESSION['toast_message'] = "Crop submitted successfully!";
-            header("Location: http://localhost/AHV2/farmer/dashboard.php");
+            header("Location: https://anihanda.com/farmer/submit_crop.php");
 
 
         } else {

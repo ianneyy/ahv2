@@ -197,7 +197,7 @@ require_once '../includes/header.php';
                                                 if (count($nameParts) > 1) {
                                                     $initials .= strtoupper(substr(end($nameParts), 0, 1));
                                                 }
-                                                ?>
+                                            ?>
                                                 <div class="avatar avatar-placeholder">
                                                     <div
                                                         class="bg-neutral text-neutral-content w-12 rounded-full flex items-center justify-center">
@@ -368,208 +368,214 @@ require_once '../includes/header.php';
 
         </div>
     </main>
-</div>
 
-<script>
-    function chatApp() {
-        return {
-            socket: null,
-            socketReady: false,
-            sendQueue: [],
-            showMobileChat: false,
-            // backend-driven unread count; reactive for real-time updates
-            unreadCounts: <?= json_encode($initialUnreadCounts) ?>,
-            latestPreview: {},
-            latestTime: {},
-            selectedUserId: null,
-            messages: [],
-            newMessage: '',
-            selectedUserName: '',
-            selectedUserPic: '',
-            initials: '',
-            selectedUserType: '',
-            searchQuery: '',
+    <!-- Pusher JS (for realtime chat) -->
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 
-            init() {
-                this.connectSocket();
-                document.querySelectorAll('[id^="dm-item-"]').forEach(item => {
-                    const uid = parseInt(item.id.replace('dm-item-', ''));
-                    const preview = item.getAttribute('data-latest-preview');
-                    const time = item.getAttribute('data-latest-time');
-                    if (preview && !this.latestPreview[uid]) {
-                        this.latestPreview[uid] = preview;
+    <script>
+        function chatApp() {
+            return {
+                pusher: null,
+                currentUserId: <?= json_encode($_SESSION['user_id']); ?>,
+                showMobileChat: false,
+                // backend-driven unread count; reactive for real-time updates
+                unreadCounts: <?= json_encode($initialUnreadCounts) ?>,
+                latestPreview: {},
+                latestTime: {},
+                selectedUserId: null,
+                messages: [],
+                newMessage: '',
+                selectedUserName: '',
+                selectedUserPic: '',
+                initials: '',
+                selectedUserType: '',
+                searchQuery: '',
+
+                init() {
+                    this.initPusher();
+                    document.querySelectorAll('[id^="dm-item-"]').forEach(item => {
+                        const uid = parseInt(item.id.replace('dm-item-', ''));
+                        const preview = item.getAttribute('data-latest-preview');
+                        const time = item.getAttribute('data-latest-time');
+                        if (preview && !this.latestPreview[uid]) {
+                            this.latestPreview[uid] = preview;
+                        }
+                        if (time && !this.latestTime[uid]) {
+                            this.latestTime[uid] = time;
+                        }
+                    });
+                },
+
+                initPusher() {
+                    const userId = this.currentUserId;
+
+                    // Optional: enable Pusher logging in dev
+                    // Pusher.logToConsole = true;
+
+                    this.pusher = new Pusher('4fc0a68218e1989eb11f', {
+                        cluster: 'ap1',
+                        forceTLS: true
+                    });
+
+                    const channel = this.pusher.subscribe(`chat_${userId}`);
+                    channel.bind('new_message', (data) => {
+                        // data is already an object from Pusher
+                        if (this.selectedUserId == data.sender_id || this.selectedUserId == data.receiver_id) {
+                            this.messages.push({
+                                id: data.id || Date.now(),
+                                text: data.message,
+                                sender: data.sender_id == userId ? 'me' : 'them'
+                            });
+                            this.$nextTick(() => {
+                                const desktopContainer = document.querySelector('.space-y-4.overflow-y-auto');
+                                if (desktopContainer) desktopContainer.scrollTop = desktopContainer.scrollHeight;
+
+                                if (this.$refs.mobileMessages) {
+                                    this.$refs.mobileMessages.scrollTop = this.$refs.mobileMessages.scrollHeight;
+                                }
+                            });
+                        }
+
+                        // Increment unread count for messages from others if that chat isn't open
+                        if (data.sender_id && data.sender_id != userId && this.selectedUserId != data.sender_id) {
+                            const fromId = data.sender_id;
+                            this.unreadCounts[fromId] = (this.unreadCounts[fromId] || 0) + 1;
+                            this.latestPreview[fromId] = data.message;
+                            this.latestTime[fromId] = new Date().toLocaleString();
+                            this.bumpDmToTop(fromId);
+                        }
+
+                        const otherId = data.sender_id == userId ? data.receiver_id : data.sender_id;
+                        this.latestPreview[otherId] = (data.sender_id == userId) ? `You: ${data.message}` : data.message;
+                        this.latestTime[otherId] = new Date().toLocaleString();
+                        this.bumpDmToTop(otherId);
+                    });
+                },
+
+                filterUser(userName) {
+                    if (!this.searchQuery.trim()) {
+                        return true;
                     }
-                    if (time && !this.latestTime[uid]) {
-                        this.latestTime[uid] = time;
+                    return userName.includes(this.searchQuery.toLowerCase());
+                },
+
+                selectUser(id, name, googleId, userType) {
+                    this.selectedUserId = id;
+                    this.selectedUserName = name;
+                    this.selectedUserType = userType;
+                    if (userType) {
+                        // Replace camelCase with spaced words and capitalize each
+                        const formatted = userType
+                            .replace(/([A-Z])/g, ' $1') // add space before capitals
+                            .replace(/^./, str => str.toUpperCase()) // capitalize first letter
+                            .trim();
+                        this.selectedUserType = formatted;
+                    } else {
+                        this.selectedUserType = '';
                     }
-                });
-            },
-
-            filterUser(userName) {
-                if (!this.searchQuery.trim()) {
-                    return true;
-                }
-                return userName.includes(this.searchQuery.toLowerCase());
-            },
-
-            connectSocket() {
-                // Use your actual session user ID from PHP
-                const userId = <?= json_encode($_SESSION['user_id']); ?>;
-                this.socket = new WebSocket(`ws://localhost:8080/chat?user_id=${userId}`);
-
-                this.socket.onopen = () => {
-                    this.socketReady = true;
-                    // flush queued messages
-                    while (this.sendQueue.length) {
-                        const queued = this.sendQueue.shift();
-                        this.socket.send(JSON.stringify(queued));
-                    }
-                };
-
-                this.socket.onclose = () => {
-                    this.socketReady = false;
-                    // retry connection after short delay
-                    setTimeout(() => this.connectSocket(), 1000);
-                };
-
-                this.socket.onerror = () => {
-                    this.socketReady = false;
-                };
-
-                this.socket.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    if (this.selectedUserId == data.sender_id || this.selectedUserId == data.receiver_id) {
-                        this.messages.push({
-                            id: data.id || Date.now(),
-                            text: data.message,
-                            sender: data.sender_id == userId ? 'me' : 'them'
-                        });
-                        this.$nextTick(() => {
-                            const desktopContainer = document.querySelector('.space-y-4.overflow-y-auto');
-                            if (desktopContainer) desktopContainer.scrollTop = desktopContainer.scrollHeight;
-
-                            // Scroll mobile chat
-                            if (this.$refs.mobileMessages) {
-                                this.$refs.mobileMessages.scrollTop = this.$refs.mobileMessages.scrollHeight;
-                            }
-                        });
+                    if (googleId) {
+                        // If user has a Google ID profile image
+                        this.selectedUserPic = `../assets/profile/${googleId}.jpg`;
+                        this.initials = '';
+                    } else {
+                        // Generate initials if no image
+                        const parts = name.trim().split(' ');
+                        this.initials = parts.map(p => p[0].toUpperCase()).join('').slice(0, 2);
+                        this.selectedUserPic = '';
                     }
 
-                    // Increment unread count for messages from others if that chat isn't open
-                    if (data.sender_id && data.sender_id != userId && this.selectedUserId != data.sender_id) {
-                        const fromId = data.sender_id;
-                        this.unreadCounts[fromId] = (this.unreadCounts[fromId] || 0) + 1;
-                        // update latest preview/time for sender
-                        this.latestPreview[fromId] = data.message;
-                        this.latestTime[fromId] = new Date().toLocaleString();
-                        this.bumpDmToTop(fromId);
+                    this.markAsRead(id)
+                        .then(() => {
+                            this.unreadCounts[id] = 0;
+                        })
+                        .finally(() => this.fetchMessages(id));
+                },
+
+                fetchMessages(userId) {
+                    fetch(`../includes/fetch_messages.php?user_id=${userId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            this.messages = Array.isArray(data) ? data : [];
+                            this.$nextTick(() => {
+                                const desktopContainer = document.querySelector('.space-y-4.overflow-y-auto');
+                                if (desktopContainer) desktopContainer.scrollTop = desktopContainer.scrollHeight;
+
+                                // Scroll mobile chat
+                                if (this.$refs.mobileMessages) {
+                                    this.$refs.mobileMessages.scrollTop = this.$refs.mobileMessages.scrollHeight;
+                                }
+                            });
+                        })
+                        .catch(console.error);
+                },
+
+                markAsRead(otherId) {
+                    return fetch(`../includes/mark_read.php`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            other_id: otherId
+                        })
+                    }).catch(() => {});
+                },
+
+                sendMessage() {
+                    if (!this.newMessage.trim() || !this.selectedUserId) return;
+
+                    const msg = this.newMessage.trim();
+                    const payload = {
+                        sender_id: this.currentUserId,
+                        receiver_id: this.selectedUserId,
+                        message: msg
+                    };
+
+                    fetch('../includes/pusher.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            // Immediately show our own message in the thread
+                            this.messages.push({
+                                id: data.id || Date.now(),
+                                text: data.message,
+                                sender: 'me'
+                            });
+                            this.$nextTick(() => {
+                                const desktopContainer = document.querySelector('.space-y-4.overflow-y-auto');
+                                if (desktopContainer) desktopContainer.scrollTop = desktopContainer.scrollHeight;
+
+                                if (this.$refs.mobileMessages) {
+                                    this.$refs.mobileMessages.scrollTop = this.$refs.mobileMessages.scrollHeight;
+                                }
+                            });
+                        })
+                        .catch(console.error);
+
+                    this.newMessage = '';
+
+                    // Optimistically update sidebar preview/time and position
+                    const now = new Date().toLocaleString();
+                    this.latestPreview[this.selectedUserId] = `You: ${msg}`;
+                    this.latestTime[this.selectedUserId] = now;
+                    this.bumpDmToTop(this.selectedUserId);
+                },
+
+                bumpDmToTop(userId) {
+                    const list = document.getElementById('dm-list');
+                    const item = document.getElementById(`dm-item-${userId}`);
+                    if (list && item) {
+                        list.prepend(item);
                     }
-
-                    // Always update counterpart preview for the other participant
-                    const otherId = data.sender_id == userId ? data.receiver_id : data.sender_id;
-                    this.latestPreview[otherId] = (data.sender_id == userId) ? `You: ${data.message}` : data.message;
-                    this.latestTime[otherId] = new Date().toLocaleString();
-                    this.bumpDmToTop(otherId);
-                };
-            },
-
-            selectUser(id, name, googleId, userType) {
-                this.selectedUserId = id;
-                this.selectedUserName = name;
-                this.selectedUserType = userType;
-                if (userType) {
-                    // Replace camelCase with spaced words and capitalize each
-                    const formatted = userType
-                        .replace(/([A-Z])/g, ' $1') // add space before capitals
-                        .replace(/^./, str => str.toUpperCase()) // capitalize first letter
-                        .trim();
-                    this.selectedUserType = formatted;
-                } else {
-                    this.selectedUserType = '';
-                }
-                if (googleId) {
-                    // If user has a Google ID profile image
-                    this.selectedUserPic = `../assets/profile/${googleId}.jpg`;
-                    this.initials = '';
-                } else {
-                    // Generate initials if no image
-                    const parts = name.trim().split(' ');
-                    this.initials = parts.map(p => p[0].toUpperCase()).join('').slice(0, 2);
-                    this.selectedUserPic = '';
-                }
-
-                this.markAsRead(id)
-                    .then(() => {
-                        this.unreadCounts[id] = 0;
-                    })
-                    .finally(() => this.fetchMessages(id));
-            },
-
-            fetchMessages(userId) {
-                fetch(`../includes/fetch_messages.php?user_id=${userId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        this.messages = Array.isArray(data) ? data : [];
-                        this.$nextTick(() => {
-                            const desktopContainer = document.querySelector('.space-y-4.overflow-y-auto');
-                            if (desktopContainer) desktopContainer.scrollTop = desktopContainer.scrollHeight;
-
-                            // Scroll mobile chat
-                            if (this.$refs.mobileMessages) {
-                                this.$refs.mobileMessages.scrollTop = this.$refs.mobileMessages.scrollHeight;
-                            }
-                        });
-                    })
-                    .catch(console.error);
-            },
-
-            markAsRead(otherId) {
-                return fetch(`../includes/mark_read.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        other_id: otherId
-                    })
-                }).catch(() => { });
-            },
-
-            sendMessage() {
-                if (!this.newMessage.trim() || !this.selectedUserId) return;
-
-                const msg = this.newMessage.trim();
-                const payload = {
-                    receiver_id: this.selectedUserId,
-                    message: msg
-                };
-
-                // Send to socket (queue if not ready yet)
-                if (this.socket && this.socketReady && this.socket.readyState === WebSocket.OPEN) {
-                    this.socket.send(JSON.stringify(payload));
-                } else {
-                    this.sendQueue.push(payload);
-                }
-
-                this.newMessage = '';
-
-                // Optimistically update sidebar preview/time and position
-                const now = new Date().toLocaleString();
-                this.latestPreview[this.selectedUserId] = `You: ${msg}`;
-                this.latestTime[this.selectedUserId] = now;
-                this.bumpDmToTop(this.selectedUserId);
-            },
-
-            bumpDmToTop(userId) {
-                const list = document.getElementById('dm-list');
-                const item = document.getElementById(`dm-item-${userId}`);
-                if (list && item) {
-                    list.prepend(item);
                 }
             }
         }
-    }
-</script>
-<?php
-require_once '../includes/footer.php';
-?>
+    </script>
+    <?php
+    require_once '../includes/footer.php';
+    ?>
